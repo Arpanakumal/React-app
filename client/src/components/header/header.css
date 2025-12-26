@@ -1,0 +1,37 @@
+.header {
+    height: 34vw;
+    margin: 30px auto;
+    position: relative;
+    background: url('../../../public/header2.jpg') no-repeat center center;
+    background-size: cover;
+}
+
+.header-contents {
+    position: absolute;
+    bottom: 10%;
+    left: 6vw;
+    align-items: start;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5vw;
+    max-width: 50%;
+}
+
+.header-contents h2 {
+    font-weight: 500;
+    font-size: max(4.5vw, 22px);
+    color: black;
+}
+
+.header-contents p {
+
+    color: rgb(7, 3, 49);
+    font-size: 1vw;
+}
+
+.header-contents button {
+    width: fit-content;
+    padding: 0.8em 1.2em;
+    font-size: 1rem;
+    cursor: pointer;
+}
