@@ -1,6 +1,8 @@
 import React from 'react'
 import './home.css'
 import Header from '../../components/header/Header';
+import ExploreService from '../../components/ExploreServices/ExploreService';
+
 
 
 
@@ -8,7 +10,8 @@ const Home = () => {
     return (
         <div>
             <Header />
-            {/* Other home content */}
+            <ExploreService/>
+
         </div>
     );
 };
