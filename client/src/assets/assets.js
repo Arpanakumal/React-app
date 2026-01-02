@@ -95,7 +95,8 @@ export const Service_list = [
         name: "Wiring & Rewiring",
         image: wiring,
         price_info: "Starts at Rs.200/hr",
-        description: "Licensed electricians for all your home wiring needs.",
+        description: "Our team ensures safe, efficient, and reliable installation and repair of all electrical systems.",
+        rating: 4,
         category: "Electrical"
     },
     {
@@ -104,79 +105,90 @@ export const Service_list = [
         image: light,
         price_info: "Starts at Rs.50/hr",
         description: "Expert electrical solution for your home to keep your power running smmothly.",
+        rating:3,
         category: "Electrical"
     },
     {
         _id: "3",
-        name: "Pipe installation & replacement",
+        name: "Pipe installation, replacement",
         image: pipe,
         price_info: "Starts at Rs.1000/hr",
         description: "Comprehensive plumbing care for your home, including leak detection & repair.",
+        rating:4,
         category: "Plumbing"
     },
-        {
+    {
         _id: "4",
-        name: "Leak detection & repair",
+        name: "Leak detection",
         image: leak,
         price_info: "Starts at Rs.1000/hr",
-        description: "Pipe installation & replacement, drain cleaning, and ensuring your water systems work flawlessly.",
+        description: "Pipe installation & replacement, and ensuring your water systems work flawlessly.",
+        rating: 4,
         category: "Plumbing"
     },
-{
-            _id: "5",
-        name: "Furniture Assembly & Home Decor",
-        image: leak,
+    {
+        _id: "5",
+        name: "Furniture Assembly",
+        image: furniture,
         price_info: "Starts at Rs.2000/hr",
-        description: "Home interior support including furniture assembly, home décor consultation.",
+        description: "Professional home interior design support specializing in furniture assembly, arrangement, and styling.",
+        rating: 3,
         category: "Interior"
     },
     {
-            _id: "6",
-        name: "Wall Painitng & Interior design",
-        image: leak,
+        _id: "6",
+        name: "Wall Painitng ",
+        image: painting,
         price_info: "Starts at Rs.3000/hr",
         description: "Professional wall painting solutions to make your living areas functional and stylish.",
+        rating: 4.3,
         category: "Interior"
     },
 
-        {
-            _id: "7",
-        name: "Deep Cleaning and Carpet Upholstery Cleaning",
+    {
+        _id: "7",
+        name: "Deep Cleaning ",
         image: deepcleaning,
         price_info: "Starts at Rs.3000/hr",
-        description: "Thorough and reliable cleaning services for your home, including deep cleaning,carpet and upholstery cleaning,.",
+        description: "Cleaning services for your home, including deep cleaning,carpet and upholstery cleaning,.",
+        rating: 4.3,
         category: "Cleaning"
     },
-        {
-            _id: "8",
+    {
+        _id: "8",
         name: "Move In/ Move out Cleaning",
         image: movein,
         price_info: "Starts at Rs.3000/hr",
         description: "Move-in/Move-out cleaning to keep your space sparkling.",
+        rating:5,
         category: "Cleaning"
     },
-            {
-            _id: "9",
+
+    {
+        _id: "9",
         name: "Move In/ MOve out Helping Guide",
         image: staff,
         price_info: "Starts at Rs.3000/hr",
         description: "Ensure a smooth, thorough cleaning for clients during move-in or move-out.",
+        rating: 4.3,
         category: "Staff"
     },
-                {
-            _id: "10",
+    {
+        _id: "10",
         name: "Lawn care and Maintenance",
         image: lawn,
         price_info: "Starts at Rs.3000/hr",
-        description: "Complete lawn care services including mowing, trimming, fertilizing, weed control, and seasonal maintenance to keep your grass healthy, green, and beautifully maintained.",
+        description: "Complete lawn care services including mowing, trimming, fertilizing, weed control, and your grass healthy, green.",
+        rating: 4.3,
         category: "Gardening"
     },
-                {
-            _id: "11",
-        name: "Gardening Care",
+    {
+        _id: "11",
+        name: "Gardening, Maintenance Care",
         image: gardeningg,
         price_info: "Starts at Rs.3000/hr",
-        description: "Complete gardening care services including planting flowers, shrubs, and trees, pruning and trimming, lawn and garden maintenance, and pest control to keep your outdoor spaces healthy, vibrant, and beautifully maintained.",
+        description: "Complete gardening care services including planting flowers, shrubs, and trees, pruning and trimming, lawn and garden maintenance.",
+        rating:5,
         category: "Gardening"
     },
 
