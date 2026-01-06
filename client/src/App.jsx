@@ -6,6 +6,7 @@ import Book from "./pages/Book/book";
 import BookingConfirmation from "./pages/bookingConfirmation/booking";
 import { StoreContext } from "./context/StoreContext";
 import { Service_list } from "./assets/assets";
+import Footer from "./components/Footer/Footer";
 
 const App = () => {
   const [services, setServices] = useState(Service_list);
@@ -22,6 +23,7 @@ const App = () => {
           </Routes>
         </BrowserRouter>
       </div>
+      <Footer/>
     </StoreContext.Provider>
   );
 };

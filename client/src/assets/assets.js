@@ -27,6 +27,9 @@ import movein from './movein.avif';
 import upholstery from './upholstery.jpg';
 import lawn from './lawn.jpg';
 import gardeningg from './gardeningg.webp';
+import fb2 from './fb2.webp';
+import ig from './ig.webp';
+import twitter from './twitter.webp';
 
 
 
@@ -61,6 +64,9 @@ export {
     movein,
     upholstery,
     lawn,
+    fb2,
+    ig,
+    twitter,
 
 };
 export const service_list = [
