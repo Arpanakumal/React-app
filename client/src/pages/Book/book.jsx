@@ -2,7 +2,7 @@ import React from 'react'
 import './book.css'
 
 
-const book = () => {
+const Book = () => {
     return (
         <div>
 
@@ -10,4 +10,4 @@ const book = () => {
     )
 }
 
-export default book
+export default Book

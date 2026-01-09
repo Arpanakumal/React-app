@@ -33,7 +33,7 @@ const ServiceItem = ({ id, name, price_info, description, image, rating }) => {
             <p className="service-item-price">{price_info}</p>
 
             <button className="book-now-btn" onClick={handleBookNow}>
-                Book Now
+                Book Appointment
             </button>
         </div>
     )

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import './Navbar.css';
 import { logo, searchIcon } from '../../assets/assets';
+import { Link } from "react-router-dom";
 
-const Navbar = () => {
+const Navbar = ({setShowLogin}) => {
     const [menu, setMenu] = useState("Home");
 
     return (
@@ -11,62 +12,71 @@ const Navbar = () => {
 
             <ul className="navbar-menu">
                 <li>
-                    <a 
-                        href="#home" 
-                        onClick={() => setMenu("Home")} 
+                    <Link
+                        to="/"
+                        onClick={() => setMenu("Home")}
                         className={menu === "Home" ? "active" : ""}
                     >
                         Home
-                    </a>
+                    </Link>
                 </li>
 
                 <li>
-                    <a 
-                        href="#services" 
-                        onClick={() => setMenu("Services")} 
+                    <Link
+                        to="/service"
+                        onClick={() => setMenu("Services")}
                         className={menu === "Services" ? "active" : ""}
                     >
                         Services
-                    </a>
+                    </Link>
+                </li>
+                <li>
+                    <Link
+                        to="/book"
+                        onClick={() => setMenu("book")}
+                        className={menu === "book" ? "active" : ""}
+                    >
+                        Book
+                    </Link>
                 </li>
 
                 <li>
-                    <a 
-                        href="#blog" 
-                        onClick={() => setMenu("Blog")} 
+                    <Link
+                        to="/blog"
+                        onClick={() => setMenu("Blog")}
                         className={menu === "Blog" ? "active" : ""}
                     >
                         Blog
-                    </a>
+                    </Link>
                 </li>
 
                 <li>
-                    <a 
-                        href="#about" 
-                        onClick={() => setMenu("About us")} 
+                    <Link
+                        to="/about"
+                        onClick={() => setMenu("About us")}
                         className={menu === "About us" ? "active" : ""}
                     >
                         About Us
-                    </a>
+                    </Link>
                 </li>
 
                 <li>
-                    <a 
-                        href="#contact" 
-                        onClick={() => setMenu("Contact us")} 
+                    <Link
+                        to="/contact"
+                        onClick={() => setMenu("Contact us")}
                         className={menu === "Contact us" ? "active" : ""}
                     >
                         Contact Us
-                    </a>
+                    </Link>
                 </li>
             </ul>
 
             <div className="navbar-right">
                 <img src={searchIcon} alt="Search" className="search-icon" />
-                <button>Sign In</button>
+                <button onClick={()=>setShowLogin(true)}>Sign In</button>
             </div>
         </div>
     );
-}
+};
 
 export default Navbar;

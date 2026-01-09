@@ -30,12 +30,17 @@ import gardeningg from './gardeningg.webp';
 import fb2 from './fb2.webp';
 import ig from './ig.webp';
 import twitter from './twitter.webp';
-
+import about2 from './about2.jpg';
+import contact from './contact.jpg';
+import cross from './cross.webp';
 
 
 
 
 export {
+    cross,
+    contact,
+    about2,
     logo,
     cleaning,
     cleaning2,

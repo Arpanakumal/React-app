@@ -14,7 +14,7 @@ const Header = () => {
                     peace of mind knowing your home is in expert hands.
                 </p>
                 <button>View Services</button>
-            </div>
+            </div><br></br>
 
         </div>
     )

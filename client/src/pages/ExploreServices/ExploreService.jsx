@@ -1,6 +1,7 @@
 import React from 'react'
 import './ExploreService.css'
 import { service_list } from '../../assets/assets'
+import ServiceItem from '../../components/ServiceItem/ServiceItem'
 
 
 const ExploreService = ({category,setCategory}) => {
@@ -12,7 +13,6 @@ const ExploreService = ({category,setCategory}) => {
                 Plumbing, Painting, Gardening, and Interior Services for design,
                 consulting, and installation.
             </p>
-
             <div className="explore-service-list">
                 {service_list.map((item, index) => {
                     return (
