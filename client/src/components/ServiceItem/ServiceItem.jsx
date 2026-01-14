@@ -1,15 +1,16 @@
 import React, { useContext } from 'react'
 import './ServiceItem.css'
 import { StoreContext } from '../../context/StoreContext'
-import { useNavigate } from 'react-router-dom' 
+import { useNavigate } from 'react-router-dom'
 
 const ServiceItem = ({ id, name, price_info, description, image, rating }) => {
     const { setSelectedService } = useContext(StoreContext);
+    const { addService } = useContext(StoreContext);
     const navigate = useNavigate();
 
     const handleBookNow = () => {
-        setSelectedService({ id, name, price_info, description, image, rating });
-        navigate('./book');  
+        addService(id); 
+        navigate('/book'); 
     };
 
     return (

@@ -3,9 +3,11 @@ import './booking.css'
 
 const booking = () => {
     return (
-        <div>
+        <form className='confirm-booking'>
+            <div>
 
-        </div>
+            </div>
+        </form>
     )
 }
 

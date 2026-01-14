@@ -106,6 +106,7 @@ export const Service_list = [
         name: "Wiring & Rewiring",
         image: wiring,
         price_info: "Starts at Rs.200/hr",
+        price:200,
         description: "Our team ensures safe, efficient, and reliable installation and repair of all electrical systems.",
         rating: 4,
         category: "Electrical"
@@ -114,7 +115,8 @@ export const Service_list = [
         _id: "2",
         name: "Light Fixture Installation",
         image: light,
-        price_info: "Starts at Rs.50/hr",
+        price_info: "Starts at Rs.500/hr",
+        price:500,
         description: "Expert electrical solution for your home to keep your power running smmothly.",
         rating:3,
         category: "Electrical"
@@ -124,6 +126,7 @@ export const Service_list = [
         name: "Pipe installation, replacement",
         image: pipe,
         price_info: "Starts at Rs.1000/hr",
+        price:1000,
         description: "Comprehensive plumbing care for your home, including leak detection & repair.",
         rating:4,
         category: "Plumbing"
@@ -133,6 +136,7 @@ export const Service_list = [
         name: "Leak detection",
         image: leak,
         price_info: "Starts at Rs.1000/hr",
+        price:1000,
         description: "Pipe installation & replacement, and ensuring your water systems work flawlessly.",
         rating: 4,
         category: "Plumbing"
@@ -142,6 +146,7 @@ export const Service_list = [
         name: "Furniture Assembly",
         image: furniture,
         price_info: "Starts at Rs.2000/hr",
+        price:2000,
         description: "Professional home interior design support specializing in furniture assembly, arrangement, and styling.",
         rating: 3,
         category: "Interior"
@@ -151,6 +156,7 @@ export const Service_list = [
         name: "Wall Painitng ",
         image: painting,
         price_info: "Starts at Rs.3000/hr",
+        price:3000,
         description: "Professional wall painting solutions to make your living areas functional and stylish.",
         rating: 4.3,
         category: "Interior"
@@ -161,6 +167,7 @@ export const Service_list = [
         name: "Deep Cleaning ",
         image: deepcleaning,
         price_info: "Starts at Rs.3000/hr",
+        price:3000,
         description: "Cleaning services for your home, including deep cleaning,carpet and upholstery cleaning,.",
         rating: 4.3,
         category: "Cleaning"
@@ -170,6 +177,7 @@ export const Service_list = [
         name: "Move In/ Move out Cleaning",
         image: movein,
         price_info: "Starts at Rs.3000/hr",
+        price:3000,
         description: "Move-in/Move-out cleaning to keep your space sparkling.",
         rating:5,
         category: "Cleaning"
@@ -180,6 +188,7 @@ export const Service_list = [
         name: "Move In/ MOve out Helping Guide",
         image: staff,
         price_info: "Starts at Rs.3000/hr",
+        price:3000,
         description: "Ensure a smooth, thorough cleaning for clients during move-in or move-out.",
         rating: 4.3,
         category: "Staff"
@@ -189,6 +198,7 @@ export const Service_list = [
         name: "Lawn care and Maintenance",
         image: lawn,
         price_info: "Starts at Rs.3000/hr",
+        price:3000,
         description: "Complete lawn care services including mowing, trimming, fertilizing, weed control, and your grass healthy, green.",
         rating: 4.3,
         category: "Gardening"
@@ -198,6 +208,7 @@ export const Service_list = [
         name: "Gardening, Maintenance Care",
         image: gardeningg,
         price_info: "Starts at Rs.3000/hr",
+        price:3000,
         description: "Complete gardening care services including planting flowers, shrubs, and trees, pruning and trimming, lawn and garden maintenance.",
         rating:5,
         category: "Gardening"
