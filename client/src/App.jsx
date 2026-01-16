@@ -4,8 +4,9 @@ import Navbar from "./components/navbar/Navbar";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/home/home";
 import Book from "./pages/Book/Book";
-import BookingConfirmation from "./pages/bookingConfirmation/Booking";
+import BookingConfirmation from "./pages/BookingConfirmation/Booking";
 import ServiceDisplay from "./pages/ServiceDisplay/ServiceDisplay";
+import ServiceDetail from "./pages/ServiceDetail/ServiceDetail";
 import Footer from "./components/Footer/Footer";
 import Contact from "./pages/Contact/Contact";
 import About from "./pages/Aboutus/About";
@@ -27,6 +28,7 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/service" element={<ServiceDisplay />} />
+              <Route path="/service/:id" element={<ServiceDetail />} />
               <Route path="/book" element={<Book />} />
               <Route path="/booking" element={<BookingConfirmation />} />
               <Route path="/about" element={<About />} />

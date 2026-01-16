@@ -75,7 +75,7 @@ const Book = () => {
                     <div className="book-total">
                         <h3>Total: Rs.{getTotalAmount().toFixed(2)}</h3>
                     </div>
-                    <button onClick={()=>navigate('./bookingConfirmation')}
+                    <button onClick={()=>navigate('/booking')}
 
 
                     className="confirm-btn">Confirm Appointment</button>
