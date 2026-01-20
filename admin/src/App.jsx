@@ -9,7 +9,6 @@ import Customers from "./pages/Customers/Customer";
 import Providers from "./pages/Providers/Provider";
 import Messages from './pages/Messages/Message';
 
-
 const App = () => {
   return (
     <div>
@@ -18,15 +17,18 @@ const App = () => {
       <div className="app-content">
         <Sidebar />
         <main className="main-content">
-          <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/bookings" element={<Booking />} />
-            <Route path="/messages" element={<Messages />} />
-            <Route path="/customers" element={<Customers />} />
-            <Route path="/providers" element={<Providers />} />
-          </Routes>
+
+          <div className="form-wrapper">
+            <Routes>
+              <Route path="/" element={<Navigate to="/dashboard" />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/bookings" element={<Booking />} />
+              <Route path="/messages" element={<Messages />} />
+              <Route path="/customers" element={<Customers />} />
+              <Route path="/providers" element={<Providers />} />
+            </Routes>
+          </div>
         </main>
       </div>
     </div>

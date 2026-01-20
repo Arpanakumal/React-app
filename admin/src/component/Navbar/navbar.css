@@ -11,8 +11,28 @@
     height: auto;
 }
 
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
 .profile {
     width: 80px;
     height: 80px;
     border-radius: 50%;
+    cursor: pointer;
+}
+
+.message {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .navbar-right {
+        gap: 10px;
+    }
 }

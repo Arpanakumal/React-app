@@ -34,11 +34,15 @@ import profile from './profile1.jpg';
 import add from './add.webp';
 import list from './list.png';
 import appointment from './appointment.jpg';
+import message from './notif.jpg';
+import upload from './upload.jpg'
 
 
 
 
 export {
+    upload,
+    message,
     appointment,
     list,
     add,
@@ -99,14 +103,6 @@ export const service_list = [
         service_image: electrical2
     },
 
-];
-const menuItems = [
-    { name: "Dashboard", icon: dashboardIcon, path: "/dashboard" },
-    { name: "Services", icon: servicesIcon, path: "/services" }, 
-    { name: "Booking ", icon: bookingsIcon, path: "/bookings" },
-    { name: "Customers", icon: customersIcon, path: "/customers" },
-    { name: "Providers", icon: staffIcon, path: "/staff" },
-    { name: "Messages", icon: messagesIcon, path: "/messages" } 
 ];
 
 
