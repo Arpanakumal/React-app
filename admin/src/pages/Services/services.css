@@ -1,22 +1,20 @@
-.service-wrapper {
-    height: 100vh;
+.service-page {
+    width: 100%;
+    min-height: calc(100vh - 80px);
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: aliceblue;
 }
 
+
 .add {
+    width: 100%;
     max-width: 600px;
-    width: 90%;
+    background: white;
     padding: 30px;
-    background-color: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    font-family: 'Outfit', sans-serif;
+    border-radius: 10px;
 }
+
 
 
 .flex-col {
@@ -108,7 +106,7 @@
 }
 
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
     .add {
         margin: 20px;
         padding: 20px;

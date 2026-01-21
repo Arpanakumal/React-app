@@ -1,3 +1,4 @@
+
 .navbar {
     display: flex;
     justify-content: space-between;
@@ -25,14 +26,51 @@
 }
 
 .message {
-    width: 90px;
-    height: 90px;
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
     cursor: pointer;
+}
+
+
+.message-container {
+    position: relative;
+    display: inline-block;
+}
+
+.notif-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: red;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 50%;
+    padding: 4px 8px;
+    min-width: 20px;
+    text-align: center;
+    line-height: 1;
 }
 
 @media (max-width: 768px) {
     .navbar-right {
         gap: 10px;
+    }
+
+    .message {
+        width: 60px;
+        height: 60px;
+    }
+
+    .profile {
+        width: 60px;
+        height: 60px;
+    }
+
+    .notif-badge {
+        font-size: 12px;
+        padding: 3px 6px;
+        min-width: 16px;
     }
 }

@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import './sidebar.css';
 
 const Sidebar = () => {
+    const [servicesOpen, setServicesOpen] = useState(false);
+
     return (
         <div className="sidebar">
             <nav className="sidebar-nav">
@@ -10,9 +12,21 @@ const Sidebar = () => {
                     Dashboard
                 </NavLink>
 
-                <NavLink to="/services" className="sidebar-link">
+
+                <div className="sidebar-link" onClick={() => setServicesOpen(!servicesOpen)}>
                     Services
-                </NavLink>
+                </div>
+
+                {servicesOpen && (
+                    <div className="sidebar-submenu">
+                        <NavLink to="/services" className="sidebar-sublink">
+                            Add Service
+                        </NavLink>
+                        <NavLink to="/services/list" className="sidebar-sublink">
+                            List Services
+                        </NavLink>
+                    </div>
+                )}
 
                 <NavLink to="/bookings" className="sidebar-link">
                     Bookings
@@ -25,8 +39,6 @@ const Sidebar = () => {
                 <NavLink to="/providers" className="sidebar-link">
                     Providers
                 </NavLink>
-
-        
             </nav>
         </div>
     );

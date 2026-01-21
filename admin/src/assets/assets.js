@@ -34,7 +34,7 @@ import profile from './profile1.jpg';
 import add from './add.webp';
 import list from './list.png';
 import appointment from './appointment.jpg';
-import message from './notif.jpg';
+import message from './message.webp';
 import upload from './upload.jpg'
 
 

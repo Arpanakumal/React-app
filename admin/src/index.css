@@ -27,25 +27,21 @@ hr {
 .app-content {
   display: flex;
   min-height: calc(100vh - 80px);
-  
+
 }
 
 
 
 .main-content {
   flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   background-color: aliceblue;
   padding: 20px;
 }
 
 
+
 .form-wrapper {
   width: 100%;
   max-width: 600px;
-
+  margin: auto;
 }
-
-
