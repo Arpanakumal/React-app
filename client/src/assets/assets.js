@@ -33,11 +33,17 @@ import twitter from './twitter.webp';
 import about2 from './about2.jpg';
 import contact from './contact.jpg';
 import cross from './cross.webp';
+import profile from './profile2.webp';
+import logout from './logout.png';
+import booking from './booking.jpg';
 
 
 
 
 export {
+    booking,
+    logout,
+    profile,
     cross,
     contact,
     about2,

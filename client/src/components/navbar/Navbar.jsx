@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import './Navbar.css';
-import { logo, searchIcon } from '../../assets/assets';
+import { logo, searchIcon, profile, logout, booking } from '../../assets/assets';
 import { Link } from "react-router-dom";
+import { StoreContext } from '../../context/StoreContext';
 
-const Navbar = ({setShowLogin}) => {
+const Navbar = ({ setShowLogin }) => {
     const [menu, setMenu] = useState("Home");
+    const [pendingCount, setPendingCount] = useState(0);
+
+    const { token, setToken } = useContext(StoreContext);
 
     return (
         <div className="navbar">
@@ -71,9 +75,26 @@ const Navbar = ({setShowLogin}) => {
                 </li>
             </ul>
 
+
             <div className="navbar-right">
                 <img src={searchIcon} alt="Search" className="search-icon" />
-                <button onClick={()=>setShowLogin(true)}>Sign In</button>
+                {!token ?
+                    <button onClick={() => setShowLogin(true)}>Sign In</button>
+                    : <div className='navbar-profile'>
+                        <img src={profile} alt="" />
+                        <ul className='nav-profile-dropdown'>
+                            <li>
+                                <img src={booking} alt="" /> Bookings
+
+                                {pendingCount > 0 && (
+                                    <span className="badge">{pendingCount}</span>
+                                )}
+                            </li>
+                            <li><img src={logout} alt="" /> Logout</li>
+                        </ul>
+                    </div>
+
+                }
             </div>
         </div>
     );

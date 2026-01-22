@@ -9,6 +9,9 @@ const StoreContextProvider = ({ children }) => {
 
     const [selectedServices, setSelectedServices] = useState({});
 
+    const url = "http://localhost:3001";
+    const [token,setToken]= useState("");
+
     const addService = (serviceId) => {
 
         const service = Service_list.find(s => s._id === serviceId);
@@ -18,8 +21,8 @@ const StoreContextProvider = ({ children }) => {
         setSelectedServices((prev) => ({
             ...prev,
             [serviceId]: prev[serviceId]
-                ? { ...prev[serviceId] } 
-                : { providers: 1, provider }, 
+                ? { ...prev[serviceId] }
+                : { providers: 1, provider },
         }));
     };
 
@@ -61,6 +64,9 @@ const StoreContextProvider = ({ children }) => {
         updateProviders,
         removeService,
         getTotalAmount,
+        url,
+        token,
+        setToken
     };
 
     return (
