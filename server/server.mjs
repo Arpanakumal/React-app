@@ -1,17 +1,19 @@
 import dotenv from 'dotenv';
-dotenv.config();  // MUST be first
+dotenv.config();
 
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import ServiceRouter from './routes/ServiceRoute.mjs';
 import userRouter from './routes/UserRoute.mjs';
+import bookingRouter from './routes/BookingRoute.mjs';
+import providerRouter from './routes/ProviderRoute.mjs';
+
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Connect MongoDB
 const connectDB = async () => {
     try {
         console.log("Connecting to:", process.env.MONGO_URI);
@@ -23,16 +25,20 @@ const connectDB = async () => {
     }
 };
 
-await connectDB();
 
-// API routes
-app.use("/api/Service", ServiceRouter);
-app.use("/images", express.static('uploads'));
-app.use("/api/user", userRouter);
+(async () => {
+    await connectDB();
 
-app.get('/', (req, res) => {
-    res.send('✅ Backend is running!');
-});
+    app.use("/api/Service", ServiceRouter);
+    app.use("/images", express.static('uploads'));
+    app.use("/api/user", userRouter);
+    app.use("/api/Booking", bookingRouter);
+    app.use("/api/Provider", providerRouter);
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    app.get('/', (req, res) => {
+        res.send('✅ Backend is running!');
+    });
+
+    const PORT = process.env.PORT || 3001;
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+})();
