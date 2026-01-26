@@ -6,8 +6,9 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import ServiceRouter from './routes/ServiceRoute.mjs';
 import userRouter from './routes/UserRoute.mjs';
-import bookingRouter from './routes/BookingRoute.mjs';
+
 import providerRouter from './routes/ProviderRoute.mjs';
+import adminRouter from './routes/AdminRoutes.mjs';
 
 
 const app = express();
@@ -32,8 +33,9 @@ const connectDB = async () => {
     app.use("/api/Service", ServiceRouter);
     app.use("/images", express.static('uploads'));
     app.use("/api/user", userRouter);
-    app.use("/api/Booking", bookingRouter);
+
     app.use("/api/Provider", providerRouter);
+    app.use("/api/admin", adminRouter);
 
     app.get('/', (req, res) => {
         res.send('✅ Backend is running!');
