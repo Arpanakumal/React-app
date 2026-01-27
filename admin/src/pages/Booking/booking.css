@@ -1,0 +1,75 @@
+.admin-booking-panel {
+    padding: 20px;
+    width: 100%;
+}
+
+.admin-booking-panel h2 {
+    margin-bottom: 20px;
+}
+
+.booking-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.booking-table th,
+.booking-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+.booking-table th {
+    background-color: #f4f4f4;
+}
+
+.booking-table tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+.booking-table select {
+    padding: 5px;
+}
+
+
+@media (max-width: 1024px) {
+    .kpi-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .half-width,
+    .tables-section,
+    .charts-section {
+        width: 100%;
+    }
+
+    .booking-table {
+        font-size: 14px;
+    }
+
+    .booking-table th,
+    .booking-table td {
+        padding: 8px;
+    }
+}
+
+@media (max-width: 600px) {
+    .kpi-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .tables-section {
+        overflow-x: auto;
+
+    }
+
+    .booking-table {
+        min-width: 600px;
+        font-size: 12px;
+    }
+
+    .charts-section {
+        grid-template-columns: 1fr;
+    }
+}

@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 const Service = ({ url }) => {
 
 
+    const [commissionPercent, setCommissionPercent] = useState(0);
 
 
     const [image, setImage] = useState(null);
@@ -28,6 +29,8 @@ const Service = ({ url }) => {
     const onSubmitHandler = async (event) => {
         event.preventDefault();
         const formData = new FormData();
+        formData.append("commissionPercent", Number(commissionPercent));
+
         formData.append("name", data.name)
         formData.append("description", data.description)
         formData.append("price_info", Number(data.price_info))
@@ -81,6 +84,7 @@ const Service = ({ url }) => {
                         <input onChange={onChangeHandler} value={data.name} type="text" name='name' placeholder='Type here' />
                     </div>
 
+
                     <div className="add-service-desc flex-col">
                         <textarea onChange={onChangeHandler} value={data.description} name="description" rows='6' placeholder='Write Content here' required></textarea>
                     </div>
@@ -101,6 +105,19 @@ const Service = ({ url }) => {
                             <p>Price Information</p>
                             <input onChange={onChangeHandler} value={data.price_info} type="number" name='price_info' placeholder='Rs.' />
                         </div>
+
+                                                <div className="add-service-name flex-col">
+                            <p>Commission %</p>
+                            <input
+                                type="number"
+                                value={commissionPercent}
+                                onChange={(e) => setCommissionPercent(e.target.value)}
+                                min="0"
+                                max="100"
+                                required
+                            />
+                        </div>
+
                     </div>
 
                     <button type='submit' className='add-btn'>ADD</button>
