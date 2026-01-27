@@ -1,21 +1,18 @@
-import { createContext, useState } from "react";
-import { Service_list } from "../assets/assets";
-import { provider_list } from '../assets/providers';
+import { createContext, useState, useEffect } from "react";
+
+import { Service_list as initialServiceList } from "../assets/assets";
+import { provider_list } from "../assets/providers";
 
 export const StoreContext = createContext(null);
 
 const StoreContextProvider = ({ children }) => {
 
-
+    // Services and selections
     const [selectedServices, setSelectedServices] = useState({});
-
-    const url = "http://localhost:3001";
-    const [token,setToken]= useState("");
+    const [Service_list, setServiceList] = useState(initialServiceList);
 
     const addService = (serviceId) => {
-
         const service = Service_list.find(s => s._id === serviceId);
-
         const provider = provider_list.find(p => p.expertise === service?.category);
 
         setSelectedServices((prev) => ({
@@ -35,7 +32,6 @@ const StoreContextProvider = ({ children }) => {
             }
         }));
     };
-
 
     const removeService = (serviceId) => {
         setSelectedServices((prev) => {
@@ -57,6 +53,34 @@ const StoreContextProvider = ({ children }) => {
         return total;
     };
 
+    // Backend URL
+    const url = "http://localhost:3001/api"
+
+
+    // Token and user info
+    const [token, setToken] = useState(localStorage.getItem("token") || "");
+    const [role, setRole] = useState(localStorage.getItem("role") || "");
+    const [userName, setUserName] = useState(localStorage.getItem("name") || "");
+    const [userId, setUserId] = useState(localStorage.getItem("id") || "");
+
+    // Save token & role to localStorage when updated
+    useEffect(() => {
+        if (token) localStorage.setItem("token", token);
+        if (role) localStorage.setItem("role", role);
+        if (userName) localStorage.setItem("name", userName);
+        if (userId) localStorage.setItem("id", userId);
+    }, [token, role, userName, userId]);
+
+    // Logout function
+    const logout = () => {
+        setToken("");
+        setRole("");
+        setUserName("");
+        setUserId("");
+        localStorage.clear();
+        window.location.href = "/"; // redirect to home
+    };
+
     const contextValue = {
         Service_list,
         selectedServices,
@@ -66,7 +90,14 @@ const StoreContextProvider = ({ children }) => {
         getTotalAmount,
         url,
         token,
-        setToken
+        setToken,
+        role,
+        setRole,
+        userName,
+        setUserName,
+        userId,
+        setUserId,
+        logout
     };
 
     return (

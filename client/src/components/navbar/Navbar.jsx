@@ -1,6 +1,8 @@
 import React, { useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import './Navbar.css';
-import { logo, searchIcon, profile, logout, booking } from '../../assets/assets';
+import { logo, searchIcon, profile, logoutIcon, booking } from '../../assets/assets';
 import { Link } from "react-router-dom";
 import { StoreContext } from '../../context/StoreContext';
 
@@ -9,6 +11,15 @@ const Navbar = ({ setShowLogin }) => {
     const [pendingCount, setPendingCount] = useState(0);
 
     const { token, setToken } = useContext(StoreContext);
+
+    const navigate = useNavigate();
+
+    const logout = () => {
+        localStorage.removeItem("token");
+        setToken("");
+        navigate("/")
+
+    }
 
     return (
         <div className="navbar">
@@ -90,7 +101,7 @@ const Navbar = ({ setShowLogin }) => {
                                     <span className="badge">{pendingCount}</span>
                                 )}
                             </li>
-                            <li><img src={logout} alt="" /> Logout</li>
+                            <li onClick={logout}><img src={logoutIcon} alt="" /> Logout</li>
                         </ul>
                     </div>
 

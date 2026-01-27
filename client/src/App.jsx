@@ -18,9 +18,9 @@ const App = () => {
 
   return (
     <StoreContextProvider>
-      {showLogin && <LoginPopup setShowLogin={setShowLogin} />}
-
       <BrowserRouter>
+        {showLogin && <LoginPopup setShowLogin={setShowLogin} />}
+
         <div className="app">
           <Navbar setShowLogin={setShowLogin} />
 
@@ -40,6 +40,7 @@ const App = () => {
         </div>
       </BrowserRouter>
     </StoreContextProvider>
+
   );
 };
 
