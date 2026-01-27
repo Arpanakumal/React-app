@@ -1,14 +1,14 @@
-// server/routes/AdminRoutes.mjs
 import express from "express";
-import { addProvider } from "../controllers/AdminController.mjs";
-import multer from "multer";
+import { addProvider, loginAll } from "../controllers/AdminController.mjs";
+import upload from "../middleware/multer.mjs";
+import authAdmin from "../middleware/authAdmin.mjs";
 
 const adminRouter = express.Router();
 
-// Temp storage for uploaded files
-const storage = multer.diskStorage({});
-const upload = multer({ storage });
+// Add provider (admin only)
+adminRouter.post("/add/provider", authAdmin, upload.single("image"), addProvider);
 
-adminRouter.post("/add/provider", upload.single("image"), addProvider);
+// Unified login for admin, provider, customer
+adminRouter.post("/login", loginAll);
 
 export default adminRouter;

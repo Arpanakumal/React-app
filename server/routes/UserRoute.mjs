@@ -1,11 +1,10 @@
-import express from "express"
-import {loginUser,registerUser} from '../controllers/UserController.mjs';
+import express from "express";
+import { registerUser } from "../controllers/UserController.mjs";
 
-const userRouter = express.Router()
+const userRouter = express.Router();
 
-userRouter.post("/register",registerUser)
-userRouter.post("/login",loginUser)
-
+// Register customer
+userRouter.post("/register", registerUser);
 
 
 
