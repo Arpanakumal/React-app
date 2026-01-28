@@ -1,114 +1,12 @@
 import mongoose from "mongoose";
 import Provider from "../models/ProviderModel.mjs";
-import validator from "validator";
+
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/UserModel.mjs";
 
 
-export const addProvider = async (req, res) => {
-    try {
-        const {
-            name,
-            email,
-            password,
-            servicesOffered,
-            experience,
-            about,
-            address,
-        } = req.body;
 
-        const imageFile = req.file;
-
-        // ---- validation ----
-        if (!name || !email || !password || !servicesOffered || !imageFile) {
-            return res.status(400).json({
-                success: false,
-                message: "Missing required fields",
-            });
-        }
-
-        if (!validator.isEmail(email)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid email",
-            });
-        }
-
-        if (password.length < 8) {
-            return res.status(400).json({
-                success: false,
-                message: "Password must be at least 8 characters",
-            });
-        }
-
-        // ---- hash password ----
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        // ---- image path ----
-        const imageUrl = `/uploads/${imageFile.filename}`;
-
-        // ---- parse servicesOffered ----
-        let servicesIds = [];
-        try {
-            const parsed = JSON.parse(servicesOffered);
-            servicesIds = parsed.map(id => new mongoose.Types.ObjectId(id));
-        } catch {
-            return res.status(400).json({
-                success: false,
-                message: "servicesOffered must be a valid JSON array of IDs",
-            });
-        }
-
-        // ---- parse address ----
-        let parsedAddress = {};
-        if (address) {
-            try {
-                parsedAddress = JSON.parse(address);
-            } catch {
-                return res.status(400).json({
-                    success: false,
-                    message: "Address must be valid JSON",
-                });
-            }
-        }
-
-        // ---- create provider ----
-        const provider = new Provider({
-            name,
-            email,
-            password: hashedPassword,
-            image: imageUrl,
-            servicesOffered: servicesIds,
-            experience,
-            about,
-            address: parsedAddress,
-        });
-
-        await provider.save();
-
-        res.status(201).json({
-            success: true,
-            data: provider,
-        });
-    } catch (err) {
-        console.error(err);
-
-        // Handle duplicate email gracefully
-        if (err.code === 11000 && err.keyPattern?.email) {
-            return res.status(400).json({
-                success: false,
-                message: "Email already exists",
-            });
-        }
-
-        res.status(500).json({
-            success: false,
-            message: err.message,
-        });
-    }
-};
 
 export const loginAll = async (req, res) => {
     const { email, password } = req.body;

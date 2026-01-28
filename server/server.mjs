@@ -36,7 +36,6 @@ const connectDB = async () => {
     app.use("/api/Service", ServiceRouter);
     app.use("/images", express.static('uploads'));
     app.use("/api/user", userRouter);
-
     app.use("/api/provider", providerRouter);
     app.use("/api/admin", adminRouter);
 
