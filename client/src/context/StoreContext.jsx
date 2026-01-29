@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect } from "react";
-
+import axios from "axios";
 import { Service_list as initialServiceList } from "../assets/assets";
 import { provider_list } from "../assets/providers";
 
@@ -56,20 +56,29 @@ const StoreContextProvider = ({ children }) => {
     // Backend URL
     const url = "http://localhost:3001/api"
 
-
-    // Token and user info
     const [token, setToken] = useState(localStorage.getItem("token") || "");
     const [role, setRole] = useState(localStorage.getItem("role") || "");
     const [userName, setUserName] = useState(localStorage.getItem("name") || "");
     const [userId, setUserId] = useState(localStorage.getItem("id") || "");
 
-    // Save token & role to localStorage when updated
+    const getAuthAxios = () => {
+        return axios.create({
+            baseURL: url,
+            headers: { atoken: token }
+        });
+    };
+
+
     useEffect(() => {
         if (token) localStorage.setItem("token", token);
         if (role) localStorage.setItem("role", role);
         if (userName) localStorage.setItem("name", userName);
         if (userId) localStorage.setItem("id", userId);
     }, [token, role, userName, userId]);
+
+
+
+
 
     // Logout function
     const logout = () => {
@@ -78,8 +87,10 @@ const StoreContextProvider = ({ children }) => {
         setUserName("");
         setUserId("");
         localStorage.clear();
-        window.location.href = "/"; // redirect to home
-    };
+        window.location.href = "/";
+    }
+
+
 
     const contextValue = {
         Service_list,
@@ -97,8 +108,10 @@ const StoreContextProvider = ({ children }) => {
         setUserName,
         userId,
         setUserId,
-        logout
+        logout,
+        getAuthAxios
     };
+
 
     return (
         <StoreContext.Provider value={contextValue}>

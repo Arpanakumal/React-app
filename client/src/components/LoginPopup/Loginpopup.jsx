@@ -55,11 +55,13 @@ const LoginPopup = ({ setShowLogin }) => {
 
                 setShowLogin(false);
 
-//redirect basen on admin/user/provider
+                //redirect basen on admin/user/provider
+                // In frontend LoginPopup
                 if (role === "admin") {
-
-                    window.location.href = "http://localhost:5174/dashboard";
-                } else {
+                    const token = response.data.token;
+                    window.location.href = `http://localhost:5173/dashboard?token=${token}`;
+                }
+                else {
 
                     navigate("/");
                 }
