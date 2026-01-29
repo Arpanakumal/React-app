@@ -21,17 +21,16 @@ const AdminDashboard = ({ url }) => {
         fetchRecentUsers();
     }, []);
 
+    // Fetch KPI metrics
     const fetchDashboardData = async () => {
         try {
             const resBookings = await axios.get(`${url}/api/Booking/list`);
             const resProviders = await axios.get(`${url}/api/Provider/list`);
 
-            const bookings = resBookings.data.data || [];
+            const bookings = resBookings.data?.data || [];
+            const providers = resProviders.data?.data || [];
 
-            const completedJobs = bookings.filter(
-                b => b.status === 'completed'
-            );
-
+            const completedJobs = bookings.filter(b => b.status === 'completed');
             const pendingCommission = completedJobs.reduce(
                 (sum, b) => sum + (b.commissionAmount || 0),
                 0
@@ -40,7 +39,7 @@ const AdminDashboard = ({ url }) => {
             setMetrics({
                 totalBookings: bookings.length,
                 completedJobs: completedJobs.length,
-                activeProviders: resProviders.data.data.length,
+                activeProviders: providers.length,
                 pendingCommission
             });
 
@@ -50,19 +49,21 @@ const AdminDashboard = ({ url }) => {
         }
     };
 
+    // Fetch recent 5 bookings
     const fetchRecentBookings = async () => {
         try {
             const res = await axios.get(`${url}/api/Booking/list?limit=5`);
-            setRecentBookings(res.data.data || []);
+            setRecentBookings(res.data?.data || []);
         } catch (error) {
             console.error(error);
         }
     };
 
+    // Fetch recent 5 customers
     const fetchRecentUsers = async () => {
         try {
             const res = await axios.get(`${url}/api/Customer/list?limit=5`);
-            setRecentUsers(res.data.data || []);
+            setRecentUsers(res.data?.data || []);
         } catch (error) {
             console.error(error);
         }
@@ -72,10 +73,9 @@ const AdminDashboard = ({ url }) => {
         <div className="dashboard-container">
             <h2>Admin Dashboard</h2>
 
-
             <div className="kpi-cards">
                 <div className="card">
-                    <h3>Rs. {metrics.pendingCommission}</h3>
+                    <h3>₹ {metrics.pendingCommission}</h3>
                     <p>Pending Commission</p>
                 </div>
 
@@ -113,13 +113,13 @@ const AdminDashboard = ({ url }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {recentBookings.map((b, i) => (
+                            {recentBookings.length > 0 ? recentBookings.map((b, i) => (
                                 <tr key={i}>
-                                    <td>{b.customerName}</td>
-                                    <td>{b.serviceName}</td>
+                                    <td>{b.customerName || 'N/A'}</td>
+                                    <td>{b.serviceName || 'N/A'}</td>
                                     <td>{b.providerName || 'Unassigned'}</td>
-                                    <td>{b.status}</td>
-                                    <td>{new Date(b.date).toLocaleDateString()}</td>
+                                    <td>{b.status || 'N/A'}</td>
+                                    <td>{b.date ? new Date(b.date).toLocaleDateString() : 'N/A'}</td>
                                     <td>₹ {b.amount || 0}</td>
                                     <td>₹ {b.commissionAmount || 0}</td>
                                     <td>
@@ -128,7 +128,11 @@ const AdminDashboard = ({ url }) => {
                                         </button>
                                     </td>
                                 </tr>
-                            ))}
+                            )) : (
+                                <tr>
+                                    <td colSpan="8">No recent bookings</td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -144,18 +148,21 @@ const AdminDashboard = ({ url }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {recentUsers.map((u, i) => (
+                            {recentUsers.length > 0 ? recentUsers.map((u, i) => (
                                 <tr key={i}>
-                                    <td>{u.name}</td>
-                                    <td>{u.email}</td>
-                                    <td>{new Date(u.createdAt).toLocaleDateString()}</td>
+                                    <td>{u.name || 'N/A'}</td>
+                                    <td>{u.email || 'N/A'}</td>
+                                    <td>{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A'}</td>
                                 </tr>
-                            ))}
+                            )) : (
+                                <tr>
+                                    <td colSpan="3">No recent users</td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
             </div>
-
 
             <div className="charts-section">
                 <div className="chart-placeholder">

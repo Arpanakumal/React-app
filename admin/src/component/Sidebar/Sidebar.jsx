@@ -1,19 +1,23 @@
-import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
-import './sidebar.css';
+import React, { useState } from "react";
+import { NavLink } from "react-router-dom";
+import "./sidebar.css";
 
 const Sidebar = () => {
     const [servicesOpen, setServicesOpen] = useState(false);
+    const [providersOpen, setProvidersOpen] = useState(false);
 
     return (
         <div className="sidebar">
             <nav className="sidebar-nav">
+
                 <NavLink to="/dashboard" className="sidebar-link">
                     Dashboard
                 </NavLink>
 
-
-                <div className="sidebar-link" onClick={() => setServicesOpen(!servicesOpen)}>
+                <div
+                    className="sidebar-link"
+                    onClick={() => setServicesOpen(!servicesOpen)}
+                >
                     Services
                 </div>
 
@@ -28,6 +32,25 @@ const Sidebar = () => {
                     </div>
                 )}
 
+
+                <div
+                    className="sidebar-link"
+                    onClick={() => setProvidersOpen(!providersOpen)}
+                >
+                    Providers
+                </div>
+
+                {providersOpen && (
+                    <div className="sidebar-submenu">
+                        <NavLink to="/providers" className="sidebar-sublink">
+                            Add Provider
+                        </NavLink>
+                        <NavLink to="/providers/providerlist" className="sidebar-sublink">
+                            List Providers
+                        </NavLink>
+                    </div>
+                )}
+
                 <NavLink to="/bookings" className="sidebar-link">
                     Bookings
                 </NavLink>
@@ -36,9 +59,6 @@ const Sidebar = () => {
                     Customers
                 </NavLink>
 
-                <NavLink to="/providers" className="sidebar-link">
-                    Providers
-                </NavLink>
             </nav>
         </div>
     );

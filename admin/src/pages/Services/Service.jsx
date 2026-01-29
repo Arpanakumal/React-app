@@ -106,18 +106,6 @@ const Service = ({ url }) => {
                             <input onChange={onChangeHandler} value={data.price_info} type="number" name='price_info' placeholder='Rs.' />
                         </div>
 
-                                                <div className="add-service-name flex-col">
-                            <p>Commission %</p>
-                            <input
-                                type="number"
-                                value={commissionPercent}
-                                onChange={(e) => setCommissionPercent(e.target.value)}
-                                min="0"
-                                max="100"
-                                required
-                            />
-                        </div>
-
                     </div>
 
                     <button type='submit' className='add-btn'>ADD</button>
