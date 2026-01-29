@@ -20,19 +20,19 @@ const addService = async (req, res) => {
             description,
             price_info,
             category,
-            commissionPercent: commissionPercent || 10,
+            commissionPercent: commissionPercent ? Number(commissionPercent) : null,
             image: req.file.filename
         });
 
         await service.save();
-
         res.status(201).json({ success: true, message: "Service added successfully", service });
 
     } catch (error) {
-        console.error("Error in addService:", error);
+        console.error(error);
         res.status(500).json({ success: false, message: "Error adding service", error: error.message });
     }
 };
+
 
 // List all services
 const listService = async (req, res) => {

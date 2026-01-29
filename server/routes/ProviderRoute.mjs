@@ -4,8 +4,13 @@ import authAdmin from "../middleware/authAdmin.mjs";
 import { addProvider, listProviders, updateProvider, toggleProviderStatus } from "../controllers/ProviderController.mjs";
 
 const providerRouter = express.Router();
-const upload = multer({ dest: "uploads/" });
 
+
+const storage = multer.diskStorage({
+    destination: "uploads",
+    filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname)
+});
+const upload = multer({ storage });
 
 // Add provider (admin only)
 providerRouter.post("/add", authAdmin, upload.single("image"), addProvider);
