@@ -17,18 +17,18 @@ export const registerUser = async (req, res) => {
     const { name, email, password } = req.body;
 
     try {
-        // check if user exists
+
         const exists = await userModel.findOne({ email });
         if (exists) {
             return res.json({ success: false, message: "User already exists" });
         }
 
-        // validate email
+
         if (!validator.isEmail(email)) {
             return res.json({ success: false, message: "Please enter a valid email" });
         }
 
-        // validate password
+
         if (password.length < 8) {
             return res.json({
                 success: false,
@@ -44,7 +44,8 @@ export const registerUser = async (req, res) => {
         const user = await userModel.create({
             name,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            isActive: true
         });
 
         const token = createToken(user._id);
@@ -57,3 +58,42 @@ export const registerUser = async (req, res) => {
     }
 };
 
+
+// List customers
+export const listUsers = async (req, res) => {
+    try {
+        const users = await userModel.find({}, "-password"); 
+        res.json({ success: true, data: users });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+// Toggle user active/inactive
+export const toggleUserStatus = async (req, res) => {
+    try {
+        const user = await userModel.findById(req.params.id);
+        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+        user.isActive = !user.isActive;
+        await user.save();
+
+        res.json({ success: true, isActive: user.isActive, message: `User ${user.isActive ? "activated" : "deactivated"}` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+// Delete user
+export const deleteUser = async (req, res) => {
+    try {
+        const user = await userModel.findByIdAndDelete(req.params.id);
+        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+        res.json({ success: true, message: "User deleted" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};

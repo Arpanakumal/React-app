@@ -66,13 +66,18 @@ export const addProvider = async (req, res) => {
 };
 
 
-//listprovider
+// List providers with summary info for admin panel
 export const listProviders = async (req, res) => {
-    const providers = await Provider.find()
-        .select("name email servicesOffered available isProfileComplete createdAt")
-        .populate("servicesOffered", "name");
+    try {
+        const providers = await Provider.find()
+            .select("name image servicesOffered available") 
+            .populate("servicesOffered", "name");
 
-    res.json({ success: true, data: providers });
+        res.json({ success: true, data: providers });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: err.message });
+    }
 };
 
 
