@@ -1,22 +1,28 @@
 import React, { useEffect, useState } from "react";
-import './list1.css';
+import { useNavigate } from "react-router-dom";
+import "./providerList.css";
 import axios from "axios";
 import { toast } from "react-toastify";
 
 const ProviderList = ({ url }) => {
+
+
+
     const [providers, setProviders] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     const fetchProviders = async () => {
         try {
+            setLoading(true);
             const token = localStorage.getItem("token");
-
             if (!token) {
                 toast.error("Admin not logged in");
                 return;
             }
 
             const res = await axios.get(`${url}/api/provider`, {
-                headers: { atoken: token }
+                headers: { atoken: token },
             });
 
             if (res.data.success) {
@@ -24,74 +30,46 @@ const ProviderList = ({ url }) => {
             } else {
                 toast.error("Failed to fetch providers");
             }
-        } catch (err) {
-            console.error(err);
-            toast.error("Server error");
+        } catch (error) {
+            console.error(error);
+            toast.error("Server error while fetching providers");
+        } finally {
+            setLoading(false);
         }
     };
 
-    const toggleProvider = async (id) => {
-        try {
-            const token = localStorage.getItem("token");
 
-            const res = await axios.patch(
-                `${url}/api/provider/${id}/toggle`,
-                {},
-                { headers: { atoken: token } }
-            );
-
-            if (res.data.success) {
-                toast.success(res.data.message);
-                fetchProviders();
-            }
-        } catch (err) {
-            toast.error("Failed to update provider status");
-        }
-    };
 
     useEffect(() => {
         fetchProviders();
     }, []);
 
+    if (loading) return <p>Loading providers...</p>;
+
     return (
         <div className="list-container">
             <p className="list-title">All Providers</p>
-
             <div className="list-table">
-                <div className="list-table-format title">
-                    <b>Name</b>
-                    <b>Email</b>
-                    <b>Services</b>
-                    <b>Status</b>
-                    <b>Action</b>
-                </div>
-
-                {providers.map((provider) => (
-                    <div key={provider._id} className="list-table-format">
+                {providers.map(provider => (
+                    <div
+                        key={provider._id}
+                        className="list-table-format"
+                        onClick={() => navigate(`/providers/detail/${provider._id}`)}
+                    >
+                        <img
+                            src={provider.image ? `${url}${provider.image}` : "/default-avatar.png"}
+                            alt={provider.name}
+                            className="provider-image"
+                        />
                         <p>{provider.name}</p>
                         <p>{provider.email}</p>
-
-                        <p>
-                            {provider.servicesOffered?.length > 0
-                                ? provider.servicesOffered.map(s => s.name).join(", ")
-                                : "No services"}
+                        <p>{provider.servicesOffered.map(s => s.name).join(", ")}</p>
+                        <p className={provider.available ? "status-active" : "status-inactive"}>
+                            {provider.available ? "Available" : "Not Available"}
                         </p>
 
-                        <p
-                            className={
-                                provider.available ? "status-active" : "status-inactive"
-                            }
-                        >
-                            {provider.available ? "Active" : "Inactive"}
-                        </p>
-
-                        <button
-                            className="toggle-btn"
-                            onClick={() => toggleProvider(provider._id)}
-                        >
-                            {provider.available ? "Deactivate" : "Activate"}
-                        </button>
                     </div>
+
                 ))}
             </div>
         </div>

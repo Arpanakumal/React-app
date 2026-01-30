@@ -12,7 +12,10 @@ const Customer = ({ url }) => {
     const fetchCustomers = async () => {
         setLoading(true);
         try {
-            const res = await axios.get(`${url}/api/User/list`); // Make sure backend has this route
+            const token = localStorage.getItem('token');
+            const res = await axios.get(`${url}/api/User/list`, {
+                headers: { atoken: token }
+            });
             setCustomers(res.data.data || []);
         } catch (err) {
             console.error(err);
@@ -30,12 +33,38 @@ const Customer = ({ url }) => {
     const deleteCustomer = async (id) => {
         if (!window.confirm('Are you sure you want to delete this customer?')) return;
         try {
-            await axios.delete(`${url}/api/User/delete/${id}`);
+            const token = localStorage.getItem('token');
+            await axios.delete(`${url}/api/User/delete/${id}`, { headers: { atoken: token } });
             toast.success('Customer deleted');
             fetchCustomers();
         } catch (err) {
             console.error(err);
             toast.error('Failed to delete customer');
+        }
+    };
+
+    // Toggle active/inactive
+    const toggleStatus = async (customer) => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.patch(
+                `${url}/api/User/${customer._id}/toggle`,
+                {},
+                { headers: { atoken: token } }
+            );
+            if (res.data.success) {
+                toast.success(res.data.message);
+                setCustomers((prev) =>
+                    prev.map((c) =>
+                        c._id === customer._id ? { ...c, isActive: res.data.isActive } : c
+                    )
+                );
+            } else {
+                toast.error('Failed to update status');
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error('Error updating status');
         }
     };
 
@@ -67,6 +96,8 @@ const Customer = ({ url }) => {
                         <tr>
                             <th>Name</th>
                             <th>Email</th>
+                            <th>Status</th>
+                            <th>Registered At</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -76,7 +107,15 @@ const Customer = ({ url }) => {
                                 <tr key={c._id}>
                                     <td>{c.name}</td>
                                     <td>{c.email}</td>
+                                    <td>{c.isActive ? "Active" : "Inactive"}</td>
+                                    <td>{new Date(c.createdAt).toLocaleDateString()}</td>
                                     <td>
+                                        <button
+                                            className={`status-btn ${c.isActive ? 'deactivate' : 'activate'}`}
+                                            onClick={() => toggleStatus(c)}
+                                        >
+                                            {c.isActive ? 'Deactivate' : 'Activate'}
+                                        </button>
                                         <button className="delete-btn" onClick={() => deleteCustomer(c._id)}>
                                             Delete
                                         </button>
@@ -85,7 +124,7 @@ const Customer = ({ url }) => {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="3">No customers found</td>
+                                <td colSpan="5">No customers found</td>
                             </tr>
                         )}
                     </tbody>

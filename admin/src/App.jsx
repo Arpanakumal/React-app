@@ -10,6 +10,8 @@ import Booking from "./pages/Booking/Booking";
 import Customers from "./pages/Customers/Customer";
 import Providers from "./pages/Providers/Provider";
 import ProviderList from './pages/Providers/ProviderList';
+import Detail from './pages/Providers/Detail';
+import EditProvider from './pages/Providers/Edit';
 import Messages from './pages/Messages/Message';
 import { ToastContainer } from 'react-toastify';
 
@@ -50,7 +52,11 @@ const App = () => {
             <Route path="/messages" element={<Messages url={url} />} />
             <Route path="/customers" element={<Customers url={url} />} />
             <Route path="/providers" element={<Providers url={url} />} />
-            <Route path="/providers/providerlist" element={<List url={url} />} />
+            <Route path="/providers/providerlist" element={<ProviderList url={url} />} />
+            <Route path="/providers/detail/:id" element={<Detail url={url} />} />
+            <Route path="/providers/update/:id" element={<EditProvider url={url} />} />
+
+
           </Routes>
         </main>
       </div>

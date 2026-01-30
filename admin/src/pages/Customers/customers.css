@@ -1,5 +1,14 @@
 .admin-customers-page {
     padding: 20px;
+    background-color: #f0f4f8;
+    min-height: 100vh;
+    font-family: 'Outfit', sans-serif;
+}
+
+.admin-customers-page h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 20px;
 }
 
 .customer-search {
@@ -8,36 +17,115 @@
 
 .customer-search input {
     width: 100%;
-    padding: 10px;
-    border-radius: 5px;
+    max-width: 400px;
+    padding: 8px 12px;
+    border-radius: 6px;
     border: 1px solid #ccc;
+    font-size: 16px;
 }
 
 .customers-table {
     width: 100%;
     border-collapse: collapse;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .customers-table th,
 .customers-table td {
-    border: 1px solid #ccc;
-    padding: 10px;
+    padding: 12px 15px;
     text-align: left;
+    border-bottom: 1px solid #eee;
 }
 
 .customers-table th {
-    background-color: #f5f5f5;
+    background-color: #f7f7f7;
+    font-weight: 600;
+}
+
+.customers-table tr:last-child td {
+    border-bottom: none;
+}
+
+.status-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-right: 8px;
+    color: #fff;
+    transition: background 0.2s;
+}
+
+.status-btn.activate {
+    background-color: #4caf50;
+}
+
+.status-btn.activate:hover {
+    background-color: #3e8e41;
+}
+
+.status-btn.deactivate {
+    background-color: #b41206;
+}
+
+.status-btn.deactivate:hover {
+    background-color: #5b0909;
 }
 
 .delete-btn {
-    padding: 5px 10px;
-    background-color: #dc3545;
-    border: none;
+    padding: 6px 12px;
+    background-color: #5c8bf0;
     color: #fff;
-    border-radius: 5px;
+    border: none;
+    border-radius: 4px;
     cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s;
 }
 
 .delete-btn:hover {
-    background-color: #c82333;
+    background-color: #1132a1;
+}
+
+@media (max-width: 768px) {
+
+    .customers-table th,
+    .customers-table td {
+        padding: 10px 8px;
+        font-size: 14px;
+    }
+
+    .status-btn,
+    .delete-btn {
+        padding: 5px 8px;
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
+
+    .customer-search input {
+        width: 100%;
+        font-size: 14px;
+    }
+
+    .customers-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-customers-page {
+        padding: 15px;
+    }
+
+    .customers-table th,
+    .customers-table td {
+        padding: 8px 6px;
+        font-size: 13px;
+    }
 }

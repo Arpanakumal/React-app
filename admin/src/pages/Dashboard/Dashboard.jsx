@@ -49,7 +49,6 @@ const AdminDashboard = ({ url }) => {
         }
     };
 
-    // Fetch recent 5 bookings
     const fetchRecentBookings = async () => {
         try {
             const res = await axios.get(`${url}/api/Booking/list?limit=5`);
@@ -59,7 +58,6 @@ const AdminDashboard = ({ url }) => {
         }
     };
 
-    // Fetch recent 5 customers
     const fetchRecentUsers = async () => {
         try {
             const res = await axios.get(`${url}/api/Customer/list?limit=5`);
@@ -75,7 +73,7 @@ const AdminDashboard = ({ url }) => {
 
             <div className="kpi-cards">
                 <div className="card">
-                    <h3>₹ {metrics.pendingCommission}</h3>
+                    <h3>Rs.{metrics.pendingCommission}</h3>
                     <p>Pending Commission</p>
                 </div>
 
@@ -95,7 +93,7 @@ const AdminDashboard = ({ url }) => {
                 </div>
             </div>
 
-            {/* TABLES */}
+
             <div className="tables-section">
                 <div className="table-wrapper full-width">
                     <h3>Recent Bookings</h3>
@@ -120,8 +118,8 @@ const AdminDashboard = ({ url }) => {
                                     <td>{b.providerName || 'Unassigned'}</td>
                                     <td>{b.status || 'N/A'}</td>
                                     <td>{b.date ? new Date(b.date).toLocaleDateString() : 'N/A'}</td>
-                                    <td>₹ {b.amount || 0}</td>
-                                    <td>₹ {b.commissionAmount || 0}</td>
+                                    <td>Rs. {b.amount || 0}</td>
+                                    <td>Rs. {b.commissionAmount || 0}</td>
                                     <td>
                                         <button className="action-btn">
                                             View
@@ -164,17 +162,6 @@ const AdminDashboard = ({ url }) => {
                 </div>
             </div>
 
-            <div className="charts-section">
-                <div className="chart-placeholder">
-                    <h3>Booking Trends</h3>
-                    <p>Completed vs Cancelled</p>
-                </div>
-
-                <div className="chart-placeholder">
-                    <h3>Service Categories</h3>
-                    <p>Category-wise demand</p>
-                </div>
-            </div>
         </div>
     );
 };

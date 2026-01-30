@@ -1,76 +1,79 @@
 import React, { useEffect, useState } from 'react';
-import './list1.css';
+import './list.css'; // renamed CSS file for clarity
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
 const List = ({ url }) => {
-
     const navigate = useNavigate();
+    const [services, setServices] = useState([]);
+    const [loading, setLoading] = useState(false);
 
-    const [list, setList] = useState([]);
-
-    const fetchList = async () => {
+    const fetchServices = async () => {
         try {
+            setLoading(true);
             const response = await axios.get(`${url}/api/Service/list`);
             if (response.data.success) {
-                setList(response.data.data);
+                setServices(response.data.data);
             } else {
                 toast.error("Error fetching services");
             }
         } catch (error) {
             toast.error("Server error");
+            console.error(error);
+        } finally {
+            setLoading(false);
         }
     };
 
-
     const removeService = async (serviceId) => {
-
-
         try {
-            const response = await axios.post(`${url}/api/Service/remove`, {
-                id: serviceId
-            });
-
+            const response = await axios.post(`${url}/api/Service/remove`, { id: serviceId });
             if (response.data.success) {
                 toast.success("Service Removed");
-
+                fetchServices(); // refresh list
             } else {
                 toast.error(response.data.message);
             }
         } catch (error) {
             toast.error("Delete failed");
+            console.error(error);
         }
     };
 
     useEffect(() => {
-        fetchList();
+        fetchServices();
     }, []);
 
-    return (
-        <div className="list-container">
-            <p className="list-title">All Services</p>
+    if (loading) return <p>Loading services...</p>;
 
-            <div className="list-table">
-                <div className="list-table-format title">
+    return (
+        <div className="service-list-container">
+            <p className="service-list-title">All Services</p>
+            <div className="service-list-table">
+                <div className="service-list-table-header">
                     <b>Image</b>
                     <b>Name</b>
                     <b>Category</b>
-                    <b>Price Information</b>
+                    <b>Price Info</b>
                     <b>Action</b>
                 </div>
 
-                {list.map((item) => (
-                    <div key={item._id} className="list-table-format">
-                        <img src={`${url}/images/${item.image}`} alt="" />
-                        <p>{item.name}</p>
-                        <p>{item.category}</p>
-                        <p>{item.price_info}</p>
-
-                        <div className="action-btns">
-                            <button onClick={() => navigate(`/services/update/${item._id}`)} className="edit-btn">Edit</button>
+                {services.map((service) => (
+                    <div key={service._id} className="service-list-row">
+                        <img src={`${url}/images/${service.image}`} alt={service.name} />
+                        <p>{service.name}</p>
+                        <p>{service.category}</p>
+                        <p>{service.price_info}</p>
+                        <div className="service-list-actions">
                             <button
-                                onClick={() => removeService(item._id)}
+                                onClick={() => navigate(`/services/update/${service._id}`)}
+                                className="edit-btn"
+                            >
+                                Edit
+                            </button>
+                            <button
+                                onClick={() => removeService(service._id)}
                                 className="delete-btn"
                             >
                                 Remove

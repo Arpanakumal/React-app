@@ -1,0 +1,90 @@
+.list-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: auto;
+}
+
+.list-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #222;
+}
+
+.list-table {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+}
+
+.list-table-format {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.list-table-format:hover {
+    box-shadow: 0 4px 14px rgb(0 0 0 / 0.2);
+}
+
+.provider-image {
+    width: 130px;
+    height: 130px;
+    border-radius: 15px;
+    object-fit: cover;
+    margin-bottom: 10px;
+    border: 2px solid #ddd;
+}
+
+.list-table-format p {
+    margin: 4px 0;
+    font-size: 0.9rem;
+    color: #444;
+}
+
+.status-active {
+    color: green;
+    font-weight: 600;
+}
+
+.status-inactive {
+    color: red;
+    font-weight: 600;
+}
+.checkbox-icon {
+    color: #1976d2;
+    margin-bottom: 6px;
+}
+
+
+
+.status-active {
+    color: green;
+    font-weight: bold;
+}
+
+.status-inactive {
+    color: red;
+    font-weight: bold;
+}
+
+
+
+@media (max-width:600px) {
+    .list-table-format {
+        grid-template-columns: 1fr 3fr 1fr;
+        gap: 15px;
+    }
+
+    .list-table-format.title {
+        display: none;
+    }
+
+}
