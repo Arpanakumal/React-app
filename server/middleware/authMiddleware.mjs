@@ -10,12 +10,11 @@ const authRole = (requiredRole) => {
 
             const token_decode = jwt.verify(atoken, process.env.JWT_SECRET);
 
-            // Check if role matches
+
             if (requiredRole && token_decode.role !== requiredRole) {
                 return res.status(403).json({ success: false, message: "Not authorized." });
             }
 
-            // Save decoded token info to request
             req.user = token_decode;
 
             next();

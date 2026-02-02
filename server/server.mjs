@@ -16,7 +16,14 @@ import adminRouter from './routes/AdminRoutes.mjs';
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+
+app.use(cors({
+    origin: ["http://localhost:3000", "http://localhost:3002"], // frontend ports
+    methods: ["GET","POST","PUT","PATCH","DELETE"],
+    allowedHeaders: ["Content-Type", "atoken"],
+}));
+
+
 
 const connectDB = async () => {
     try {

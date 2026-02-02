@@ -1,18 +1,26 @@
 import express from "express";
-import { registerUser,listUsers,deleteUser,toggleUserStatus } from "../controllers/UserController.mjs";
+import authmiddleware from '../middleware/authMiddleware.mjs'
+import { registerUser, listUsers, deleteUser, updateUser, getUserById,getCurrentUser,toggleUserStatus } from "../controllers/UserController.mjs";
 
 const userRouter = express.Router();
 
-// Register customer
+
 userRouter.post("/register", registerUser);
 
-// Get all users (for admin)
+
 userRouter.get("/list", listUsers);
 
-// Toggle active/inactive status
 userRouter.patch("/:id/toggle", toggleUserStatus);
 
-// Delete user
+
+userRouter.put("/:id/update", updateUser);
+
+userRouter.get("/me",authmiddleware, getCurrentUser);
+
+userRouter.get("/:id", getUserById);
+
+
+
 userRouter.delete("/delete/:id", deleteUser);
 
 export default userRouter;

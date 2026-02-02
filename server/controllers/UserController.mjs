@@ -62,7 +62,7 @@ export const registerUser = async (req, res) => {
 // List customers
 export const listUsers = async (req, res) => {
     try {
-        const users = await userModel.find({}, "-password"); 
+        const users = await userModel.find({}, "-password");
         res.json({ success: true, data: users });
     } catch (err) {
         console.error(err);
@@ -85,6 +85,79 @@ export const toggleUserStatus = async (req, res) => {
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
+
+
+// Update user details
+export const updateUser = async (req, res) => {
+    try {
+        const { name, email, password } = req.body;
+        const user = await userModel.findById(req.params.id);
+        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+        // Update name and email
+        if (name) user.name = name;
+        if (email) {
+            if (!validator.isEmail(email)) {
+                return res.json({ success: false, message: "Invalid email" });
+            }
+            user.email = email;
+        }
+
+        // Update password if provided
+        if (password) {
+            if (password.length < 8) {
+                return res.json({ success: false, message: "Password must be at least 8 characters" });
+            }
+            const salt = await bcrypt.genSalt(10);
+            user.password = await bcrypt.hash(password, salt);
+        }
+
+        await user.save();
+
+        res.json({ success: true, message: "Profile updated", user: { name: user.name, email: user.email, id: user._id } });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+
+export const getUserById = async (req, res) => {
+    try {
+        const user = await userModel.findById(req.params.id, "-password");
+        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+        res.json({ success: true, data: user });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+
+export const getCurrentUser = async (req, res) => {
+    try {
+        const userId = req.user?.id; // ← use req.user
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
+
+        const user = await userModel.findById(userId, "-password");
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        res.json({ success: true, data: user });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+
+
+
+
 
 // Delete user
 export const deleteUser = async (req, res) => {
