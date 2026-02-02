@@ -94,15 +94,20 @@ const Navbar = ({ setShowLogin }) => {
                     : <div className='navbar-profile'>
                         <img src={profile} alt="" />
                         <ul className='nav-profile-dropdown'>
-                            <li>
-                                <img src={booking} alt="" /> Bookings
-
-                                {pendingCount > 0 && (
-                                    <span className="badge">{pendingCount}</span>
-                                )}
+                            <li onClick={() => navigate("/profile")}>
+                                <img src={profile} alt="" /> My Profile
                             </li>
-                            <li onClick={logout}><img src={logoutIcon} alt="" /> Logout</li>
+
+                            <li onClick={() => navigate("/my-bookings")}>
+                                <img src={booking} alt="" /> My Bookings
+                                {pendingCount > 0 && <span className="badge">{pendingCount}</span>}
+                            </li>
+
+                            <li onClick={logout}>
+                                <img src={logoutIcon} alt="" /> Logout
+                            </li>
                         </ul>
+
                     </div>
 
                 }

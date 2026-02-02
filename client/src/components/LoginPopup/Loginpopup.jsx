@@ -19,7 +19,6 @@ const LoginPopup = ({ setShowLogin }) => {
     };
 
     const togglePassword = () => setShowPassword(prev => !prev);
-
     const onSubmit = async (e) => {
         e.preventDefault();
 
@@ -27,21 +26,22 @@ const LoginPopup = ({ setShowLogin }) => {
             let endpoint = "";
 
             if (currState === "Login") {
-                // Admin login
-                if (data.email.toLowerCase().trim() === process.env.REACT_APP_ADMIN_EMAIL.toLowerCase().trim()) {
-                    endpoint = "admin/login";
-                } else {
-                    endpoint = "user/login-all";
-                }
+
+                endpoint = "admin/login";
             } else {
                 endpoint = "user/register";
             }
 
-            const response = await axios.post(`${process.env.REACT_APP_API_URL}/${endpoint}`, data);
+
+            console.log("Calling endpoint:", `${process.env.REACT_APP_API_URL}/${endpoint}`);
+
+            const response = await axios.post(
+                `${process.env.REACT_APP_API_URL}/${endpoint}`,
+                data
+            );
 
             if (response.data.success) {
                 const { token, role, name, id } = response.data;
-
 
                 setToken(token);
                 setRole(role);
@@ -55,25 +55,20 @@ const LoginPopup = ({ setShowLogin }) => {
 
                 setShowLogin(false);
 
-                //redirect basen on admin/user/provider
-                // In frontend LoginPopup
                 if (role === "admin") {
-                    const token = response.data.token;
                     window.location.href = `http://localhost:5173/dashboard?token=${token}`;
-                }
-                else {
-
+                } else {
                     navigate("/");
                 }
             } else {
-                alert(response.data.message || "Login failed. Check your credentials.");
+                alert(response.data.message || "Login failed. Check credentials.");
             }
-
         } catch (err) {
-            console.error(err);
+            console.error("AxiosError", err);
             alert("Login failed. Check backend URL or credentials.");
         }
     };
+
 
     return (
         <div className='login-popup'>

@@ -1,0 +1,54 @@
+.profile-container {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 2rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.profile-container h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.profile-form label {
+    display: block;
+    margin-top: 1rem;
+    margin-bottom: 0.3rem;
+    font-weight: bold;
+}
+
+.profile-form input {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.password-wrapper {
+    position: relative;
+}
+
+.eye-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+.profile-form button {
+    margin-top: 1.5rem;
+    width: 100%;
+    padding: 0.8rem;
+    background-color: #285687;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.profile-form button:hover {
+    background-color: #4581c1;
+}

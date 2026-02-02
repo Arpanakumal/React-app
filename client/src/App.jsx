@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { ToastContainer } from 'react-toastify';
 import './index.css';
 import Navbar from "./components/navbar/Navbar";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -12,6 +13,7 @@ import Contact from "./pages/Contact/Contact";
 import About from "./pages/Aboutus/About";
 import LoginPopup from './components/LoginPopup/Loginpopup';
 import StoreContextProvider from "./context/StoreContext";
+import MyProfile from "./pages/MyProfile/MyProfile";
 
 const App = () => {
   const [showLogin, setShowLogin] = useState(false);
@@ -33,6 +35,7 @@ const App = () => {
               <Route path="/booking" element={<BookingConfirmation />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/profile" element={<MyProfile />}></Route>
             </Routes>
           </div>
 
