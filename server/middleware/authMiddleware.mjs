@@ -1,28 +1,19 @@
 import jwt from "jsonwebtoken";
 
-const authRole = (requiredRole) => {
-    return (req, res, next) => {
-        try {
-            const { atoken } = req.headers;
-            if (!atoken) {
-                return res.status(401).json({ success: false, message: "Not authorized. Login again." });
-            }
-
-            const token_decode = jwt.verify(atoken, process.env.JWT_SECRET);
-
-
-            if (requiredRole && token_decode.role !== requiredRole) {
-                return res.status(403).json({ success: false, message: "Not authorized." });
-            }
-
-            req.user = token_decode;
-
-            next();
-        } catch (error) {
-            console.log(error);
-            return res.status(401).json({ success: false, message: "Invalid token" });
+const authmiddleware = (req, res, next) => {
+    try {
+        const token = req.headers.atoken; 
+        if (!token) {
+            return res.status(401).json({ success: false, message: "Not authorized. Login again." });
         }
-    };
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
+        next();
+    } catch (err) {
+        console.error(err);
+        return res.status(401).json({ success: false, message: "Invalid token" });
+    }
 };
 
-export default authRole;
+export default authmiddleware;

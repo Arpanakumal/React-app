@@ -9,6 +9,7 @@ import userRouter from './routes/UserRoute.mjs';
 import path from "path";
 import providerRouter from './routes/ProviderRoute.mjs';
 import adminRouter from './routes/AdminRoutes.mjs';
+import bookingRouter from './routes/BookingRoute.mjs';
 
 
 
@@ -18,10 +19,12 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-    origin: ["http://localhost:3000", "http://localhost:3002"], // frontend ports
-    methods: ["GET","POST","PUT","PATCH","DELETE"],
+    origin: ["http://localhost:3000", "http://localhost:5173"], 
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "atoken"],
 }));
+
+
 
 
 
@@ -44,6 +47,7 @@ const connectDB = async () => {
     app.use("/images", express.static('uploads'));
     app.use("/api/user", userRouter);
     app.use("/api/provider", providerRouter);
+    app.use("/api/booking",bookingRouter);
     app.use("/api/admin", adminRouter);
 
     app.get('/', (req, res) => {

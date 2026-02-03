@@ -1,29 +1,32 @@
 import mongoose from "mongoose";
 import Provider from "../models/ProviderModel.mjs";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+
 import validator from "validator";
 import crypto from 'crypto';
 
 
 
 
-// CREATE JWT TOKEN 
-const createToken = (id) => {
-    return jwt.sign({ id, role: "provider" }, process.env.JWT_SECRET, { expiresIn: "7d" });
-};
 
 export const addProvider = async (req, res) => {
     try {
-        const { name, email, servicesOffered, defaultCommissionPercent } = req.body; // fixed typo
+        const { name, phone, email, servicesOffered, defaultCommissionPercent } = req.body;
         const imageFile = req.file;
 
-        if (!name || !email) {
+        if (!name || !phone || !email) {
             return res.status(400).json({
                 success: false,
-                message: "Name and email are required",
+                message: "Name,Phone and email are required",
             });
         }
+        if (!phone || !validator.isMobilePhone(phone, 'any')) {
+            return res.status(400).json({
+                success: false,
+                message: "Valid phone number is required",
+            });
+        }
+
 
         if (!validator.isEmail(email)) {
             return res.status(400).json({ success: false, message: "Invalid email" });
@@ -40,8 +43,9 @@ export const addProvider = async (req, res) => {
         }
 
         const provider = new Provider({
-            name,
-            email,
+            name: name.trim(),
+            phone: phone.trim(),
+            email: email.trim(),
             password: hashedPassword,
             servicesOffered: servicesIds,
             image: imageFile ? `/uploads/${imageFile.filename}` : null,
@@ -66,11 +70,11 @@ export const addProvider = async (req, res) => {
 };
 
 
-// List providers with summary info for admin panel
+
 export const listProviders = async (req, res) => {
     try {
         const providers = await Provider.find()
-            .select("name image servicesOffered available") 
+            .select("name image servicesOffered available")
             .populate("servicesOffered", "name");
 
         res.json({ success: true, data: providers });
@@ -85,21 +89,28 @@ export const listProviders = async (req, res) => {
 //update
 export const updateProvider = async (req, res) => {
     const { id } = req.params;
-    const { name, email, servicesOffered, password } = req.body;
+    const { name, email, phone, servicesOffered, password } = req.body;
 
     const provider = await Provider.findById(id);
     if (!provider) {
         return res.status(404).json({ success: false, message: "Provider not found" });
     }
 
-    if (name) provider.name = name;
+    if (name) provider.name = name.trim();
+
+    if (phone) {
+        if (!validator.isMobilePhone(phone, 'any')) {
+            return res.status(400).json({ success: false, message: "Invalid phone number" });
+        }
+        provider.phone = phone.trim();
+    }
 
     if (email && email !== provider.email) {
-        const exists = await Provider.findOne({ email });
+        const exists = await Provider.findOne({ email, _id: { $ne: id } });
         if (exists) {
             return res.status(400).json({ success: false, message: "Email in use" });
         }
-        provider.email = email;
+        provider.email = email.trim();
     }
 
     if (password) {
@@ -107,9 +118,13 @@ export const updateProvider = async (req, res) => {
     }
 
     if (servicesOffered) {
-        provider.servicesOffered = JSON.parse(servicesOffered).map(
-            (id) => new mongoose.Types.ObjectId(id)
-        );
+        try {
+            provider.servicesOffered = JSON.parse(servicesOffered).map(
+                (id) => new mongoose.Types.ObjectId(id)
+            );
+        } catch (err) {
+            return res.status(400).json({ success: false, message: "Invalid services format" });
+        }
     }
 
     if (req.file) {
@@ -117,7 +132,6 @@ export const updateProvider = async (req, res) => {
     }
 
     await provider.save();
-
     res.json({ success: true, message: "Provider updated" });
 };
 
