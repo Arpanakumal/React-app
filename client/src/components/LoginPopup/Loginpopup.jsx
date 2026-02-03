@@ -1,9 +1,9 @@
-import React, { useContext, useState } from 'react';
-import './loginpopup.css';
-import * as assets from '../../assets/assets';
-import { StoreContext } from '../../context/StoreContext';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import React, { useContext, useState } from "react";
+import "./loginpopup.css";
+import * as assets from "../../assets/assets";
+import { StoreContext } from "../../context/StoreContext";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const LoginPopup = ({ setShowLogin }) => {
     const navigate = useNavigate();
@@ -15,39 +15,37 @@ const LoginPopup = ({ setShowLogin }) => {
 
     const onChangeHandler = (e) => {
         const { name, value } = e.target;
-        setData(prev => ({ ...prev, [name]: value }));
+        setData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const togglePassword = () => setShowPassword(prev => !prev);
+    const togglePassword = () => setShowPassword((prev) => !prev);
+
     const onSubmit = async (e) => {
         e.preventDefault();
 
         try {
-            let endpoint = "";
+            let url = "";
 
             if (currState === "Login") {
-
-                endpoint = "admin/login";
+                url = `${process.env.REACT_APP_API_URL}/api/admin/login`;
             } else {
-                endpoint = "user/register";
+                url = `${process.env.REACT_APP_API_URL}/api/user/register`;
             }
 
+            console.log("Calling endpoint:", url);
 
-            console.log("Calling endpoint:", `${process.env.REACT_APP_API_URL}/${endpoint}`);
-
-            const response = await axios.post(
-                `${process.env.REACT_APP_API_URL}/${endpoint}`,
-                data
-            );
+            const response = await axios.post(url, data);
 
             if (response.data.success) {
                 const { token, role, name, id } = response.data;
 
+                // Store in context
                 setToken(token);
                 setRole(role);
                 setUserName(name);
                 setUserId(id);
 
+                // Store in localStorage
                 localStorage.setItem("token", token);
                 localStorage.setItem("role", role);
                 localStorage.setItem("name", name);
@@ -69,10 +67,9 @@ const LoginPopup = ({ setShowLogin }) => {
         }
     };
 
-
     return (
-        <div className='login-popup'>
-            <form onSubmit={onSubmit} className='login-popup-container'>
+        <div className="login-popup">
+            <form onSubmit={onSubmit} className="login-popup-container">
                 <div className="login-popup-title">
                     <h2>{currState}</h2>
                     <img onClick={() => setShowLogin(false)} src={assets.cross} alt="close" />
@@ -81,31 +78,31 @@ const LoginPopup = ({ setShowLogin }) => {
                 <div className="login-popup-inputs">
                     {currState === "Sign up" && (
                         <input
-                            name='name'
-                            onChange={onChangeHandler}
+                            name="name"
                             value={data.name}
+                            onChange={onChangeHandler}
                             type="text"
-                            placeholder='Your Name'
+                            placeholder="Your Name"
                             required
                         />
                     )}
 
                     <input
-                        name='email'
-                        onChange={onChangeHandler}
+                        name="email"
                         value={data.email}
+                        onChange={onChangeHandler}
                         type="email"
-                        placeholder='Your Email'
+                        placeholder="Your Email"
                         required
                     />
 
                     <div className="password-wrapper">
                         <input
-                            name='password'
-                            onChange={onChangeHandler}
+                            name="password"
                             value={data.password}
+                            onChange={onChangeHandler}
                             type={showPassword ? "text" : "password"}
-                            placeholder='Password'
+                            placeholder="Password"
                             required
                         />
                         <span className="eye-icon" onClick={togglePassword}>
@@ -118,19 +115,17 @@ const LoginPopup = ({ setShowLogin }) => {
                     </div>
                 </div>
 
-                <button type='submit'>
-                    {currState === "Sign up" ? "Create Account" : "Login"}
-                </button>
+                <button type="submit">{currState === "Sign up" ? "Create Account" : "Login"}</button>
 
                 <div className="login-toggle">
                     {currState === "Sign up" ? (
                         <p>
-                            Already have an account?{' '}
+                            Already have an account?{" "}
                             <span onClick={() => setCurrState("Login")}>Login</span>
                         </p>
                     ) : (
                         <p>
-                            Don't have an account?{' '}
+                            Don't have an account?{" "}
                             <span onClick={() => setCurrState("Sign up")}>Sign Up</span>
                         </p>
                     )}

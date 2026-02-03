@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import "./profile.css";
-import * as assets from "../../assets/assets"; 
+import * as assets from "../../assets/assets";
 
 const MyProfile = () => {
     const [user, setUser] = useState({ id: "", name: "", email: "", password: "" });
@@ -10,11 +11,13 @@ const MyProfile = () => {
     const [showPassword, setShowPassword] = useState(false);
 
     const token = localStorage.getItem("token");
+    const API_URL = process.env.REACT_APP_API_URL;
+    const navigate = useNavigate();
 
-    // Fetch current user
+
     const fetchUser = async () => {
         try {
-            const { data } = await axios.get("http://localhost:3001/api/user/me", {
+            const { data } = await axios.get(`${API_URL}/api/user/me`, {
                 headers: { atoken: token },
             });
 
@@ -24,14 +27,14 @@ const MyProfile = () => {
                     id: u._id,
                     name: u.name,
                     email: u.email,
-                    password: "", 
+                    password: "",
                 });
             } else {
                 toast.error(data.message || "Failed to fetch user");
             }
         } catch (err) {
             console.error("Fetch user error:", err);
-            toast.error(err.response?.data?.message || "Failed to fetch user");
+            toast.error("Cannot reach backend. Is it running?");
         } finally {
             setLoading(false);
         }
@@ -41,20 +44,21 @@ const MyProfile = () => {
         fetchUser();
     }, []);
 
+
     const handleChange = (e) => {
         setUser({ ...user, [e.target.name]: e.target.value });
     };
 
     const handleUpdate = async (e) => {
         e.preventDefault();
-        if (!user.id) {
-            toast.error("User ID not found. Please try again.");
+        if (!token) {
+            toast.error("User not logged in");
             return;
         }
 
         try {
             const { data } = await axios.put(
-                `http://localhost:3001/api/user/${user.id}/update`,
+                `${API_URL}/api/user/${user.id}/update`,
                 {
                     name: user.name,
                     email: user.email,
@@ -64,8 +68,13 @@ const MyProfile = () => {
             );
 
             if (data.success) {
-                toast.success(data.message);
-                setUser({ ...user, password: "" }); 
+                toast.success("Profile updated successfully!");
+                setUser({ ...user, password: "" });
+
+
+                setTimeout(() => {
+                    navigate("/");
+                }, 1500);
             } else {
                 toast.error(data.message);
             }
@@ -113,10 +122,7 @@ const MyProfile = () => {
                             onChange={handleChange}
                             placeholder="Leave blank to keep current password"
                         />
-                        <span
-                            className="eye-icon"
-                            onClick={() => setShowPassword(!showPassword)}
-                        >
+                        <span className="eye-icon" onClick={() => setShowPassword(!showPassword)}>
                             {showPassword ? (
                                 <img src={assets.eyeOpen} alt="Hide" />
                             ) : (
