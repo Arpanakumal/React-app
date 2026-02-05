@@ -172,3 +172,69 @@ export const toggleProviderStatus = async (req, res) => {
 };
 
 
+// start 
+export const startBooking = async (req, res) => {
+    try {
+        const providerId = req.user.id; 
+        const { bookingId } = req.params;
+
+        const booking = await Booking.findById(bookingId);
+        if (!booking)
+            return res.status(404).json({ success: false, message: "Booking not found" });
+
+        if (booking.providerId.toString() !== providerId) {
+            return res.status(403).json({ success: false, message: "Not authorized for this booking" });
+        }
+
+        if (booking.status !== "pending") {
+            return res.status(400).json({ success: false, message: "Booking already started or completed" });
+        }
+
+        booking.startedAt = new Date();
+        booking.status = "in-progress";
+        await booking.save();
+
+        res.json({ success: true, message: "Booking started", data: booking });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// end/completed
+export const endBooking = async (req, res) => {
+    try {
+        const providerId = req.user.id;
+        const { bookingId } = req.params;
+
+        const booking = await Booking.findById(bookingId);
+        if (!booking)
+            return res.status(404).json({ success: false, message: "Booking not found" });
+
+        if (booking.providerId.toString() !== providerId) {
+            return res.status(403).json({ success: false, message: "Not authorized for this booking" });
+        }
+
+        if (booking.status !== "in-progress") {
+            return res.status(400).json({ success: false, message: "Booking not in progress" });
+        }
+
+        booking.endedAt = new Date();
+
+        // Calculate hours worked
+        const hoursWorked = (booking.endedAt - booking.startedAt) / 3600000; 
+        const finalPrice = hoursWorked * booking.pricePerHour;
+
+        booking.finalPrice = finalPrice;
+        booking.commissionAmount = (finalPrice * booking.commissionPercent) / 100;
+        booking.providerEarning = finalPrice - booking.commissionAmount;
+        booking.status = "completed";
+
+        await booking.save();
+
+        res.json({ success: true, message: "Booking completed", data: booking });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};

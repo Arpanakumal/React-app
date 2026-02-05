@@ -1,7 +1,8 @@
 import express from "express";
 import multer from "multer";
 import authAdmin from "../middleware/authAdmin.mjs";
-import { addProvider, listProviders, updateProvider, toggleProviderStatus } from "../controllers/ProviderController.mjs";
+import authmiddleware from "../middleware/authMiddleware.mjs";
+import { addProvider, listProviders, updateProvider, toggleProviderStatus ,startBooking,endBooking} from "../controllers/ProviderController.mjs";
 import Provider from "../models/ProviderModel.mjs"; 
 
 const providerRouter = express.Router();
@@ -39,5 +40,8 @@ providerRouter.get('/:id', async (req, res) => {
 providerRouter.put("/:id", upload.single("image"), updateProvider);
 
 providerRouter.patch("/:id/toggle", toggleProviderStatus);
+
+providerRouter.patch("/booking/:bookingId/start", authmiddleware, startBooking);
+providerRouter.patch("/booking/:bookingId/end", authmiddleware, endBooking);
 
 export default providerRouter;

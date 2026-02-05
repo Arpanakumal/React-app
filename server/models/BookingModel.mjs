@@ -2,28 +2,23 @@ import mongoose from "mongoose";
 
 const bookingSchema = new mongoose.Schema(
     {
-        userId: {
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+        username: {
             type: String,
-            ref: "User",
             required: true
+        },
+        providerId: { type: mongoose.Schema.Types.ObjectId, ref: "Provider", required: true },
+        serviceId: { type: mongoose.Schema.Types.ObjectId,   ref:"Service",required:true },
+
+
+        providerCount: { type: Number, default: 1 },
+
+        customer: {
+            name: String,
+            email: String,
+            phone: String
         },
 
-        providerId: {
-            type: String,
-            ref: "Provider",
-            required: true
-        },
-
-        serviceId: {
-            type: String,
-            ref: "Service",
-            required: true
-        },
-
-        appointmentDate: {
-            type: Date,
-            required: true
-        },
 
         address: {
             street: String,
@@ -33,39 +28,31 @@ const bookingSchema = new mongoose.Schema(
             country: String
         },
 
-        price: {
-            type: Number,
-            required: true
-        },
 
-        commissionPercent: {
-            type: Number,
-            required: true
-        },
+        appointmentDate: { type: Date, required: true },
+        appointmentTime: { type: String, required: true },
 
-        commissionAmount: {
-            type: Number,
-            required: true
-        },
 
-        providerEarning: {
-            type: Number,
-            required: true
-        },
+        notes: String,
 
-        paymentStatus: {
-            type: String,
-            enum: ["pending", "paid"],
-            default: "pending"
-        },
 
-        bookingStatus: {
-            type: String,
-            enum: ["booked", "completed", "cancelled"],
-            default: "booked"
-        }
+        pricePerHour: { type: Number, required: true },
+
+
+        startedAt: { type: Date },
+        endedAt: { type: Date },
+
+
+        finalPrice: { type: Number },
+        commissionPercent: { type: Number },
+        commissionAmount: { type: Number },
+        providerEarning: { type: Number },
+
+
+        status: { type: String, enum: ["pending", "in-progress", "completed", "cancelled"], default: "pending" },
     },
     { timestamps: true }
 );
 
-export default mongoose.model("Booking", bookingSchema);
+const Booking = mongoose.models.Booking || mongoose.model("Booking", bookingSchema);
+export default Booking;
