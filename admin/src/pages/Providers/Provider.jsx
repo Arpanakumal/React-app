@@ -11,13 +11,12 @@ const Providers = () => {
     const [services, setServices] = useState([]);
     const [selectedServices, setSelectedServices] = useState([]);
     const [defaultCommission, setDefaultCommission] = useState(10);
-    const [data, setData] = useState({ name: '', email: '' });
+    const [data, setData] = useState({ name: '', phone: '', email: '' });
 
-    // Get token from URL or localStorage
     let token = localStorage.getItem("token") || new URLSearchParams(window.location.search).get("token");
     if (!localStorage.getItem("token") && token) localStorage.setItem("token", token);
 
-    // Fetch services on mount
+
     useEffect(() => {
         const fetchServices = async () => {
             if (!token) {
@@ -53,7 +52,7 @@ const Providers = () => {
         e.preventDefault();
 
         if (!data.name || !data.email) {
-            toast.error('Name and email are required');
+            toast.error('Name,Phone,  and email are required');
             return;
         }
 
@@ -64,6 +63,7 @@ const Providers = () => {
 
         const formData = new FormData();
         formData.append('name', data.name);
+        formData.append('phone',data.phone);
         formData.append('email', data.email);
         formData.append('defaultCommissionPercent', defaultCommission);
         formData.append('servicesOffered', JSON.stringify(selectedServices));
@@ -122,6 +122,18 @@ const Providers = () => {
                             required
                         />
                     </div>
+                    <div className="add-service-name flex-col">
+                        <p>Phone</p>
+                        <input
+                            type="tel"
+                            name="phone"
+                            placeholder="Enter phone number"
+                            value={data.phone}
+                            onChange={onChangeHandler}
+                            required
+                        />
+                    </div>
+
 
                     <div className="add-service-name flex-col">
                         <p>Email</p>

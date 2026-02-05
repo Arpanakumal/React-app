@@ -7,6 +7,7 @@ import Services from "./pages/Services/Service";
 import List from './pages/Services/List';
 import Update from './pages/Services/Update';
 import Booking from "./pages/Booking/Booking";
+import BookingDetail from './pages/Booking/BookingDetail';
 import Customers from "./pages/Customers/Customer";
 import Providers from "./pages/Providers/Provider";
 import ProviderList from './pages/Providers/ProviderList';
@@ -49,6 +50,8 @@ const App = () => {
             <Route path="/services/update/:id" element={<Update url={url} />} />
 
             <Route path="/bookings" element={<Booking url={url} />} />
+            <Route path="/bookings/detail/:id" element={<BookingDetail url={url} />} />
+
             <Route path="/messages" element={<Messages url={url} />} />
             <Route path="/customers" element={<Customers url={url} />} />
             <Route path="/providers" element={<Providers url={url} />} />

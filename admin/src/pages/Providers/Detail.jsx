@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import './detail.css';
+import "./detail.css";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -50,7 +50,10 @@ const Detail = ({ url }) => {
 
             if (res.data.success) {
                 toast.success(res.data.message);
-                setProvider((prev) => ({ ...prev, available: res.data.available }));
+                setProvider((prev) => ({
+                    ...prev,
+                    available: res.data.available,
+                }));
             } else {
                 toast.error("Failed to update status");
             }
@@ -62,32 +65,81 @@ const Detail = ({ url }) => {
         }
     };
 
-    if (!provider) return <p>Loading provider details...</p>;
+    if (!provider)
+        return <p className="loading-text">Loading provider details...</p>;
 
     return (
-        <div>
-            <img
-                src={provider.image ? `${url}${provider.image}` : "/default-avatar.png"}
-                alt={provider.name}
-                style={{ width: "150px", height: "150px", borderRadius: "50%" }}
-            />
-            <h2>{provider.name}</h2>
-            <p>Email: {provider.email}</p>
-            <p>Services: {provider.servicesOffered.map((s) => s.name).join(", ")}</p>
-            <p>Status: {provider.available ? "Available" : "Not Available"}</p>
-            <p>Profile Complete: {provider.isProfileComplete ? "Yes" : "No"}</p>
-            <p>Joined At: {new Date(provider.createdAt).toLocaleDateString()}</p>
+        <div className="detail-container">
+            <div className="detail-header">
+                <img
+                    src={
+                        provider.image
+                            ? `${url}${provider.image}`
+                            : "/default-avatar.png"
+                    }
+                    alt={provider.name}
+                />
+                <h2>{provider.name}</h2>
+            </div>
 
-            <button onClick={toggleStatus} disabled={loading} style={{ marginRight: "10px" }}>
-                {provider.available ? "Deactivate" : "Activate"}
-            </button>
-            <button onClick={() => navigate(`/providers/providerlist`)}>
-                Back to List
-            </button>
-            <button onClick={() => navigate(`/providers/update/${provider._id}`)}>
-                Edit Provider
-            </button>
+            <div className="detail-info">
+                <p>
+                    <span>Phone:</span> {provider.phone || "N/A"}
+                </p>
 
+                <p>
+                    <span>Email:</span> {provider.email}
+                </p>
+
+                <p>
+                    <span>Services:</span>{" "}
+                    {provider.servicesOffered.map((s) => s.name).join(", ")}
+                </p>
+
+                <p>
+                    <span>Status:</span>{" "}
+                    <span
+                        className={`status ${provider.available ? "available" : "unavailable"
+                            }`}
+                    >
+                        {provider.available ? "Available" : "Not Available"}
+                    </span>
+                </p>
+
+                <p>
+                    <span>Profile Complete:</span>{" "}
+                    {provider.isProfileComplete ? "Yes" : "No"}
+                </p>
+
+                <p>
+                    <span>Joined At:</span>{" "}
+                    {new Date(provider.createdAt).toLocaleDateString()}
+                </p>
+            </div>
+
+            <div className="button-group">
+                <button
+                    className={provider.available ? "btn-danger" : "btn-primary"}
+                    onClick={toggleStatus}
+                    disabled={loading}
+                >
+                    {provider.available ? "Deactivate" : "Activate"}
+                </button>
+
+                <button
+                    className="btn-secondary"
+                    onClick={() => navigate("/providers/providerlist")}
+                >
+                    Back to List
+                </button>
+
+                <button
+                    className="btn-primary"
+                    onClick={() => navigate(`/providers/update/${provider._id}`)}
+                >
+                    Edit Provider
+                </button>
+            </div>
         </div>
     );
 };
