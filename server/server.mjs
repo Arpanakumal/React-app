@@ -10,6 +10,7 @@ import path from "path";
 import providerRouter from './routes/ProviderRoute.mjs';
 import adminRouter from './routes/AdminRoutes.mjs';
 import bookingRouter from './routes/BookingRoute.mjs';
+import messageRouter from './routes/MessageRoute.mjs';
 
 
 
@@ -43,10 +44,10 @@ const connectDB = async () => {
     await connectDB();
     app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
     app.use("/api/Service", ServiceRouter);
-    app.use("/images", express.static('uploads'));
     app.use("/api/user", userRouter);
     app.use("/api/provider", providerRouter);
     app.use("/api/booking", bookingRouter);
+    app.use("/api/messages",messageRouter);
     app.use("/api/admin", adminRouter);
 
     app.get('/', (req, res) => {

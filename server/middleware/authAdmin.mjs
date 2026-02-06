@@ -2,20 +2,19 @@ import jwt from "jsonwebtoken";
 
 const authAdmin = (req, res, next) => {
     try {
-        const { atoken } = req.headers;
-        if (!atoken) {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
             return res.status(401).json({ success: false, message: "Not authorized. Login again." });
         }
 
-        const token_decode = jwt.verify(atoken, process.env.JWT_SECRET);
+        const token = authHeader.split(" ")[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        if (token_decode.role !== "admin") {
+        if (decoded.role !== "admin") {
             return res.status(403).json({ success: false, message: "Not authorized." });
         }
 
-
-        req.admin = token_decode; 
-
+        req.admin = decoded;
         next();
     } catch (error) {
         console.log(error);

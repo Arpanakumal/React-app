@@ -21,7 +21,7 @@ const addService = async (req, res) => {
             price_info,
             category,
             commissionPercent: commissionPercent ? Number(commissionPercent) : null,
-            image: req.file.filename
+            image: `/uploads/${req.file.filename}`
         });
 
         await service.save();
@@ -32,6 +32,7 @@ const addService = async (req, res) => {
         res.status(500).json({ success: false, message: "Error adding service", error: error.message });
     }
 };
+
 
 
 // List all services
@@ -61,9 +62,11 @@ const updateService = async (req, res) => {
         service.commissionPercent = commissionPercent || service.commissionPercent;
 
         if (req.file) {
-            const oldImage = `uploads/${service.image}`;
+
+            const oldImage = service.image.replace("/uploads/", "uploads/");
             if (fs.existsSync(oldImage)) fs.unlinkSync(oldImage);
-            service.image = req.file.filename;
+
+            service.image = `/uploads/${req.file.filename}`;
         }
 
         await service.save();
@@ -75,6 +78,7 @@ const updateService = async (req, res) => {
     }
 };
 
+
 // Remove service
 const removeService = async (req, res) => {
     try {
@@ -84,7 +88,7 @@ const removeService = async (req, res) => {
         const service = await ServiceModel.findById(id);
         if (!service) return res.status(404).json({ success: false, message: "Service not found" });
 
-        const imagePath = `uploads/${service.image}`;
+        const imagePath = service.image.replace("/uploads/", "uploads/");
         if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
 
         await ServiceModel.findByIdAndDelete(id);

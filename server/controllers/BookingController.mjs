@@ -115,7 +115,7 @@ export const listBookings = async (req, res) => {
 export const getBookingById = async (req, res) => {
     try {
         const booking = await Booking.findById(req.params.id)
-            .populate("serviceId", "name category image price_info commissionPercent") // use correct field name
+            .populate("serviceId", "name category image price_info commissionPercent")
             .populate("providerId", "name")
             .populate("userId", "firstName lastName email phone");
 
