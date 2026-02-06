@@ -61,7 +61,8 @@ const List = ({ url }) => {
 
                 {services.map((service) => (
                     <div key={service._id} className="service-list-row">
-                        <img src={`${url}/images/${service.image}`} alt={service.name} />
+                        <img src={`${url}${service.image}`} alt={service.name} />
+
                         <p>{service.name}</p>
                         <p>{service.category}</p>
                         <p>{service.price_info}</p>

@@ -81,10 +81,11 @@ const UpdateService = ({ url }) => {
                         <p>Upload Image</p>
                         <label htmlFor="image">
                             <img
-                                src={image ? URL.createObjectURL(image) : existingImage ? `${url}/images/${existingImage}` : upload}
+                                src={image ? URL.createObjectURL(image) : existingImage ? `${url}${existingImage}` : upload}
                                 alt="Upload Preview"
                                 style={{ width: '150px', height: '150px', objectFit: 'cover', cursor: 'pointer' }}
                             />
+
                         </label>
                         <input
                             onChange={(e) => setImage(e.target.files[0])}
