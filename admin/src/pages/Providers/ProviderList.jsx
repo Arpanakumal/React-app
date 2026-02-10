@@ -15,15 +15,17 @@ const ProviderList = ({ url }) => {
     const fetchProviders = async () => {
         try {
             setLoading(true);
-            const token = localStorage.getItem("token");
+            const token = localStorage.getItem("token"); 
             if (!token) {
                 toast.error("Admin not logged in");
                 return;
             }
 
+
             const res = await axios.get(`${url}/api/provider`, {
                 headers: { atoken: token },
             });
+
 
             if (res.data.success) {
                 setProviders(res.data.data);
