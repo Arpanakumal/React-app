@@ -3,10 +3,11 @@ import Service from "../models/ServiceModel.mjs";
 import Provider from "../models/ProviderModel.mjs";
 import User from "../models/UserModel.mjs";
 
+// Create a new booking
+
 export const createBooking = async (req, res) => {
     try {
         const userId = req.user.id;
-
         const {
             serviceId,
             providerId,
@@ -32,37 +33,38 @@ export const createBooking = async (req, res) => {
         if (!user) return res.status(404).json({ success: false, message: "User not found" });
         if (!service) return res.status(404).json({ success: false, message: "Service not found" });
         if (!provider) return res.status(404).json({ success: false, message: "Provider not found" });
-        if (!provider.available) {
-            return res.status(400).json({ success: false, message: "Provider not available" });
-        }
+        if (!provider.available) return res.status(400).json({ success: false, message: "Provider not available" });
 
         const pricePerHour = Number(service.price_info);
-        if (isNaN(pricePerHour)) {
-            return res.status(400).json({ success: false, message: "Invalid service price" });
-        }
+        if (isNaN(pricePerHour)) return res.status(400).json({ success: false, message: "Invalid service price" });
 
+        const providerCountNumber = Number(providerCount) || 1;
         const commissionPercent = Number(provider.defaultCommissionPercent) || 10;
+
+        const finalPrice = pricePerHour * providerCountNumber;
+        const commissionAmount = (finalPrice * commissionPercent) / 100;
+        const providerEarning = finalPrice - commissionAmount;
 
         const booking = await Booking.create({
             userId,
             username: username.trim(),
             providerId,
             serviceId,
-            providerCount: providerCount || 1,
-
+            providerCount: providerCountNumber,
             customer: {
                 name: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
                 email: user.email,
                 phone: user.phone
             },
-
             address,
             appointmentDate,
             appointmentTime,
             notes,
-
             pricePerHour,
-            commissionPercent
+            commissionPercent,
+            finalPrice,
+            commissionAmount,
+            providerEarning
         });
 
         res.status(201).json({
@@ -80,38 +82,62 @@ export const createBooking = async (req, res) => {
     }
 };
 
+// List all bookings
+// In Booking controller or routes file
 
 export const listBookings = async (req, res) => {
     try {
         const bookings = await Booking.find()
-            .populate("serviceId", "name image category price_info")
+            .populate("serviceId", "name image category price_info commissionPercent")
             .populate("providerId", "name image")
             .populate("userId", "firstName lastName email phone");
 
+        // Format bookings to flatten and align with frontend expected fields
+        const formattedBookings = bookings.map(b => {
+            const totalPrice = b.pricePerHour * (b.providerCount || 1);
+            const commissionAmount = (totalPrice * (b.commissionPercent || 10)) / 100;
+            const providerEarning = totalPrice - commissionAmount;
 
-        const formattedBookings = bookings.map(b => ({
-            _id: b._id,
-            username: b.username,
-            provider: b.providerId ? { id: b.providerId._id, name: b.providerId.name, image: b.providerId.image } : null,
-            service: b.serviceId ? { id: b.serviceId._id, name: b.serviceId.name, image: b.serviceId.image, category: b.serviceId.category, price: b.serviceId.price_info } : null,
-            customer: b.customer,
-            address: b.address,
-            appointmentDate: b.appointmentDate,
-            appointmentTime: b.appointmentTime,
-            notes: b.notes,
-            pricePerHour: b.pricePerHour,
-            commissionPercent: b.commissionPercent,
-            status: b.status,
-            createdAt: b.createdAt,
-        }));
+            return {
+                _id: b._id,
+                username: b.username,
+                providerCount: b.providerCount || 1,
+                customer: b.customer || {},
+                address: b.address || {},
+                appointmentDate: b.appointmentDate,
+                appointmentTime: b.appointmentTime,
+                notes: b.notes,
+                pricePerHour: b.pricePerHour,
+                commissionPercent: b.commissionPercent,
+                status: b.status,
+                createdAt: b.createdAt,
+                updatedAt: b.updatedAt,
+
+                // Flatten populated data:
+                provider: b.providerId ? { id: b.providerId._id, name: b.providerId.name, image: b.providerId.image } : null,
+                service: b.serviceId ? {
+                    id: b.serviceId._id,
+                    name: b.serviceId.name,
+                    category: b.serviceId.category,
+                    image: b.serviceId.image,
+                    price: b.serviceId.price_info,
+                    commissionPercent: b.serviceId.commissionPercent
+                } : null,
+
+                totalPrice,
+                commissionAmount,
+                providerEarning,
+            };
+        });
 
         res.json({ success: true, data: formattedBookings });
-    } catch (err) {
-        console.error("Error fetching bookings:", err);
-        res.status(500).json({ success: false, message: err.message });
+    } catch (error) {
+        console.error("Error fetching bookings:", error);
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
+// Get booking by ID
 export const getBookingById = async (req, res) => {
     try {
         const booking = await Booking.findById(req.params.id)
@@ -119,10 +145,7 @@ export const getBookingById = async (req, res) => {
             .populate("providerId", "name")
             .populate("userId", "firstName lastName email phone");
 
-        if (!booking) {
-            return res.status(404).json({ success: false, message: "Booking not found" });
-        }
-
+        if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
 
         const formattedBooking = {
             _id: booking._id,
@@ -144,9 +167,13 @@ export const getBookingById = async (req, res) => {
             appointmentTime: booking.appointmentTime,
             notes: booking.notes,
             pricePerHour: booking.pricePerHour,
+            providerCount: booking.providerCount || 1,
             commissionPercent: booking.commissionPercent,
             status: booking.status,
             createdAt: booking.createdAt,
+            finalPrice: booking.finalPrice,
+            commissionAmount: booking.commissionAmount,
+            providerEarning: booking.providerEarning
         };
 
         res.json({ success: true, data: formattedBooking });
@@ -156,6 +183,29 @@ export const getBookingById = async (req, res) => {
     }
 };
 
+export const completeBooking = async (req, res) => {
+    try {
+        const { hoursWorked } = req.body;
+        const booking = await Booking.findById(req.params.id);
+        if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
+
+        const newFinalPrice = booking.pricePerHour * hoursWorked * booking.providerCount;
+        const newCommissionAmount = (newFinalPrice * booking.commissionPercent) / 100;
+        const newProviderEarning = newFinalPrice - newCommissionAmount;
+
+        booking.finalPrice = newFinalPrice;
+        booking.commissionAmount = newCommissionAmount;
+        booking.providerEarning = newProviderEarning;
+        booking.status = "completed";
+
+        await booking.save();
+
+        res.json({ success: true, data: booking });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
 
 
 export const updateBookingStatus = async (req, res) => {
@@ -163,6 +213,7 @@ export const updateBookingStatus = async (req, res) => {
         const { status } = req.body;
         const booking = await Booking.findByIdAndUpdate(req.params.id, { status }, { new: true });
         if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
+
         res.json({ success: true, data: booking });
     } catch (error) {
         console.error(error);

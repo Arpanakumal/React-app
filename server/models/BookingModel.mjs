@@ -43,10 +43,10 @@ const bookingSchema = new mongoose.Schema(
         endedAt: { type: Date },
 
 
-        finalPrice: { type: Number },
-        commissionPercent: { type: Number },
-        commissionAmount: { type: Number },
-        providerEarning: { type: Number },
+    finalPrice: { type: Number, default: 0 },
+    commissionPercent: { type: Number, default: 10 },
+    commissionAmount: { type: Number, default: 0 },
+    providerEarning: { type: Number, default: 0 },
 
 
         status: { type: String, enum: ["pending", "in-progress", "completed", "cancelled"], default: "pending" },

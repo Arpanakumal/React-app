@@ -16,11 +16,13 @@ import messageRouter from './routes/MessageRoute.mjs';
 
 
 
+
 const app = express();
 app.use(express.json());
 app.use(cors({
     origin: ["http://localhost:3000", "http://localhost:5173"],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+
 
 }));
 
@@ -47,12 +49,13 @@ const connectDB = async () => {
     app.use("/api/user", userRouter);
     app.use("/api/provider", providerRouter);
     app.use("/api/booking", bookingRouter);
-    app.use("/api/messages",messageRouter);
+    app.use("/api/messages", messageRouter);
     app.use("/api/admin", adminRouter);
 
     app.get('/', (req, res) => {
         res.send('✅ Backend is running!');
     });
+
 
     const PORT = process.env.PORT || 3001;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -58,6 +58,51 @@ export const registerUser = async (req, res) => {
     }
 };
 
+// LOGIN USER
+export const loginUser = async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        // 1️⃣ Check user exists
+        const user = await userModel.findOne({ email });
+        if (!user) {
+            return res.json({ success: false, message: "Invalid email or password" });
+        }
+
+        // 2️⃣ Check if user is active
+        if (!user.isActive) {
+            return res.json({ success: false, message: "Account is deactivated" });
+        }
+
+        // 3️⃣ Compare password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.json({ success: false, message: "Invalid email or password" });
+        }
+
+        // 4️⃣ Create token (same role as register)
+        const token = jwt.sign(
+            { id: user._id, role: "customer" },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
+
+        // 5️⃣ Respond
+        res.json({
+            success: true,
+            token,
+            role: "customer",
+            name: user.name,
+            id: user._id,
+        });
+
+    } catch (error) {
+        console.error("Login error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+
 
 // List customers
 export const listUsers = async (req, res) => {
