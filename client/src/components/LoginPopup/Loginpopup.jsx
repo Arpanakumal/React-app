@@ -7,11 +7,18 @@ import { useNavigate } from "react-router-dom";
 
 const LoginPopup = ({ setShowLogin }) => {
     const navigate = useNavigate();
-    const { setToken, setRole, setUserName, setUserId } = useContext(StoreContext);
+    const { setToken, setRole, setUserName, setUserId } =
+        useContext(StoreContext);
 
-    const [currState, setCurrState] = useState("Sign up");
-    const [data, setData] = useState({ name: "", email: "", password: "" });
+    const [mode, setMode] = useState("login"); // login | signup
+    const [loginType, setLoginType] = useState("user"); // user | admin
     const [showPassword, setShowPassword] = useState(false);
+
+    const [data, setData] = useState({
+        name: "",
+        email: "",
+        password: "",
+    });
 
     const onChangeHandler = (e) => {
         const { name, value } = e.target;
@@ -26,107 +33,156 @@ const LoginPopup = ({ setShowLogin }) => {
         try {
             let url = "";
 
-            if (currState === "Login") {
-                url = `${process.env.REACT_APP_API_URL}/api/admin/login`;
-            } else {
+
+            if (mode === "signup") {
                 url = `${process.env.REACT_APP_API_URL}/api/user/register`;
             }
 
-            console.log("Calling endpoint:", url);
+            else {
+                url =
+                    loginType === "admin"
+                        ? `${process.env.REACT_APP_API_URL}/api/admin/login`
+                        : `${process.env.REACT_APP_API_URL}/api/user/login`;
+            }
 
             const response = await axios.post(url, data);
 
-            if (response.data.success) {
-                const { token, role, name, id } = response.data;
-
-                // Store in context
-                setToken(token);
-                setRole(role);
-                setUserName(name);
-                setUserId(id);
-
-                // Store in localStorage
-                localStorage.setItem("token", token);
-                localStorage.setItem("role", role);
-                localStorage.setItem("name", name);
-                localStorage.setItem("id", id);
-
-                setShowLogin(false);
-
-                if (role === "admin") {
-                    window.location.href = `http://localhost:5173/dashboard?token=${token}`;
-                } else {
-                    navigate("/");
-                }
-            } else {
-                alert(response.data.message || "Login failed. Check credentials.");
+            if (!response.data.success) {
+                alert(response.data.message || "Authentication failed");
+                return;
             }
-        } catch (err) {
-            console.error("AxiosError", err);
-            alert("Login failed. Check backend URL or credentials.");
+
+            const { token, role, name, id } = response.data;
+
+
+            if (role === "admin") {
+                localStorage.setItem("token", token);
+                window.location.href = `http://localhost:5173/dashboard?token=${token}`;
+                return;
+            }
+
+
+            localStorage.setItem("user_token", token);
+            localStorage.setItem("user_role", role);
+            localStorage.setItem("user_name", name);
+            localStorage.setItem("user_id", id);
+
+            setToken(token);
+            setRole(role);
+            setUserName(name);
+            setUserId(id);
+
+            setShowLogin(false);
+            navigate("/");
+
+        } catch (error) {
+            console.error("Login error:", error);
+            alert("Server error. Please try again.");
         }
     };
 
     return (
         <div className="login-popup">
-            <form onSubmit={onSubmit} className="login-popup-container">
+            <form className="login-popup-container" onSubmit={onSubmit}>
+
                 <div className="login-popup-title">
-                    <h2>{currState}</h2>
-                    <img onClick={() => setShowLogin(false)} src={assets.cross} alt="close" />
+                    <h2>{mode === "signup" ? "Sign Up" : "Login"}</h2>
+                    <img
+                        src={assets.cross}
+                        alt="close"
+                        onClick={() => setShowLogin(false)}
+                    />
                 </div>
 
+
                 <div className="login-popup-inputs">
-                    {currState === "Sign up" && (
+                    {mode === "signup" && (
                         <input
+                            type="text"
                             name="name"
+                            placeholder="Your Name"
                             value={data.name}
                             onChange={onChangeHandler}
-                            type="text"
-                            placeholder="Your Name"
                             required
                         />
                     )}
 
                     <input
+                        type="email"
                         name="email"
+                        placeholder="Your Email"
                         value={data.email}
                         onChange={onChangeHandler}
-                        type="email"
-                        placeholder="Your Email"
                         required
                     />
 
                     <div className="password-wrapper">
                         <input
+                            type={showPassword ? "text" : "password"}
                             name="password"
+                            placeholder="Password"
                             value={data.password}
                             onChange={onChangeHandler}
-                            type={showPassword ? "text" : "password"}
-                            placeholder="Password"
                             required
                         />
                         <span className="eye-icon" onClick={togglePassword}>
-                            {showPassword ? (
-                                <img src={assets.eyeOpen} alt="Hide" />
-                            ) : (
-                                <img src={assets.eyeClosed} alt="Show" />
-                            )}
+                            <img
+                                src={
+                                    showPassword
+                                        ? assets.eyeOpen
+                                        : assets.eyeClosed
+                                }
+                                alt="toggle"
+                            />
                         </span>
                     </div>
+
+
+                    {mode === "login" && (
+                        <div className="login-type">
+                            <label>
+                                <input
+                                    type="radio"
+                                    value="user"
+                                    checked={loginType === "user"}
+                                    onChange={() => setLoginType("user")}
+                                />
+                                User
+                            </label>
+
+                            <label>
+                                <input
+                                    type="radio"
+                                    value="admin"
+                                    checked={loginType === "admin"}
+                                    onChange={() => setLoginType("admin")}
+                                />
+                                Admin
+                            </label>
+                        </div>
+                    )}
                 </div>
 
-                <button type="submit">{currState === "Sign up" ? "Create Account" : "Login"}</button>
+
+                <button type="submit">
+                    {mode === "signup" ? "Create Account" : "Login"}
+                </button>
+
 
                 <div className="login-toggle">
-                    {currState === "Sign up" ? (
+                    {mode === "signup" ? (
                         <p>
                             Already have an account?{" "}
-                            <span onClick={() => setCurrState("Login")}>Login</span>
+                            <span onClick={() => setMode("login")}>
+                                Login
+                            </span>
                         </p>
                     ) : (
                         <p>
-                            Don't have an account?{" "}
-                            <span onClick={() => setCurrState("Sign up")}>Sign Up</span>
+                            Don’t have an account?{" "}
+                            <span onClick={() => setMode("signup")}>
+                                Sign Up
+                            </span>
                         </p>
                     )}
                 </div>
