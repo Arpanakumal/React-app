@@ -82,17 +82,16 @@ export const createBooking = async (req, res) => {
     }
 };
 
-// List all bookings
-// In Booking controller or routes file
+
 
 export const listBookings = async (req, res) => {
     try {
         const bookings = await Booking.find()
+            .sort({ createdAt: -1 }) 
             .populate("serviceId", "name image category price_info commissionPercent")
             .populate("providerId", "name image")
             .populate("userId", "firstName lastName email phone");
 
-        // Format bookings to flatten and align with frontend expected fields
         const formattedBookings = bookings.map(b => {
             const totalPrice = b.pricePerHour * (b.providerCount || 1);
             const commissionAmount = (totalPrice * (b.commissionPercent || 10)) / 100;
@@ -113,7 +112,7 @@ export const listBookings = async (req, res) => {
                 createdAt: b.createdAt,
                 updatedAt: b.updatedAt,
 
-                // Flatten populated data:
+
                 provider: b.providerId ? { id: b.providerId._id, name: b.providerId.name, image: b.providerId.image } : null,
                 service: b.serviceId ? {
                     id: b.serviceId._id,
