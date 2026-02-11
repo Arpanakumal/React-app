@@ -15,6 +15,8 @@ import Detail from './pages/Providers/Detail';
 import EditProvider from './pages/Providers/Edit';
 import Messages from './pages/Messages/Message';
 import { ToastContainer } from 'react-toastify';
+import AdminDashboard from "./pages/Dashboard/Dashboard"; 
+
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -42,7 +44,8 @@ const App = () => {
         <Sidebar />
         <main className="main-content">
           <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" />} />
+            <Route path="/dashboard" element={<AdminDashboard url={url} />} />
+
             <Route path="/dashboard" element={<Dashboard />} />
 
             <Route path="/services" element={<Services url={url} />} />

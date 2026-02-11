@@ -38,21 +38,32 @@ const AdminDashboard = ({ url }) => {
     const fetchDashboardData = async () => {
         try {
             const token = localStorage.getItem('token');
-            if (!token) return toast.error("Admin not logged in");
+            if (!token) {
+                toast.error("Admin not logged in");
+                return;
+            }
 
-            const resBookings = await axios.get(`${url}/api/booking/list`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            const resProviders = await axios.get(`${url}/api/provider/list`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const [resBookings, resProviders] = await Promise.all([
+                axios.get(`${url}/api/booking/list`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                }),
+                axios.get(`${url}/api/provider`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                })
+            ]);
+
+            console.log("Bookings API:", resBookings.data);
+            console.log("Providers API:", resProviders.data);
 
             const bookings = resBookings.data?.data || [];
             const providers = resProviders.data?.data || [];
 
-            const completedJobs = bookings.filter(b => b.status === 'completed');
+            const completedJobs = bookings.filter(
+                b => b.status?.toLowerCase() === "completed"
+            );
+
             const pendingCommission = completedJobs.reduce(
-                (sum, b) => sum + (b.commissionAmount || 0),
+                (sum, b) => sum + Number(b.commissionAmount || 0),
                 0
             );
 
@@ -62,13 +73,14 @@ const AdminDashboard = ({ url }) => {
                 activeProviders: providers.length,
                 pendingCommission,
             });
+
         } catch (error) {
+            console.error("Dashboard error:", error);
             toast.error("Error fetching dashboard data");
-            console.error(error);
         }
     };
 
-    // Fetch last 5 bookings
+    // fetch bookingd
     const fetchRecentBookings = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -91,12 +103,12 @@ const AdminDashboard = ({ url }) => {
             const token = localStorage.getItem('token');
             if (!token) return toast.error("Admin not logged in");
 
-            const res = await axios.get(`${url}/api/customer/list`, {
+            const res = await axios.get(`${url}/api/user/list`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
             const users = res.data?.data || [];
-            setRecentUsers(users.slice(-5).reverse()); // last 5 users
+            setRecentUsers(users.slice(-5).reverse());
         } catch (error) {
             console.error(error);
         }
@@ -106,7 +118,6 @@ const AdminDashboard = ({ url }) => {
         <div className="dashboard-container">
             <h2>Admin Dashboard</h2>
 
-            {/* KPI Cards */}
             <div className="kpi-cards">
                 <div className="card">
                     <h3>Rs.{metrics.pendingCommission}</h3>
@@ -126,7 +137,7 @@ const AdminDashboard = ({ url }) => {
                 </div>
             </div>
 
-            {/* Recent Bookings */}
+
             <div className="tables-section">
                 <div className="table-wrapper full-width">
                     <h3>Recent Bookings</h3>
@@ -174,7 +185,6 @@ const AdminDashboard = ({ url }) => {
                     </table>
                 </div>
 
-                {/* Recent Customers */}
                 <div className="table-wrapper half-width">
                     <h3>Recent Customers</h3>
                     <table>

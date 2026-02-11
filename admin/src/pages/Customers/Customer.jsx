@@ -13,7 +13,7 @@ const Customer = ({ url }) => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get(`${url}/api/User/list`, {
+            const res = await axios.get(`${url}/api/user/list`, {
                 headers: { atoken: token }
             });
             setCustomers(res.data.data || []);
