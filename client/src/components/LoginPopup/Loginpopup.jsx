@@ -10,8 +10,8 @@ const LoginPopup = ({ setShowLogin }) => {
     const { setToken, setRole, setUserName, setUserId } =
         useContext(StoreContext);
 
-    const [mode, setMode] = useState("login"); // login | signup
-    const [loginType, setLoginType] = useState("user"); // user | admin
+    const [mode, setMode] = useState("login");
+    const [loginType, setLoginType] = useState("user");
     const [showPassword, setShowPassword] = useState(false);
 
     const [data, setData] = useState({
@@ -36,14 +36,16 @@ const LoginPopup = ({ setShowLogin }) => {
 
             if (mode === "signup") {
                 url = `${process.env.REACT_APP_API_URL}/api/user/register`;
+            } else {
+                if (loginType === "admin") {
+                    url = `${process.env.REACT_APP_API_URL}/api/admin/login`;
+                } else if (loginType === "provider") {
+                    url = `${process.env.REACT_APP_API_URL}/api/provider/login`;
+                } else {
+                    url = `${process.env.REACT_APP_API_URL}/api/user/login`;
+                }
             }
 
-            else {
-                url =
-                    loginType === "admin"
-                        ? `${process.env.REACT_APP_API_URL}/api/admin/login`
-                        : `${process.env.REACT_APP_API_URL}/api/user/login`;
-            }
 
             const response = await axios.post(url, data);
 
@@ -61,6 +63,14 @@ const LoginPopup = ({ setShowLogin }) => {
                 return;
             }
 
+            if (role === "provider") {
+                localStorage.setItem("pToken", token);
+                localStorage.setItem("provider_role", role);
+                localStorage.setItem("provider_name", name);
+                localStorage.setItem("provider_id", id);
+                window.location.href = `http://localhost:5173/provider/dashboard?token=${token}`;
+                return;
+            }
 
             localStorage.setItem("user_token", token);
             localStorage.setItem("user_role", role);
@@ -158,6 +168,16 @@ const LoginPopup = ({ setShowLogin }) => {
                                     onChange={() => setLoginType("admin")}
                                 />
                                 Admin
+                            </label>
+
+                            <label>
+                                <input
+                                    type="radio"
+                                    value="provider"
+                                    checked={loginType === "provider"}
+                                    onChange={() => setLoginType("provider")}
+                                />
+                                Provider
                             </label>
                         </div>
                     )}
