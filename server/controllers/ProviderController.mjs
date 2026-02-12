@@ -1,10 +1,9 @@
 import mongoose from "mongoose";
 import Provider from "../models/ProviderModel.mjs";
 import bcrypt from "bcrypt";
-
+import jwt from 'jsonwebtoken';
 import validator from "validator";
 import crypto from 'crypto';
-
 
 
 
@@ -69,7 +68,49 @@ export const addProvider = async (req, res) => {
     }
 };
 
+// LOGIN provider
+export const loginProvider = async (req, res) => {
+    const { email, password } = req.body;
 
+    try {
+
+        const provider = await Provider.findOne({ email });
+
+        if (!provider) {
+            return res.json({ success: false, message: "Invalid email or password" });
+        }
+
+
+        if (!provider.available) {
+            return res.json({ success: false, message: "Account is deactivated" });
+        }
+
+        const isMatch = await bcrypt.compare(password, provider.password);
+        if (!isMatch) {
+            return res.json({ success: false, message: "Invalid email or password" });
+        }
+
+        // create tokon
+        const token = jwt.sign(
+            { id: provider._id, role: "provider" },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
+
+
+        res.json({
+            success: true,
+            token,
+            role: "provider",
+            name: provider.name,
+            id: provider._id,
+        });
+
+    } catch (error) {
+        console.error("Login error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
 
 export const listProviders = async (req, res) => {
     try {
@@ -82,7 +123,8 @@ export const listProviders = async (req, res) => {
         console.error(err);
         res.status(500).json({ success: false, message: err.message });
     }
-};
+}
+
 
 
 
@@ -175,7 +217,7 @@ export const toggleProviderStatus = async (req, res) => {
 // start 
 export const startBooking = async (req, res) => {
     try {
-        const providerId = req.user.id; 
+        const providerId = req.user.id;
         const { bookingId } = req.params;
 
         const booking = await Booking.findById(bookingId);
@@ -222,7 +264,7 @@ export const endBooking = async (req, res) => {
         booking.endedAt = new Date();
 
         // Calculate hours worked
-        const hoursWorked = (booking.endedAt - booking.startedAt) / 3600000; 
+        const hoursWorked = (booking.endedAt - booking.startedAt) / 3600000;
         const finalPrice = hoursWorked * booking.pricePerHour;
 
         booking.finalPrice = finalPrice;

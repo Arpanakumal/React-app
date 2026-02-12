@@ -2,7 +2,7 @@ import express from "express";
 import multer from "multer";
 import authAdmin from "../middleware/authAdmin.mjs";
 import authmiddleware from "../middleware/authMiddleware.mjs";
-import { addProvider, listProviders, updateProvider, toggleProviderStatus ,startBooking,endBooking} from "../controllers/ProviderController.mjs";
+import { addProvider,loginProvider, listProviders, updateProvider, toggleProviderStatus ,startBooking,endBooking} from "../controllers/ProviderController.mjs";
 import Provider from "../models/ProviderModel.mjs"; 
 
 const providerRouter = express.Router();
@@ -16,7 +16,11 @@ const upload = multer({ storage });
 // Add provider (admin only)
 providerRouter.post("/add", authAdmin, upload.single("image"), addProvider);
 
-// List all providers
+//login
+providerRouter.post("/login",loginProvider)
+
+
+// List 
 providerRouter.get('/', listProviders);
 
 // Provider details
@@ -38,6 +42,7 @@ providerRouter.get('/:id', async (req, res) => {
 
 
 providerRouter.put("/:id", upload.single("image"), updateProvider);
+providerRouter.put('/update/:id', updateProvider);
 
 providerRouter.patch("/:id/toggle", toggleProviderStatus);
 
