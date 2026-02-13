@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const providerSchema = new mongoose.Schema({
     name: { type: String, required: true },
-    phone: {type:Number, required:true},
+    phone: { type: Number, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     image: { type: String },
@@ -10,6 +10,7 @@ const providerSchema = new mongoose.Schema({
     defaultCommissionPercent: { type: Number, default: 10 },
     available: { type: Boolean, default: true },
 }, { timestamps: true });
+
 
 const Provider = mongoose.models.Provider || mongoose.model("Provider", providerSchema);
 export default Provider;

@@ -128,6 +128,26 @@ export const listProviders = async (req, res) => {
 
 
 
+export const getProviderById = async (req, res) => {
+    try {
+        const provider = await Provider.findById(req.params.id)
+            .select("-password") 
+            .populate("servicesOffered", "name"); 
+
+        if (!provider) {
+            return res.status(404).json({ success: false, message: "Provider not found" });
+        }
+
+        res.json({ success: true, provider });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+
+
+
 //update
 export const updateProvider = async (req, res) => {
     const { id } = req.params;
