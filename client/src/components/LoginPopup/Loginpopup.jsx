@@ -27,25 +27,26 @@ const LoginPopup = ({ setShowLogin }) => {
 
     const togglePassword = () => setShowPassword((prev) => !prev);
 
+    const handleRedirect = (type) => {
+        if (type === "admin") {
+            window.location.href = "http://localhost:5173/login";
+        } else if (type === "provider") {
+            window.location.href = "http://localhost:5173/provider/login";
+        } else {
+            setLoginType("user");
+        }
+    };
+
     const onSubmit = async (e) => {
         e.preventDefault();
 
+
+        if (loginType !== "user") return;
+
         try {
-            let url = "";
-
-
-            if (mode === "signup") {
-                url = `${process.env.REACT_APP_API_URL}/api/user/register`;
-            } else {
-                if (loginType === "admin") {
-                    url = `${process.env.REACT_APP_API_URL}/api/admin/login`;
-                } else if (loginType === "provider") {
-                    url = `${process.env.REACT_APP_API_URL}/api/provider/login`;
-                } else {
-                    url = `${process.env.REACT_APP_API_URL}/api/user/login`;
-                }
-            }
-
+            let url = mode === "signup"
+                ? `${process.env.REACT_APP_API_URL}/api/user/register`
+                : `${process.env.REACT_APP_API_URL}/api/user/login`;
 
             const response = await axios.post(url, data);
 
@@ -55,22 +56,6 @@ const LoginPopup = ({ setShowLogin }) => {
             }
 
             const { token, role, name, id } = response.data;
-
-
-            if (role === "admin") {
-                localStorage.setItem("token", token);
-                window.location.href = `http://localhost:5173/dashboard?token=${token}`;
-                return;
-            }
-
-            if (role === "provider") {
-                localStorage.setItem("pToken", token);
-                localStorage.setItem("provider_role", role);
-                localStorage.setItem("provider_name", name);
-                localStorage.setItem("provider_id", id);
-                window.location.href = `http://localhost:5173/provider/dashboard?token=${token}`;
-                return;
-            }
 
             localStorage.setItem("user_token", token);
             localStorage.setItem("user_role", role);
@@ -94,7 +79,6 @@ const LoginPopup = ({ setShowLogin }) => {
     return (
         <div className="login-popup">
             <form className="login-popup-container" onSubmit={onSubmit}>
-
                 <div className="login-popup-title">
                     <h2>{mode === "signup" ? "Sign Up" : "Login"}</h2>
                     <img
@@ -104,105 +88,93 @@ const LoginPopup = ({ setShowLogin }) => {
                     />
                 </div>
 
-
-                <div className="login-popup-inputs">
-                    {mode === "signup" && (
-                        <input
-                            type="text"
-                            name="name"
-                            placeholder="Your Name"
-                            value={data.name}
-                            onChange={onChangeHandler}
-                            required
-                        />
-                    )}
-
-                    <input
-                        type="email"
-                        name="email"
-                        placeholder="Your Email"
-                        value={data.email}
-                        onChange={onChangeHandler}
-                        required
-                    />
-
-                    <div className="password-wrapper">
-                        <input
-                            type={showPassword ? "text" : "password"}
-                            name="password"
-                            placeholder="Password"
-                            value={data.password}
-                            onChange={onChangeHandler}
-                            required
-                        />
-                        <span className="eye-icon" onClick={togglePassword}>
-                            <img
-                                src={
-                                    showPassword
-                                        ? assets.eyeOpen
-                                        : assets.eyeClosed
-                                }
-                                alt="toggle"
+                {loginType === "user" && (
+                    <div className="login-popup-inputs">
+                        {mode === "signup" && (
+                            <input
+                                type="text"
+                                name="name"
+                                placeholder="Your Name"
+                                value={data.name}
+                                onChange={onChangeHandler}
+                                required
                             />
-                        </span>
-                    </div>
+                        )}
 
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="Your Email"
+                            value={data.email}
+                            onChange={onChangeHandler}
+                            required
+                        />
 
-                    {mode === "login" && (
-                        <div className="login-type">
-                            <label>
-                                <input
-                                    type="radio"
-                                    value="user"
-                                    checked={loginType === "user"}
-                                    onChange={() => setLoginType("user")}
+                        <div className="password-wrapper">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                name="password"
+                                placeholder="Password"
+                                value={data.password}
+                                onChange={onChangeHandler}
+                                required
+                            />
+                            <span className="eye-icon" onClick={togglePassword}>
+                                <img
+                                    src={showPassword ? assets.eyeOpen : assets.eyeClosed}
+                                    alt="toggle"
                                 />
-                                User
-                            </label>
-
-                            <label>
-                                <input
-                                    type="radio"
-                                    value="admin"
-                                    checked={loginType === "admin"}
-                                    onChange={() => setLoginType("admin")}
-                                />
-                                Admin
-                            </label>
-
-                            <label>
-                                <input
-                                    type="radio"
-                                    value="provider"
-                                    checked={loginType === "provider"}
-                                    onChange={() => setLoginType("provider")}
-                                />
-                                Provider
-                            </label>
+                            </span>
                         </div>
-                    )}
+                    </div>
+                )}
+
+                <div className="login-type">
+                    <label>
+                        <input
+                            type="radio"
+                            value="user"
+                            checked={loginType === "user"}
+                            onChange={() => handleRedirect("user")}
+                        />
+                        User
+                    </label>
+                    <label>
+                        <input
+                            type="radio"
+                            value="admin"
+                            checked={loginType === "admin"}
+                            onChange={() => handleRedirect("admin")}
+                        />
+                        Admin
+                    </label>
+                    <label>
+                        <input
+                            type="radio"
+                            value="provider"
+                            checked={loginType === "provider"}
+                            onChange={() => handleRedirect("provider")}
+                        />
+                        Provider
+                    </label>
                 </div>
 
-
-                <button type="submit">
-                    {mode === "signup" ? "Create Account" : "Login"}
-                </button>
-
+                {loginType === "user" && (
+                    <button type="submit">
+                        {mode === "signup" ? "Create Account" : "Login"}
+                    </button>
+                )}
 
                 <div className="login-toggle">
                     {mode === "signup" ? (
                         <p>
                             Already have an account?{" "}
-                            <span onClick={() => setMode("login")}>
-                                Login
-                            </span>
+                            <span onClick={() => setMode("login")}>Login</span>
                         </p>
                     ) : (
                         <p>
                             Don’t have an account?{" "}
-                            <span onClick={() => setMode("signup")}>
-                                Sign Up
-                            </span>
+                            <span onClick={() => setMode("signup")}>Sign Up</span>
                         </p>
                     )}
                 </div>
