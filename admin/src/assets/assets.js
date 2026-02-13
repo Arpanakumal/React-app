@@ -36,11 +36,15 @@ import list from './list.png';
 import appointment from './appointment.jpg';
 import message from './message.webp';
 import upload from './upload.jpg'
+import eyeClosed from './closed.png';
+import eyeOpen from './open.webp';
 
 
 
 
 export {
+    eyeClosed,
+    eyeOpen,
     upload,
     message,
     appointment,

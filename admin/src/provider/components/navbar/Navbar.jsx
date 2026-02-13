@@ -1,44 +1,37 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './navbar.css';
-import { logo, message, profile } from '../../../assets/assets';
+import { logo, message } from '../../../assets/assets';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { jwtDecode } from 'jwt-decode';
 
 const Navbar = () => {
-    const [unreadMessages, setUnreadMessages] = useState(0);
     const [showDropdown, setShowDropdown] = useState(false);
+    const [profileImage, setProfileImage] = useState(null);
     const API_URL = import.meta.env.VITE_API_URL;
-    const navigate = useNavigate();
     const dropdownRef = useRef(null);
 
-
     useEffect(() => {
-        const fetchUnreadMessages = async () => {
+        const fetchProviderProfile = async () => {
             try {
-                const token = localStorage.getItem("token");
+                const token = localStorage.getItem("pToken");
                 if (!token) return;
 
-                const res = await axios.get(`${API_URL}/api/messages/unread-count`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const decoded = jwtDecode(token);
+                const providerId = decoded.id;
 
-                if (res.data.success) {
-                    setUnreadMessages(res.data.count);
-                } else {
-                    console.warn("Failed to fetch unread messages:", res.data.message);
+                const res = await axios.get(`${API_URL}/api/provider/${providerId}`);
+                if (res.data.success && res.data.provider) {
+                    setProfileImage(res.data.provider.image);
                 }
             } catch (err) {
-                console.error("Error fetching unread messages:", err);
-                toast.error("Could not fetch unread messages");
+                console.error("Error fetching provider profile:", err);
             }
         };
 
-        fetchUnreadMessages();
-        const interval = setInterval(fetchUnreadMessages, 5000);
-        return () => clearInterval(interval);
-    }, [API_URL]);
-
+        fetchProviderProfile();
+    }, []);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -51,11 +44,12 @@ const Navbar = () => {
     }, []);
 
     const handleLogout = () => {
-        localStorage.removeItem("token");
-        navigate("http://localhost:3000");
+        localStorage.removeItem("pToken");
+        localStorage.removeItem("provider_role");
+        localStorage.removeItem("provider_name");
+        localStorage.removeItem("provider_id");
+        window.location.href = "http://localhost:3000";
     };
-
-
 
     return (
         <div className="navbar">
@@ -63,26 +57,21 @@ const Navbar = () => {
 
             <div className="navbar-right">
 
-                <Link to="/messages" className="message-link">
-                    <div className="message-container">
-                        <img src={message} alt="Messages" className="message" />
-                        {unreadMessages > 0 && (
-                            <span className="notif-badge">{unreadMessages}</span>
-                        )}
-                    </div>
-                </Link>
-
-
                 <div className="profile-wrapper" ref={dropdownRef}>
                     <img
-                        src={profile}
+                        src={profileImage ? `${API_URL}${profileImage}` : '/default-profile.png'}
                         alt="Profile"
                         className="profile"
                         onClick={() => setShowDropdown(prev => !prev)}
                     />
+
+
                     {showDropdown && (
                         <div className="profile-dropdown">
                             <button onClick={handleLogout}>Logout</button>
+                            <Link to="/provider/profile">
+                                <button>Profile</button>
+                            </Link>
                         </div>
                     )}
                 </div>

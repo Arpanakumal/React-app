@@ -5,6 +5,7 @@ import { ToastContainer } from "react-toastify";
 // Layouts
 import AdminLayout from "../layouts/AdminLayout";
 import ProviderLayout from "../layouts/ProviderLayout";
+import AdminProtectRoute from "./routes/AdminProtectRoute";
 
 // Admin Pages
 import AdminDashboard from "./pages/Dashboard/Dashboard";
@@ -19,29 +20,37 @@ import ProviderList from "./pages/Providers/ProviderList";
 import Detail from "./pages/Providers/Detail";
 import EditProvider from "./pages/Providers/Edit";
 import Messages from "./pages/Messages/Message";
+import Login from "./pages/login/AdminLogin";
+
 
 // Provider Pages
 import ProviderDashboard from "./provider/pages/Dashboard/Dashboard";
+import Providerlogin from "./provider/pages/login/Providerlogin";
+import ProviderBooking from "./provider/pages/Bookings/Booking";
+import ProviderMessage from "./provider/pages/message/Message";
+import ProviderProtectRoute from "./routes/ProviderProtectRoute";
+
 
 const App = () => {
   const url = "http://localhost:3001";
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const tokenFromFrontend = urlParams.get("token");
-
-    if (tokenFromFrontend) {
-      localStorage.setItem("token", tokenFromFrontend);
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, []);
 
   return (
     <>
       <ToastContainer />
       <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/provider/login" element={<Providerlogin />} />
+
         {/* Admin Routes */}
-        <Route element={<AdminLayout />}>
+        <Route
+          element={
+            <AdminProtectRoute>
+              <AdminLayout />
+            </AdminProtectRoute>
+          }
+        >
+
           <Route path="/dashboard" element={<AdminDashboard url={url} />} />
           <Route path="/services" element={<Services url={url} />} />
           <Route path="/services/list" element={<List url={url} />} />
@@ -54,11 +63,22 @@ const App = () => {
           <Route path="/providers/providerlist" element={<ProviderList url={url} />} />
           <Route path="/providers/detail/:id" element={<Detail url={url} />} />
           <Route path="/providers/update/:id" element={<EditProvider url={url} />} />
+
+
         </Route>
 
         {/* Provider Routes */}
-        <Route element={<ProviderLayout />}>
+        <Route
+          element={
+            <ProviderProtectRoute>
+              <ProviderLayout />
+            </ProviderProtectRoute>
+          }
+        >
           <Route path="/provider/dashboard" element={<ProviderDashboard url={url} />} />
+          <Route path="/provider/booking" element={<ProviderBooking url={url} />} />
+          <Route path="/provider/message" element={<ProviderMessage url={url} />} />
+
 
         </Route>
       </Routes>

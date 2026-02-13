@@ -1,6 +1,6 @@
 import React from 'react'
 
-const ProviderBooking= () => {
+const ProviderMessage = () => {
     return (
         <div>
 
@@ -8,4 +8,4 @@ const ProviderBooking= () => {
     )
 }
 
-export default ProviderBooking
+export default ProviderMessage

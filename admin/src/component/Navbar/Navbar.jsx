@@ -51,8 +51,13 @@ const Navbar = () => {
     }, []);
 
     const handleLogout = () => {
-        localStorage.removeItem("token");
-        navigate("http://localhost:3000");
+
+        localStorage.removeItem("token"); 
+        localStorage.removeItem("role");  
+        localStorage.removeItem("name");  
+
+
+        window.location.href = "http://localhost:3000";
     };
 
 
@@ -83,6 +88,7 @@ const Navbar = () => {
                     {showDropdown && (
                         <div className="profile-dropdown">
                             <button onClick={handleLogout}>Logout</button>
+
                         </div>
                     )}
                 </div>

@@ -10,12 +10,12 @@ const Sidebar = () => {
         <div className="sidebar">
             <nav className="sidebar-nav">
 
-                <NavLink to="/dashboard" className="sidebar-link">
+                <NavLink to="/provider/dashboard" className="sidebar-link">
                     Dashboard
                 </NavLink>
 
 
-                <NavLink to="/bookings" className="sidebar-link">
+                <NavLink to="/provider/booking" className="sidebar-link">
                     Bookings
                 </NavLink>
 

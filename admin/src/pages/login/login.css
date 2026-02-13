@@ -1,0 +1,118 @@
+
+.login-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+
+.login-popup-container {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+
+.login-popup-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.login-popup-title h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.login-popup-title img {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+}
+
+
+.login-popup-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.login-popup-inputs input {
+    padding: 0.75rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+}
+
+.login-popup-inputs input:focus {
+    border-color: #04154a;
+}
+
+
+.login-popup-container button {
+    padding: 0.75rem 1rem;
+    background-color: #04154a;
+    color: white;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.login-popup-container button:hover {
+    background-color: #02103b;
+}
+
+.login-toggle {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.login-toggle span {
+    color: #04154a;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-wrapper input {
+    flex: 1;
+    padding-right: 40px;
+
+}
+
+.eye-icon {
+    position: absolute;
+    right: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.eye-icon img {
+    width: 20px;
+    height: 20px;
+}
