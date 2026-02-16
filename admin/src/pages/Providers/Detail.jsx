@@ -19,12 +19,12 @@ const Detail = ({ url }) => {
                 const res = await axios.get(`${url}/api/provider/${id}`, {
                     headers: { atoken: token },
                 });
-
                 if (res.data.success) {
-                    setProvider(res.data.data);
+                    setProvider(res.data.provider); 
                 } else {
                     toast.error("Failed to fetch provider details");
                 }
+
             } catch (err) {
                 console.error("AxiosError:", err);
                 toast.error("Server error while fetching provider");

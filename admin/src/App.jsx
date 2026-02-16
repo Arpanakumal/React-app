@@ -29,6 +29,7 @@ import Providerlogin from "./provider/pages/login/Providerlogin";
 import ProviderBooking from "./provider/pages/Bookings/Booking";
 import ProviderMessage from "./provider/pages/message/Message";
 import ProviderProtectRoute from "./routes/ProviderProtectRoute";
+import Bookinghistory from "./provider/pages/Bookings/history";
 
 
 const App = () => {
@@ -76,8 +77,9 @@ const App = () => {
           }
         >
           <Route path="/provider/dashboard" element={<ProviderDashboard url={url} />} />
-          <Route path="/provider/booking" element={<ProviderBooking url={url} />} />
+          <Route path="/provider/booking" element={<ProviderBooking />} />
           <Route path="/provider/message" element={<ProviderMessage url={url} />} />
+          <Route path="/provider/history" element={<Bookinghistory url={url} />} />
 
 
         </Route>
