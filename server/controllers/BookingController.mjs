@@ -51,7 +51,8 @@ export const createBooking = async (req, res) => {
             serviceId,
             providerCount: providerCountNumber,
             customer: {
-                name: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+                name: user.name,
+
                 email: user.email,
                 phone: user.phone
             },
@@ -137,28 +138,64 @@ export const listBookings = async (req, res) => {
 };
 
 // bookings for provider dashboard
+// bookings for provider panel
 export const listBookingsForProvider = async (req, res) => {
     try {
         const providerId = req.user.id;
-        const provider = await Provider.findById(providerId)
-            .populate({ path: "servicesOffered", select: "_id", strictPopulate: false });
 
-        if (!provider) return res.status(404).json({ success: false, message: "Provider not found" });
+        // fetch provider and their offered services
+        const provider = await Provider.findById(providerId).select("servicesOffered");
+        if (!provider) {
+            return res.status(404).json({ success: false, message: "Provider not found" });
+        }
 
+        // get all bookings for services they offer, regardless of status
         const bookings = await Booking.find({
-            serviceId: { $in: provider.servicesOffered.map(s => s._id) },
-            status: "pending",
+            serviceId: { $in: provider.servicesOffered },
+            // optional: show pending + in-progress, skip completed/cancelled
+            status: { $in: ["pending", "in-progress"] }
         })
             .sort({ createdAt: -1 })
-            .populate("serviceId", "name image category price_info")
-            .populate("userId", "firstName lastName email phone");
+            .populate("serviceId", "name image category price_info commissionPercent")
+            .populate("userId", "name email phone");
 
-        res.json({ success: true, data: bookings });
+        // format for frontend
+        const formattedBookings = bookings.map(b => ({
+            _id: b._id,
+            username: b.username,
+            providerId: b.providerId,
+            status: b.status,
+            appointmentDate: b.appointmentDate,
+            appointmentTime: b.appointmentTime,
+            notes: b.notes,
+            pricePerHour: b.pricePerHour,
+            providerCount: b.providerCount,
+            finalPrice: b.finalPrice,
+            commissionAmount: b.commissionAmount,
+            providerEarning: b.providerEarning,
+            customer: b.userId ? {
+                name: b.userId.name,
+                email: b.userId.email,
+                phone: b.userId.phone
+            } : {},
+            service: b.serviceId ? {
+                id: b.serviceId._id,
+                name: b.serviceId.name,
+                category: b.serviceId.category,
+                image: b.serviceId.image,
+                price: b.serviceId.price_info,
+                commissionPercent: b.serviceId.commissionPercent
+            } : null
+        }));
+
+        res.json({ success: true, data: formattedBookings });
+
     } catch (err) {
         console.error("Error fetching provider bookings:", err);
-        res.status(500).json({ success: false, message: err.message });
+        res.status(500).json({ success: false, message: "Server error" });
     }
 };
+
 
 
 // Get booking by ID
