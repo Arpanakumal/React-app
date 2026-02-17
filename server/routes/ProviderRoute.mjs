@@ -9,6 +9,7 @@ import {
     getProviderById,
     updateProvider,
     toggleProviderStatus,
+    respondToBooking,
     startBooking,
     endBooking
 } from "../controllers/ProviderController.mjs";
@@ -35,7 +36,10 @@ providerRouter.put("/:id", upload.single("image"), updateProvider);
 
 providerRouter.patch("/:id/toggle", toggleProviderStatus);
 
-
+providerRouter.patch("/booking/:bookingId/respond",
+    authmiddleware,
+    respondToBooking
+);
 providerRouter.patch("/booking/:bookingId/start", authmiddleware, startBooking);
 providerRouter.patch("/booking/:bookingId/end", authmiddleware, endBooking);
 

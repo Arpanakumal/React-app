@@ -1,6 +1,7 @@
 import Booking from "../models/BookingModel.mjs";
 import Service from "../models/ServiceModel.mjs";
 import Provider from "../models/ProviderModel.mjs";
+import validator from "validator";
 import User from "../models/UserModel.mjs";
 
 
@@ -16,23 +17,35 @@ export const createBooking = async (req, res) => {
             address,
             notes,
             providerCount,
-            username
+            username,
+            phone
         } = req.body;
 
-
-        if (!serviceId || !appointmentDate || !appointmentTime || !username) {
+        // Required fields validation
+        if (!serviceId || !appointmentDate || !appointmentTime || !username || !phone) {
             return res.status(400).json({
                 success: false,
-                message: "Missing required booking details"
+                message: "Missing required booking details (serviceId, date, time, username, phone)"
             });
         }
 
-        const user = await User.findById(userId);
-        const service = await Service.findById(serviceId);
+        // Validate phone (digits + optional + sign, 7–15 digits)
+        const normalizedPhone = phone.replace(/\s|-/g, ""); // remove spaces and dashes
+        if (!/^\+?\d{7,15}$/.test(normalizedPhone)) {
+            return res.status(400).json({ success: false, message: "Invalid phone number format" });
+        }
 
-        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+        // Validate email if provided
+        const email = req.user.email || "";
+        if (email && !validator.isEmail(email)) {
+            return res.status(400).json({ success: false, message: "Invalid email format" });
+        }
+
+        // Fetch service
+        const service = await Service.findById(serviceId);
         if (!service) return res.status(404).json({ success: false, message: "Service not found" });
 
+        // Pricing calculations
         const pricePerHour = Number(service.price_info);
         if (isNaN(pricePerHour)) return res.status(400).json({ success: false, message: "Invalid service price" });
 
@@ -43,7 +56,7 @@ export const createBooking = async (req, res) => {
         const commissionAmount = (finalPrice * commissionPercent) / 100;
         const providerEarning = finalPrice - commissionAmount;
 
-
+        // Create booking
         const booking = await Booking.create({
             userId,
             username: username.trim(),
@@ -51,11 +64,11 @@ export const createBooking = async (req, res) => {
             serviceId,
             providerCount: providerCountNumber,
             customer: {
-                name: user.name,
-
-                email: user.email,
-                phone: user.phone
+                name: username.trim(),
+                email: email,
+                phone: normalizedPhone
             },
+            phone: normalizedPhone,
             address,
             appointmentDate,
             appointmentTime,
@@ -90,7 +103,7 @@ export const listBookings = async (req, res) => {
             .sort({ createdAt: -1 })
             .populate("serviceId", "name image category price_info commissionPercent")
             .populate("providerId", "name image")
-            .populate("userId", "firstName lastName email phone");
+            .populate("userId", "firstName lastName email");
 
         if (!bookings.length) {
             return res.json({ success: true, data: [], message: "No bookings found" });
@@ -106,6 +119,7 @@ export const listBookings = async (req, res) => {
                 username: b.username,
                 providerCount: b.providerCount || 1,
                 customer: b.customer || {},
+                phone: b.phone || (b.customer?.phone || ""),
                 address: b.address || {},
                 appointmentDate: b.appointmentDate,
                 appointmentTime: b.appointmentTime,
@@ -137,29 +151,22 @@ export const listBookings = async (req, res) => {
     }
 };
 
-// bookings for provider dashboard
-// bookings for provider panel
+// List bookings for provider
 export const listBookingsForProvider = async (req, res) => {
     try {
         const providerId = req.user.id;
 
-        // fetch provider and their offered services
-        const provider = await Provider.findById(providerId).select("servicesOffered");
-        if (!provider) {
-            return res.status(404).json({ success: false, message: "Provider not found" });
-        }
+        const provider = await Provider.findById(providerId).select("servicesOffered name");
+        if (!provider) return res.status(404).json({ success: false, message: "Provider not found" });
 
-        // get all bookings for services they offer, regardless of status
         const bookings = await Booking.find({
             serviceId: { $in: provider.servicesOffered },
-            // optional: show pending + in-progress, skip completed/cancelled
-            status: { $in: ["pending", "in-progress"] }
+            status: { $in: ["pending", "accepted", "in-progress"] }
         })
             .sort({ createdAt: -1 })
             .populate("serviceId", "name image category price_info commissionPercent")
-            .populate("userId", "name email phone");
+            .populate("userId", "name email");
 
-        // format for frontend
         const formattedBookings = bookings.map(b => ({
             _id: b._id,
             username: b.username,
@@ -173,10 +180,11 @@ export const listBookingsForProvider = async (req, res) => {
             finalPrice: b.finalPrice,
             commissionAmount: b.commissionAmount,
             providerEarning: b.providerEarning,
+            phone: b.phone || (b.customer?.phone || ""),
             customer: b.userId ? {
                 name: b.userId.name,
                 email: b.userId.email,
-                phone: b.userId.phone
+                phone: b.phone || (b.customer?.phone || "")
             } : {},
             service: b.serviceId ? {
                 id: b.serviceId._id,
@@ -185,11 +193,11 @@ export const listBookingsForProvider = async (req, res) => {
                 image: b.serviceId.image,
                 price: b.serviceId.price_info,
                 commissionPercent: b.serviceId.commissionPercent
-            } : null
+            } : null,
+            canRespond: !b.providerId || b.providerId.toString() === providerId
         }));
 
         res.json({ success: true, data: formattedBookings });
-
     } catch (err) {
         console.error("Error fetching provider bookings:", err);
         res.status(500).json({ success: false, message: "Server error" });
@@ -197,14 +205,12 @@ export const listBookingsForProvider = async (req, res) => {
 };
 
 
-
-// Get booking by ID
 export const getBookingById = async (req, res) => {
     try {
         const booking = await Booking.findById(req.params.id)
             .populate("serviceId", "name category image price_info commissionPercent")
             .populate("providerId", "name image")
-            .populate("userId", "firstName lastName email phone");
+            .populate("userId", "firstName lastName email");
 
         if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
 
@@ -225,6 +231,7 @@ export const getBookingById = async (req, res) => {
                 commissionPercent: booking.serviceId.commissionPercent
             } : null,
             customer: booking.customer,
+            phone: booking.phone || (booking.customer?.phone || ""),
             address: booking.address,
             appointmentDate: booking.appointmentDate,
             appointmentTime: booking.appointmentTime,

@@ -3,13 +3,9 @@ import mongoose from "mongoose";
 const bookingSchema = new mongoose.Schema(
     {
         userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-        username: {
-            type: String,
-            required: true
-        },
-        providerId: { type: mongoose.Schema.Types.ObjectId, ref: "Provider" },
-        serviceId: { type: mongoose.Schema.Types.ObjectId,   ref:"Service",required:true },
-
+        username: { type: String, required: true },
+        providerId: { type: mongoose.Schema.Types.ObjectId, ref: "Provider", default: null },
+        serviceId: { type: mongoose.Schema.Types.ObjectId, ref: "Service", required: true },
 
         providerCount: { type: Number, default: 1 },
 
@@ -19,7 +15,6 @@ const bookingSchema = new mongoose.Schema(
             phone: String
         },
 
-
         address: {
             street: String,
             city: String,
@@ -28,28 +23,24 @@ const bookingSchema = new mongoose.Schema(
             country: String
         },
 
-
         appointmentDate: { type: Date, required: true },
         appointmentTime: { type: String, required: true },
-
-
         notes: String,
 
-
         pricePerHour: { type: Number, required: true },
-
-
         startedAt: { type: Date },
         endedAt: { type: Date },
 
+        finalPrice: { type: Number, default: 0 },
+        commissionPercent: { type: Number, default: 10 },
+        commissionAmount: { type: Number, default: 0 },
+        providerEarning: { type: Number, default: 0 },
 
-    finalPrice: { type: Number, default: 0 },
-    commissionPercent: { type: Number, default: 10 },
-    commissionAmount: { type: Number, default: 0 },
-    providerEarning: { type: Number, default: 0 },
-
-
-        status: { type: String, enum: ["pending", "in-progress", "completed", "cancelled"], default: "pending" },
+        status: {
+            type: String,
+            enum: ["pending", "accepted", "in-progress", "completed", "cancelled"],
+            default: "pending"
+        },
     },
     { timestamps: true }
 );

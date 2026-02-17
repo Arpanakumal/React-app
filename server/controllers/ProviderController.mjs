@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Provider from "../models/ProviderModel.mjs";
+import Booking from "../models/BookingModel.mjs";
 import bcrypt from "bcrypt";
 import jwt from 'jsonwebtoken';
 import validator from "validator";
@@ -233,23 +234,93 @@ export const toggleProviderStatus = async (req, res) => {
     }
 };
 
+export const respondToBooking = async (req, res) => {
+    try {
+        const providerId = req.user.id;
+        const { bookingId } = req.params;
+        const { action } = req.body;
 
-// start 
+        if (!["accept", "reject"].includes(action)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid action"
+            });
+        }
+
+
+        const booking = await Booking.findOne({
+            _id: bookingId,
+            status: "pending",
+            providerId: null
+        });
+
+        if (!booking) {
+            return res.status(400).json({
+                success: false,
+                message: "Booking already assigned or processed"
+            });
+        }
+
+
+        const provider = await Provider.findById(providerId);
+        if (!provider) {
+            return res.status(404).json({ success: false, message: "Provider not found" });
+        }
+
+
+        const serviceAllowed = provider.servicesOffered.some(
+            (id) => id.toString() === booking.serviceId.toString()
+        );
+
+        if (!serviceAllowed) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not allowed to accept this service"
+            });
+        }
+
+        if (action === "accept") {
+            booking.providerId = providerId;
+            booking.status = "accepted";
+        } else {
+            booking.status = "cancelled";
+        }
+
+        await booking.save();
+
+        res.json({
+            success: true,
+            message: `Booking ${action}ed successfully`,
+            data: booking
+        });
+
+    } catch (err) {
+        console.error("RespondToBooking Error:", err);
+        res.status(500).json({
+            success: false,
+            message: "Server error"
+        });
+    }
+};
+
+
+
+
+
 export const startBooking = async (req, res) => {
     try {
         const providerId = req.user.id;
         const { bookingId } = req.params;
 
         const booking = await Booking.findById(bookingId);
-        if (!booking)
-            return res.status(404).json({ success: false, message: "Booking not found" });
+        if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
 
         if (booking.providerId.toString() !== providerId) {
             return res.status(403).json({ success: false, message: "Not authorized for this booking" });
         }
 
-        if (booking.status !== "pending") {
-            return res.status(400).json({ success: false, message: "Booking already started or completed" });
+        if (booking.status !== "accepted") {
+            return res.status(400).json({ success: false, message: "Booking must be accepted first" });
         }
 
         booking.startedAt = new Date();
@@ -263,15 +334,14 @@ export const startBooking = async (req, res) => {
     }
 };
 
-// end/completed
+
 export const endBooking = async (req, res) => {
     try {
         const providerId = req.user.id;
         const { bookingId } = req.params;
 
         const booking = await Booking.findById(bookingId);
-        if (!booking)
-            return res.status(404).json({ success: false, message: "Booking not found" });
+        if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
 
         if (booking.providerId.toString() !== providerId) {
             return res.status(403).json({ success: false, message: "Not authorized for this booking" });
@@ -283,9 +353,8 @@ export const endBooking = async (req, res) => {
 
         booking.endedAt = new Date();
 
-        // Calculate hours worked
-        const hoursWorked = (booking.endedAt - booking.startedAt) / 3600000;
-        const finalPrice = hoursWorked * booking.pricePerHour;
+        const hoursWorked = (booking.endedAt - booking.startedAt) / 3600000; // ms → hours
+        const finalPrice = hoursWorked * booking.pricePerHour * (booking.providerCount || 1);
 
         booking.finalPrice = finalPrice;
         booking.commissionAmount = (finalPrice * booking.commissionPercent) / 100;
