@@ -1,58 +1,78 @@
 import React, { useEffect, useState } from "react";
+import './bookings.css';
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const ProviderBooking = () => {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Get API URL from Vite env
+    const navigate = useNavigate();
+
     const API_URL = import.meta.env.VITE_API_URL;
 
-    useEffect(() => {
-        const fetchBookings = async () => {
-            try {
-                setLoading(true);
-                setError(null);
+    // Fetch bookings for provider
+    const fetchBookings = async () => {
+        try {
+            setLoading(true);
+            setError(null);
 
-                // Get token from localStorage
-                const token = localStorage.getItem("pToken");
-                if (!token) {
-                    setError("No token found. Please log in.");
-                    setLoading(false);
-                    return;
-                }
+            const token = localStorage.getItem("pToken");
+            if (!token) throw new Error("No token found. Please log in.");
 
-                const res = await axios.get(`${API_URL}/api/booking/provider`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
+            const res = await axios.get(`${API_URL}/api/booking/provider`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
 
-                if (res.data.success) {
-                    setBookings(res.data.data || []);
-                } else {
-                    setError(res.data.message || "Failed to fetch bookings");
-                }
-            } catch (err) {
-                console.error("Fetch error:", err);
-                setError(err.response?.data?.message || err.message || "Server error");
-            } finally {
-                setLoading(false);
+            if (res.data.success) {
+                setBookings(res.data.data || []);
+            } else {
+                throw new Error(res.data.message || "Failed to fetch bookings");
             }
-        };
+        } catch (err) {
+            setError(err.message || "Server error");
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchBookings();
     }, [API_URL]);
+
+
+    const respondToBooking = async (bookingId, action) => {
+        try {
+            const token = localStorage.getItem("pToken");
+
+            const res = await axios.patch(
+                `${API_URL}/api/provider/booking/${bookingId}/respond`,
+                { action },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            if (res.data.success) {
+                alert(res.data.message);
+                fetchBookings();
+            } else {
+                alert(res.data.message);
+            }
+        } catch (err) {
+            console.error("Booking response error:", err.response?.data || err.message);
+            alert(err.response?.data?.message || "Server error");
+        }
+    };
+
 
     if (loading) return <p>Loading bookings...</p>;
     if (error) return <p style={{ color: "red" }}>Error: {error}</p>;
     if (!bookings.length) return <p>No bookings found.</p>;
 
     return (
-        <div>
+        <div className="provider-booking">
             <h2>Provider Bookings</h2>
-            <table>
+            <table border="1" cellPadding="10">
                 <thead>
                     <tr>
                         <th>Customer</th>
@@ -61,20 +81,52 @@ const ProviderBooking = () => {
                         <th>Time</th>
                         <th>Status</th>
                         <th>Final Price</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {bookings.map((b) => (
-                        <tr key={b._id}>
-                            <td>{b.customer?.name || "N/A"}</td>
-                            <td>{b.service?.name || "N/A"}</td>
-                            <td>{new Date(b.appointmentDate).toLocaleDateString()}</td>
-                            <td>{b.appointmentTime}</td>
-                            <td>{b.status}</td>
-                            <td>{b.finalPrice}</td>
+                        <tr
+                            key={b._id}
+                            onClick={() => navigate(`/provider/bookings/${b._id}`)}
+                        >
+                            <td data-label="Customer">{b.customer?.name || "N/A"}</td>
+                            <td data-label="Service">{b.service?.name || "N/A"}</td>
+                            <td data-label="Date">{new Date(b.appointmentDate).toLocaleDateString()}</td>
+                            <td data-label="Time">{b.appointmentTime}</td>
+                            <td data-label="Status">{b.status}</td>
+                            <td data-label="Final Price">{b.finalPrice || "-"}</td>
+                            <td data-label="Action">
+                                {b.status === "pending" ? (
+                                    <>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                respondToBooking(b._id, "accept");
+                                            }}
+                                        >
+                                            Accept
+                                        </button>
+                                        <button
+                                            className="reject"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                respondToBooking(b._id, "reject");
+                                            }}
+                                        >
+                                            Reject
+                                        </button>
+                                    </>
+                                ) : (
+                                    <span>—</span>
+                                )}
+                            </td>
                         </tr>
                     ))}
                 </tbody>
+
+
+
             </table>
         </div>
     );

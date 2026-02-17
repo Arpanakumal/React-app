@@ -1,0 +1,147 @@
+
+.provider-booking {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+
+.provider-booking h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+
+.provider-booking table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.provider-booking thead {
+    background-color: #3f7ab9;
+    color: #fff;
+}
+
+.provider-booking thead th {
+    padding: 12px;
+    text-align: left;
+}
+
+
+.provider-booking tbody td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+
+.provider-booking tbody tr {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.provider-booking tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+
+.provider-booking button {
+    margin-right: 5px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #fff;
+    background-color: #28a745;
+    transition: background-color 0.2s;
+}
+
+.provider-booking button:hover {
+    background-color: #218838;
+}
+
+.provider-booking button.reject {
+    background-color: #dc3545;
+}
+
+.provider-booking button.reject:hover {
+    background-color: #c82333;
+}
+
+.provider-booking tbody td span {
+    color: #888;
+}
+
+
+.provider-booking p {
+    font-size: 16px;
+    color: #555;
+    margin: 10px 0;
+}
+
+.provider-booking .pagination {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.provider-booking .pagination button {
+    margin: 0 3px;
+    padding: 6px 12px;
+    border: 1px solid #007bff;
+    background-color: #fff;
+    color: #007bff;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.provider-booking .pagination button.active {
+    background-color: #007bff;
+    color: #fff;
+}
+
+@media (max-width: 768px) {
+
+    .provider-booking table,
+    .provider-booking thead,
+    .provider-booking tbody,
+    .provider-booking th,
+    .provider-booking td,
+    .provider-booking tr {
+        display: block;
+        width: 100%;
+    }
+
+    .provider-booking thead {
+        display: none;
+
+    }
+
+    .provider-booking tbody tr {
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 10px;
+        background-color: #fff;
+    }
+
+    .provider-booking tbody td {
+        padding: 8px 0;
+        text-align: right;
+        position: relative;
+    }
+
+    .provider-booking tbody td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        width: 50%;
+        padding-left: 10px;
+        font-weight: bold;
+        text-align: left;
+    }
+
+    .provider-booking tbody td button {
+        margin: 5px 0 0 0;
+        width: 48%;
+    }
+}
