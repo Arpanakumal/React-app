@@ -67,8 +67,8 @@ const BookingDetail = ({ url }) => {
                 <p><strong>Commission %:</strong> {booking.commissionPercent}</p>
                 <p><strong>Commission Amount:</strong> Rs. {booking.commissionAmount}</p>
                 <p><strong>Booking Created:</strong> {new Date(booking.createdAt).toLocaleString()}</p>
-                <p><strong>Service Started:</strong> {booking.startedAt ? new Date(booking.startedAt).toLocaleString() : "Not started"}</p>
-                <p><strong>Service Ended:</strong> {booking.endedAt ? new Date(booking.endedAt).toLocaleString() : "Not ended"}</p>
+                {/* <p><strong>Service Started:</strong> {booking.startedAt ? new Date(booking.startedAt).toLocaleString() : "Not started"}</p>
+                <p><strong>Service Ended:</strong> {booking.endedAt ? new Date(booking.endedAt).toLocaleString() : "Not ended"}</p> */}
                 <p><strong>Provider Earning:</strong> Rs. {booking.providerEarning}</p>
                 <p><strong>Status:</strong> <span className={`status ${booking.status}`}>{booking.status}</span></p>
             </div>

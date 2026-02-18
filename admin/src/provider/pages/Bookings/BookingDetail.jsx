@@ -80,8 +80,8 @@ const BookingDetail= ({ url }) => {
                 <p><strong>Booking Status:</strong> {booking.status}</p>
                 <p><strong>Created At:</strong> {new Date(booking.createdAt).toLocaleString()}</p>
                 <p><strong>Updated At:</strong> {new Date(booking.updatedAt).toLocaleString()}</p>
-                <p><strong>Service Started:</strong> {booking.startedAt ? new Date(booking.startedAt).toLocaleString() : "Not started"}</p>
-                <p><strong>Service Ended:</strong> {booking.endedAt ? new Date(booking.endedAt).toLocaleString() : "Not ended"}</p>
+                {/* <p><strong>Service Started:</strong> {booking.startedAt ? new Date(booking.startedAt).toLocaleString() : "Not started"}</p>
+                <p><strong>Service Ended:</strong> {booking.endedAt ? new Date(booking.endedAt).toLocaleString() : "Not ended"}</p> */}
             </div>
         </div>
     );
