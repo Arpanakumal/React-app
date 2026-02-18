@@ -353,12 +353,18 @@ export const endBooking = async (req, res) => {
 
         booking.endedAt = new Date();
 
-        const hoursWorked = (booking.endedAt - booking.startedAt) / 3600000; // ms → hours
+
+        const hoursWorked = (booking.endedAt - booking.startedAt) / 3600000;
         const finalPrice = hoursWorked * booking.pricePerHour * (booking.providerCount || 1);
+
 
         booking.finalPrice = finalPrice;
         booking.commissionAmount = (finalPrice * booking.commissionPercent) / 100;
         booking.providerEarning = finalPrice - booking.commissionAmount;
+
+        booking.commissionPaid = false;
+
+
         booking.status = "completed";
 
         await booking.save();
@@ -367,5 +373,105 @@ export const endBooking = async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+
+
+export const getDashboardSummary = async (req, res) => {
+    try {
+        const providerId = req.user.id;
+
+        const totalBookings = await Booking.countDocuments({ providerId });
+
+
+        const pendingCommissionsAgg = await Booking.aggregate([
+            {
+                $match: {
+                    providerId: new mongoose.Types.ObjectId(providerId),
+                    status: "completed",
+                    commissionPaid: false
+                }
+            },
+            {
+                $group: { _id: null, totalPending: { $sum: "$commissionAmount" } }
+            }
+        ]);
+
+        const pendingCommission = pendingCommissionsAgg[0]?.totalPending || 0;
+
+        const newRequests = await Booking.countDocuments({ providerId, status: "pending" });
+
+        res.json({
+            success: true,
+            data: { totalBookings, newRequests, pendingCommission }
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+
+
+
+// GET provider commissions
+export const getProviderCommissions = async (req, res) => {
+    try {
+        const providerId = req.user?.id;
+        if (!providerId) return res.status(401).json({ success: false, message: "Unauthorized" });
+
+        const bookings = await Booking.find({ providerId, status: "completed" })
+            .populate("serviceId", "name")
+            .populate("customer", "name")
+            .sort({ endedAt: -1 });
+
+        const formattedBookings = bookings.map(b => {
+            const hoursWorked = b.startedAt && b.endedAt ? (b.endedAt - b.startedAt) / 3600000 : 0;
+
+            return {
+                _id: b._id,
+                service: b.serviceId?.name || "N/A",
+                customerName: b.customer?.name || b.username || "N/A",
+                hoursWorked,
+                finalPrice: b.finalPrice || 0,
+                commissionPercent: b.commissionPercent || 0,
+                commissionAmount: b.commissionAmount || 0,
+                providerEarning: b.providerEarning || 0,
+                commissionPaid: b.commissionPaid || false
+            };
+        });
+
+        res.json({ success: true, data: formattedBookings });
+
+    } catch (err) {
+        console.error("getProviderCommissions Error:", err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+
+
+export const markCommissionPaid = async (req, res) => {
+    try {
+        const providerId = req.user.id;
+        const { bookingId } = req.params;
+
+        const booking = await Booking.findOne({
+            _id: bookingId,
+            providerId,
+            status: "completed"
+        });
+
+        if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
+
+        booking.commissionPaid = true;
+        await booking.save();
+
+        res.json({ success: true, message: "Commission marked as paid", data: booking });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Server error" });
     }
 };

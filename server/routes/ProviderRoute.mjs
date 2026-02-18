@@ -7,6 +7,9 @@ import {
     loginProvider,
     listProviders,
     getProviderById,
+    getDashboardSummary,
+    getProviderCommissions,
+    markCommissionPaid,
     updateProvider,
     toggleProviderStatus,
     respondToBooking,
@@ -16,31 +19,33 @@ import {
 
 const providerRouter = express.Router();
 
+
 const storage = multer.diskStorage({
     destination: "uploads",
     filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname)
 });
 const upload = multer({ storage });
 
-providerRouter.post("/add", authAdmin, upload.single("image"), addProvider);
 
+
+providerRouter.post("/add", authAdmin, upload.single("image"), addProvider);
 
 providerRouter.post("/login", loginProvider);
 
-providerRouter.get("/", listProviders);
 
-providerRouter.get("/:id", getProviderById);
+providerRouter.get("/dashboard-summary", authmiddleware, getDashboardSummary);
+providerRouter.get("/commissions", authmiddleware, getProviderCommissions);
+providerRouter.post("/commissions/:bookingId/paid", authmiddleware, markCommissionPaid);
 
-providerRouter.put("/:id", upload.single("image"), updateProvider);
 
-
-providerRouter.patch("/:id/toggle", toggleProviderStatus);
-
-providerRouter.patch("/booking/:bookingId/respond",
-    authmiddleware,
-    respondToBooking
-);
+providerRouter.patch("/booking/:bookingId/respond", authmiddleware, respondToBooking);
 providerRouter.patch("/booking/:bookingId/start", authmiddleware, startBooking);
 providerRouter.patch("/booking/:bookingId/end", authmiddleware, endBooking);
+
+
+providerRouter.get("/", listProviders);
+providerRouter.get("/:id", getProviderById); 
+providerRouter.put("/:id", upload.single("image"), updateProvider);
+providerRouter.patch("/:id/toggle", toggleProviderStatus);
 
 export default providerRouter;
