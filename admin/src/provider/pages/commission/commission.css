@@ -1,0 +1,151 @@
+.commission-container {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+}
+
+.commission-container h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #333;
+}
+
+
+
+.commission-container {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+}
+
+.commission-container h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #333;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+
+}
+
+.commission-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.commission-table th,
+.commission-table td {
+    padding: 12px 15px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    white-space: nowrap;
+
+}
+
+.commission-table th {
+    background-color: #3777c9;
+    color: white;
+    font-weight: 600;
+}
+
+.commission-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.commission-table tr:hover {
+    background-color: #e0f7fa;
+}
+
+.commission-table button {
+    padding: 6px 12px;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.commission-table button:hover {
+    background-color: #0b7dda;
+}
+
+.commission-table button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+
+@media (max-width: 768px) {
+    .commission-container {
+        padding: 15px;
+        margin: 20px auto;
+    }
+
+    .commission-table th,
+    .commission-table td {
+        padding: 10px 8px;
+        font-size: 14px;
+    }
+
+    .commission-table {
+        min-width: 600px;
+    }
+}
+
+.commission-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.commission-table th,
+.commission-table td {
+    padding: 12px 15px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.commission-table th {
+    background-color: #306ab5;
+    color: white;
+    font-weight: 600;
+}
+
+.commission-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.commission-table tr:hover {
+    background-color: #e0f7fa;
+}
+
+.commission-table button {
+    padding: 6px 12px;
+    background-color: #0a518a;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.commission-table button:hover {
+    background-color: #0b7dda;
+}
+
+.commission-table button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}

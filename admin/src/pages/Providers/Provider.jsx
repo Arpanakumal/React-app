@@ -13,20 +13,31 @@ const Providers = () => {
     const [defaultCommission, setDefaultCommission] = useState(10);
     const [data, setData] = useState({ name: '', phone: '', email: '' });
 
-    let token = localStorage.getItem("token") || new URLSearchParams(window.location.search).get("token");
-    if (!localStorage.getItem("token") && token) localStorage.setItem("token", token);
+    // Get token from localStorage or URL
+    useEffect(() => {
+        const urlToken = new URLSearchParams(window.location.search).get("token");
+        const storedToken = localStorage.getItem("token");
 
+        if (!storedToken && urlToken) {
+            localStorage.setItem("token", urlToken);
+        }
+    }, []);
 
+    const token = localStorage.getItem("token");
+
+    // Fetch services
     useEffect(() => {
         const fetchServices = async () => {
             if (!token) {
-                toast.error("Admin not logged in!");
+                toast.error("Provider not logged in!");
                 return;
             }
+
             try {
                 const res = await axios.get(`${API_URL}/Service/list`, {
-                    headers: { atoken: token }
+                    headers: { Authorization: `Bearer ${token}` } // <-- fixed header
                 });
+
                 if (res.data.success) setServices(res.data.data);
                 else toast.error(res.data.message);
             } catch (err) {
@@ -34,10 +45,10 @@ const Providers = () => {
                 toast.error("Failed to load services");
             }
         };
+
         fetchServices();
     }, [token]);
 
-    // Input handlers
     const onChangeHandler = (e) => {
         const { name, value } = e.target;
         setData(prev => ({ ...prev, [name]: value }));
@@ -51,19 +62,19 @@ const Providers = () => {
     const onSubmitHandler = async (e) => {
         e.preventDefault();
 
-        if (!data.name || !data.email) {
-            toast.error('Name,Phone,  and email are required');
+        if (!data.name || !data.email || !data.phone) {
+            toast.error('Name, phone, and email are required');
             return;
         }
 
         if (!token) {
-            toast.error("Admin not logged in!");
+            toast.error("Provider not logged in!");
             return;
         }
 
         const formData = new FormData();
         formData.append('name', data.name);
-        formData.append('phone',data.phone);
+        formData.append('phone', data.phone);
         formData.append('email', data.email);
         formData.append('defaultCommissionPercent', defaultCommission);
         formData.append('servicesOffered', JSON.stringify(selectedServices));
@@ -71,11 +82,11 @@ const Providers = () => {
 
         try {
             const res = await axios.post(`${API_URL}/provider/add`, formData, {
-                headers: { atoken: token }
+                headers: { Authorization: `Bearer ${token}` } // <-- fixed header
             });
 
             if (res.data.success) {
-                setData({ name: '', email: '' });
+                setData({ name: '', phone: '', email: '' });
                 setSelectedServices([]);
                 setImage(null);
                 setDefaultCommission(10);
@@ -122,6 +133,7 @@ const Providers = () => {
                             required
                         />
                     </div>
+
                     <div className="add-service-name flex-col">
                         <p>Phone</p>
                         <input
@@ -133,7 +145,6 @@ const Providers = () => {
                             required
                         />
                     </div>
-
 
                     <div className="add-service-name flex-col">
                         <p>Email</p>

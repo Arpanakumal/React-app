@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import './dashboard.css';
 import { useNavigate } from "react-router-dom";
 
 const ProviderDashboard = () => {
@@ -8,14 +9,14 @@ const ProviderDashboard = () => {
         newRequests: 0,
         pendingCommission: 0,
     });
-    const [bookings, setBookings] = useState([]); // all bookings with any status
+    const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const API_URL = import.meta.env.VITE_API_URL;
     const token = localStorage.getItem("pToken");
     const navigate = useNavigate();
 
-    // Fetch all bookings for this provider (any status)
+
     const fetchRecentBookings = async () => {
         try {
             const res = await axios.get(`${API_URL}/api/booking/provider`, {
@@ -29,7 +30,6 @@ const ProviderDashboard = () => {
         }
     };
 
-    // Fetch dashboard summary (KPIs)
     const fetchSummary = async () => {
         try {
             const res = await axios.get(`${API_URL}/api/provider/dashboard-summary`, {
@@ -53,7 +53,6 @@ const ProviderDashboard = () => {
         fetchAll();
     }, []);
 
-    // Handle booking start
     const handleStart = async (bookingId) => {
         try {
             const res = await axios.patch(
@@ -76,7 +75,6 @@ const ProviderDashboard = () => {
         }
     };
 
-    // Handle booking end (also refresh summary for commission update)
     const handleEnd = async (bookingId) => {
         try {
             const res = await axios.patch(
@@ -92,7 +90,7 @@ const ProviderDashboard = () => {
                             : b
                     )
                 );
-                await fetchSummary(); // refresh KPI after completion
+                await fetchSummary();
             }
         } catch (err) {
             console.error(err);
@@ -102,7 +100,7 @@ const ProviderDashboard = () => {
 
     if (loading) return <p>Loading dashboard...</p>;
 
-    // Filter bookings for recent display (any status except pending that isn't assigned to provider)
+
     const pendingRequests = bookings.filter((b) => b.status === "pending");
     const recentBookings = bookings.filter((b) =>
         ["accepted", "in-progress", "completed"].includes(b.status)
@@ -110,9 +108,9 @@ const ProviderDashboard = () => {
 
     return (
         <div className="dashboard-container">
-            <h2>Provider Dashboard</h2>
+            <h2>Dashboard</h2>
 
-            {/* KPI Cards */}
+
             <div className="kpi-cards">
                 <div
                     className="card new-requests"
@@ -139,7 +137,7 @@ const ProviderDashboard = () => {
                     )}
                 </div>
 
-                <div className="card total-bookings">
+                <div className="card total-bookings" style={{ cursor: "pointer" }} onClick={() => navigate("/provider/history")}>
                     <h3>Total Bookings</h3>
                     <p>{summary.totalBookings}</p>
                 </div>
@@ -151,7 +149,7 @@ const ProviderDashboard = () => {
 
             </div>
 
-            {/* Recent Bookings Table */}
+
             <h3>Recent Bookings</h3>
             {recentBookings.length === 0 ? (
                 <p>No recent bookings.</p>

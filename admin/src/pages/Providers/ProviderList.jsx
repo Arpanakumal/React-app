@@ -64,7 +64,7 @@ const ProviderList = ({ url }) => {
                             className="provider-image"
                         />
                         <p>{provider.name}</p>
-                        <p>{provider.phone || "N/A"}</p>
+
 
                         <p>{provider.email}</p>
                         <p>{provider.servicesOffered.map(s => s.name).join(", ")}</p>

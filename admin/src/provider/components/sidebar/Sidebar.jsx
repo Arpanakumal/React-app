@@ -1,28 +1,28 @@
-import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
-import "./sidebar.css";
+// import React, { useState } from "react";
+// import { NavLink } from "react-router-dom";
+// import "./sidebar.css";
 
-const Sidebar = () => {
-    const [servicesOpen, setServicesOpen] = useState(false);
-    const [providersOpen, setProvidersOpen] = useState(false);
+// const Sidebar = () => {
+//     const [servicesOpen, setServicesOpen] = useState(false);
+//     const [providersOpen, setProvidersOpen] = useState(false);
 
-    return (
-        <div className="sidebar">
-            <nav className="sidebar-nav">
+//     return (
+//         <div className="sidebar">
+//             <nav className="sidebar-nav">
 
-                <NavLink to="/provider/dashboard" className="sidebar-link">
-                    Dashboard
-                </NavLink>
-
-
-                <NavLink to="/provider/booking" className="sidebar-link">
-                    Bookings
-                </NavLink>
+//                 <NavLink to="/provider/dashboard" className="sidebar-link">
+//                     Dashboard
+//                 </NavLink>
 
 
-            </nav>
-        </div>
-    );
-};
+//                 <NavLink to="/provider/booking" className="sidebar-link">
+//                     Bookings
+//                 </NavLink>
 
-export default Sidebar;
+
+//             </nav>
+//         </div>
+//     );
+// };
+
+// export default Sidebar;

@@ -20,7 +20,7 @@ const Detail = ({ url }) => {
                     headers: { atoken: token },
                 });
                 if (res.data.success) {
-                    setProvider(res.data.provider); 
+                    setProvider(res.data.provider);
                 } else {
                     toast.error("Failed to fetch provider details");
                 }
@@ -99,23 +99,46 @@ const Detail = ({ url }) => {
                 <p>
                     <span>Status:</span>{" "}
                     <span
-                        className={`status ${provider.available ? "available" : "unavailable"
-                            }`}
+                        className={`status ${provider.available ? "available" : "unavailable"}`}
                     >
                         {provider.available ? "Available" : "Not Available"}
                     </span>
                 </p>
 
                 <p>
-                    <span>Profile Complete:</span>{" "}
-                    {provider.isProfileComplete ? "Yes" : "No"}
-                </p>
-
-                <p>
                     <span>Joined At:</span>{" "}
                     {new Date(provider.createdAt).toLocaleDateString()}
                 </p>
+
+
+                {provider.availability && (
+                    <div className="availability-section">
+                        <h3>Availability</h3>
+                        <p>
+                            <span>Working Days:</span>{" "}
+                            {provider.availability.workingDays?.length
+                                ? provider.availability.workingDays.join(", ")
+                                : "Not set"}
+                        </p>
+                        <p>
+                            <span>Working Hours:</span>{" "}
+                            {provider.availability.startTime && provider.availability.endTime
+                                ? `${provider.availability.startTime} - ${provider.availability.endTime}`
+                                : "Not set"}
+                        </p>
+                        <p>
+                            <span>Currently Available:</span>{" "}
+                            <span
+                                className={`status ${provider.availability.isAvailable ? "available" : "unavailable"
+                                    }`}
+                            >
+                                {provider.availability.isAvailable ? "Yes" : "No"}
+                            </span>
+                        </p>
+                    </div>
+                )}
             </div>
+
 
             <div className="button-group">
                 <button

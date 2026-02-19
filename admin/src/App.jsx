@@ -21,6 +21,7 @@ import Detail from "./pages/Providers/Detail";
 import EditProvider from "./pages/Providers/Edit";
 import Messages from "./pages/Messages/Message";
 import Login from "./pages/login/AdminLogin";
+import Revenue from "./pages/Commission/Revenue";
 
 
 // Provider Pages
@@ -32,6 +33,7 @@ import ProviderProtectRoute from "./routes/ProviderProtectRoute";
 import Bookinghistory from "./provider/pages/Bookings/history";
 import BookingDetails from "./provider/pages/Bookings/BookingDetail";
 import Commisson from "./provider/pages/commission/Commisson";
+import Profile from "./provider/pages/Profile/Profile";
 
 
 const App = () => {
@@ -66,6 +68,7 @@ const App = () => {
           <Route path="/providers/providerlist" element={<ProviderList url={url} />} />
           <Route path="/providers/detail/:id" element={<Detail url={url} />} />
           <Route path="/providers/update/:id" element={<EditProvider url={url} />} />
+          <Route path="/revenue" element={<Revenue url={url} />} />
 
 
         </Route>
@@ -84,8 +87,7 @@ const App = () => {
           <Route path="/provider/history" element={<Bookinghistory url={url} />} />
           <Route path="/provider/bookings/:id" element={<BookingDetails url={url} />} />
           <Route path="/provider/commission" element={<Commisson url={url} />} />
-
-
+          <Route path="/provider/profile" element={<Profile url={url} />} />
 
         </Route>
       </Routes>

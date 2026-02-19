@@ -1,0 +1,127 @@
+
+
+.dashboard-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 15px;
+    font-family: Arial, sans-serif;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.kpi-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+.card {
+    flex: 1 1 200px;
+    min-width: 180px;
+    background: #f7f7f7;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    cursor: pointer;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.card h3 {
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.card p {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.booking-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.booking-table th,
+.booking-table td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+}
+
+.booking-table th {
+    background-color: #f0f0f0;
+}
+
+.booking-table tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+.booking-table button {
+    padding: 6px 12px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.booking-table button:hover {
+    background-color: #0056b3;
+}
+
+.booking-table span {
+    color: #888;
+}
+
+
+@media (max-width: 768px) {
+    .kpi-cards {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+
+    .booking-table th,
+    .booking-table td {
+        font-size: 14px;
+        padding: 6px;
+    }
+
+    .booking-table button {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-container {
+        padding: 10px;
+    }
+
+    .card h3 {
+        font-size: 16px;
+    }
+
+    .card p {
+        font-size: 20px;
+    }
+
+    .booking-table th,
+    .booking-table td {
+        font-size: 12px;
+        padding: 4px;
+    }
+}

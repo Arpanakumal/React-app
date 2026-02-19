@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import './commission.css';
 
 const Commission = ({ url }) => {
     const [commissionData, setCommissionData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [updatingId, setUpdatingId] = useState(null);
 
     const token = localStorage.getItem("pToken");
 
@@ -26,6 +28,32 @@ const Commission = ({ url }) => {
         fetchCommissions();
     }, []);
 
+    const handleMarkPaid = async (bookingId) => {
+        try {
+            setUpdatingId(bookingId);
+            const res = await axios.post(
+                `${url}/api/provider/commissions/${bookingId}/paid`,
+                {},
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+            if (res.data.success) {
+
+                setCommissionData((prev) =>
+                    prev.map((b) =>
+                        b._id === bookingId ? { ...b, commissionPaid: true } : b
+                    )
+                );
+            }
+        } catch (err) {
+            console.error("Error marking commission as paid:", err);
+            alert("Failed to mark as paid");
+        } finally {
+            setUpdatingId(null);
+        }
+    };
+
     if (loading) return <p>Loading commissions...</p>;
 
     if (!commissionData || commissionData.length === 0) {
@@ -33,38 +61,49 @@ const Commission = ({ url }) => {
     }
 
     return (
-        <div>
+        <div className="commission-container">
             <h2>Commission History</h2>
-            <table border="1" cellPadding="10">
-                <thead>
-                    <tr>
-                        <th>Service</th>
-                        <th>Customer</th>
-                        <th>Hours Worked</th>
-                        <th>Final Price</th>
-                        <th>Commission (%)</th>
-                        <th>Commission Amount</th>
-                        <th>Provider Earning</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {commissionData.map(b => (
-                        <tr key={b._id}>
-                            <td>{b.service}</td>
-                            <td>{b.customerName}</td>
-                            <td>{Number(b.hoursWorked).toFixed(2)}</td>
-                            <td>{Number(b.finalPrice).toFixed(2)}</td>
-                            <td>{Number(b.commissionPercent).toFixed(2)}</td>
-                            <td>{Number(b.commissionAmount).toFixed(2)}</td>
-                            <td>{Number(b.providerEarning).toFixed(2)}</td>
-                            <td>{b.commissionPaid ? "Paid" : "Pending"}</td>
+            <div className="table-wrapper">
+                <table className="commission-table">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Customer</th>
+                            <th>Hours Worked</th>
+                            <th>Final Price</th>
+                            <th>Commission (%)</th>
+                            <th>Commission Amount</th>
+                            <th>Provider Earning</th>
+                            <th>Status</th>
+                            <th>Action</th>
                         </tr>
-                    ))}
-                </tbody>
-
-
-            </table>
+                    </thead>
+                    <tbody>
+                        {commissionData.map((b) => (
+                            <tr key={b._id}>
+                                <td>{b.service}</td>
+                                <td>{b.customerName}</td>
+                                <td>{Number(b.hoursWorked).toFixed(2)}</td>
+                                <td>{Number(b.finalPrice).toFixed(2)}</td>
+                                <td>{Number(b.commissionPercent).toFixed(2)}</td>
+                                <td>{Number(b.commissionAmount).toFixed(2)}</td>
+                                <td>{Number(b.providerEarning).toFixed(2)}</td>
+                                <td>{b.commissionPaid ? "Paid" : "Pending"}</td>
+                                <td>
+                                    {!b.commissionPaid && (
+                                        <button
+                                            onClick={() => handleMarkPaid(b._id)}
+                                            disabled={updatingId === b._id}
+                                        >
+                                            {updatingId === b._id ? "Updating..." : "Mark Paid"}
+                                        </button>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };

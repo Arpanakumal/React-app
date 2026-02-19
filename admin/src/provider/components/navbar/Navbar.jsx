@@ -11,6 +11,7 @@ const Navbar = () => {
     const [profileImage, setProfileImage] = useState(null);
     const API_URL = import.meta.env.VITE_API_URL;
     const dropdownRef = useRef(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchProviderProfile = async () => {
@@ -53,7 +54,7 @@ const Navbar = () => {
 
     return (
         <div className="navbar">
-            <img src={logo} alt="Logo" className="logo" />
+            <img src={logo} alt="Logo" className="logo"   onClick={()=>navigate("/provider/dashboard")}/>
 
             <div className="navbar-right">
 

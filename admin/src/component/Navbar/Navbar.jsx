@@ -64,7 +64,7 @@ const Navbar = () => {
 
     return (
         <div className="navbar">
-            <img src={logo} alt="Logo" className="logo" />
+            <img src={logo} alt="Logo" className="logo" onClick={()=>navigate("/dashboard")} />
 
             <div className="navbar-right">
 
