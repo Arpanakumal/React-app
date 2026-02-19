@@ -234,76 +234,74 @@ export const toggleProviderStatus = async (req, res) => {
     }
 };
 
-export const respondToBooking = async (req, res) => {
-    try {
-        const providerId = req.user.id;
-        const { bookingId } = req.params;
-        const { action } = req.body;
+// export const respondToBooking = async (req, res) => {
+//     try {
+//         const providerId = req.user.id;
+//         const { bookingId } = req.params;
+//         const { action } = req.body;
 
-        if (!["accept", "reject"].includes(action)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid action"
-            });
-        }
-
-
-        const booking = await Booking.findOne({
-            _id: bookingId,
-            status: "pending",
-            providerId: null
-        });
-
-        if (!booking) {
-            return res.status(400).json({
-                success: false,
-                message: "Booking already assigned or processed"
-            });
-        }
+//         if (!["accept", "reject"].includes(action)) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "Invalid action"
+//             });
+//         }
 
 
-        const provider = await Provider.findById(providerId);
-        if (!provider) {
-            return res.status(404).json({ success: false, message: "Provider not found" });
-        }
+//         const booking = await Booking.findOne({
+//             _id: bookingId,
+//             status: "pending",
+//             providerId: null
+//         });
+
+//         if (!booking) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "Booking already assigned or processed"
+//             });
+//         }
 
 
-        const serviceAllowed = provider.servicesOffered.some(
-            (id) => id.toString() === booking.serviceId.toString()
-        );
-
-        if (!serviceAllowed) {
-            return res.status(403).json({
-                success: false,
-                message: "You are not allowed to accept this service"
-            });
-        }
-
-        if (action === "accept") {
-            booking.providerId = providerId;
-            booking.status = "accepted";
-        } else {
-            booking.status = "cancelled";
-        }
-
-        await booking.save();
-
-        res.json({
-            success: true,
-            message: `Booking ${action}ed successfully`,
-            data: booking
-        });
-
-    } catch (err) {
-        console.error("RespondToBooking Error:", err);
-        res.status(500).json({
-            success: false,
-            message: "Server error"
-        });
-    }
-};
+//         const provider = await Provider.findById(providerId);
+//         if (!provider) {
+//             return res.status(404).json({ success: false, message: "Provider not found" });
+//         }
 
 
+//         const serviceAllowed = provider.servicesOffered.some(
+//             (id) => id.toString() === booking.serviceId.toString()
+//         );
+
+//         if (!serviceAllowed) {
+//             return res.status(403).json({
+//                 success: false,
+//                 message: "You are not allowed to accept this service"
+//             });
+//         }
+
+//         if (action === "accept") {
+//             booking.providerId = providerId;
+//             booking.status = "accepted";
+//         } else {
+//             booking.status = "cancelled";
+//         }
+
+//         await booking.save();
+
+//         res.json({
+//             success: true,
+//             message: `Booking ${action}ed successfully`,
+//             data: booking
+//         });
+
+//     } catch (err) {
+//         console.error("RespondToBooking Error:", err);
+//         res.status(500).json({
+//             success: false,
+//             message: "Server error"
+//         });
+//     }
+// };
 
 
 
@@ -313,23 +311,27 @@ export const startBooking = async (req, res) => {
         const { bookingId } = req.params;
 
         const booking = await Booking.findById(bookingId);
-        if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
+        if (!booking)
+            return res.status(404).json({ success: false, message: "Booking not found" });
 
-        if (booking.providerId.toString() !== providerId) {
-            return res.status(403).json({ success: false, message: "Not authorized for this booking" });
-        }
+        const isAssigned = booking.providerIds.some(
+            id => id.toString() === providerId
+        );
 
-        if (booking.status !== "accepted") {
+        if (!isAssigned)
+            return res.status(403).json({ success: false, message: "Not assigned to this booking" });
+
+        if (booking.status !== "accepted")
             return res.status(400).json({ success: false, message: "Booking must be accepted first" });
-        }
 
         booking.startedAt = new Date();
         booking.status = "in-progress";
+
         await booking.save();
 
         res.json({ success: true, message: "Booking started", data: booking });
+
     } catch (err) {
-        console.error(err);
         res.status(500).json({ success: false, message: err.message });
     }
 };
@@ -341,37 +343,37 @@ export const endBooking = async (req, res) => {
         const { bookingId } = req.params;
 
         const booking = await Booking.findById(bookingId);
-        if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
+        if (!booking)
+            return res.status(404).json({ success: false, message: "Booking not found" });
 
-        if (booking.providerId.toString() !== providerId) {
+        const isAssigned = booking.providerIds.some(
+            id => id.toString() === providerId
+        );
+
+        if (!isAssigned)
             return res.status(403).json({ success: false, message: "Not authorized for this booking" });
-        }
 
-        if (booking.status !== "in-progress") {
+        if (booking.status !== "in-progress")
             return res.status(400).json({ success: false, message: "Booking not in progress" });
-        }
 
         booking.endedAt = new Date();
 
-
         const hoursWorked = (booking.endedAt - booking.startedAt) / 3600000;
-        const finalPrice = hoursWorked * booking.pricePerHour * (booking.providerCount || 1);
 
+        const finalPrice = hoursWorked * booking.pricePerHour * (booking.providerCount || 1);
 
         booking.finalPrice = finalPrice;
         booking.commissionAmount = (finalPrice * booking.commissionPercent) / 100;
         booking.providerEarning = finalPrice - booking.commissionAmount;
 
         booking.commissionPaid = false;
-
-
         booking.status = "completed";
 
         await booking.save();
 
         res.json({ success: true, message: "Booking completed", data: booking });
+
     } catch (err) {
-        console.error(err);
         res.status(500).json({ success: false, message: err.message });
     }
 };
@@ -382,94 +384,187 @@ export const getDashboardSummary = async (req, res) => {
     try {
         const providerId = req.user.id;
 
-        const totalBookings = await Booking.countDocuments({ providerId });
-
+        const totalBookings = await Booking.countDocuments({
+            providerIds: providerId
+        });
 
         const pendingCommissionsAgg = await Booking.aggregate([
             {
                 $match: {
-                    providerId: new mongoose.Types.ObjectId(providerId),
+                    providerIds: new mongoose.Types.ObjectId(providerId),
                     status: "completed",
                     commissionPaid: false
                 }
             },
             {
-                $group: { _id: null, totalPending: { $sum: "$commissionAmount" } }
+                $project: {
+                    commissionShare: {
+                        $divide: ["$commissionAmount", "$providerCount"]
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalPending: { $sum: "$commissionShare" }
+                }
             }
         ]);
 
-        const pendingCommission = pendingCommissionsAgg[0]?.totalPending || 0;
 
-        const newRequests = await Booking.countDocuments({ providerId, status: "pending" });
+        const pendingCommission =
+            pendingCommissionsAgg[0]?.totalPending || 0;
 
         res.json({
             success: true,
-            data: { totalBookings, newRequests, pendingCommission }
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ success: false, message: "Server error" });
-    }
-};
-
-
-
-
-// GET provider commissions
-export const getProviderCommissions = async (req, res) => {
-    try {
-        const providerId = req.user?.id;
-        if (!providerId) return res.status(401).json({ success: false, message: "Unauthorized" });
-
-        const bookings = await Booking.find({ providerId, status: "completed" })
-            .populate("serviceId", "name")
-            .populate("customer", "name")
-            .sort({ endedAt: -1 });
-
-        const formattedBookings = bookings.map(b => {
-            const hoursWorked = b.startedAt && b.endedAt ? (b.endedAt - b.startedAt) / 3600000 : 0;
-
-            return {
-                _id: b._id,
-                service: b.serviceId?.name || "N/A",
-                customerName: b.customer?.name || b.username || "N/A",
-                hoursWorked,
-                finalPrice: b.finalPrice || 0,
-                commissionPercent: b.commissionPercent || 0,
-                commissionAmount: b.commissionAmount || 0,
-                providerEarning: b.providerEarning || 0,
-                commissionPaid: b.commissionPaid || false
-            };
+            data: {
+                totalBookings,
+                pendingCommission
+            }
         });
 
-        res.json({ success: true, data: formattedBookings });
-
     } catch (err) {
-        console.error("getProviderCommissions Error:", err);
         res.status(500).json({ success: false, message: err.message });
     }
 };
 
 
 
-export const markCommissionPaid = async (req, res) => {
+// GET provider commissions
+export const getProviderCommissions = async (req, res) => {
     try {
         const providerId = req.user.id;
-        const { bookingId } = req.params;
 
-        const booking = await Booking.findOne({
-            _id: bookingId,
-            providerId,
+        const bookings = await Booking.find({
+            providerIds: providerId,
             status: "completed"
-        });
+        })
+            .populate("serviceId", "name")
+            .sort({ endedAt: -1 });
 
-        if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
+        const formatted = bookings.map(b => ({
+            _id: b._id,
+            service: b.serviceId?.name || "N/A",
+            finalPrice: b.finalPrice,
+            commissionPercent: b.commissionPercent,
+            commissionAmount: b.commissionAmount / (b.providerCount || 1),
+            providerEarning: b.providerEarning / (b.providerCount || 1),
+            commissionPaid: b.commissionPaid
+        }));
 
-        booking.commissionPaid = true;
-        await booking.save();
 
-        res.json({ success: true, message: "Commission marked as paid", data: booking });
+        res.json({ success: true, data: formatted });
 
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+
+
+
+export const getProviderBookingHistory = async (req, res) => {
+    try {
+        const providerId = req.user.id;
+
+        const bookings = await Booking.find({
+            providerIds,
+            status: { $in: ["accepted", "in-progress", "completed"] }
+        })
+            .populate("serviceId", "name")
+            .populate("customer", "name")
+            .sort({ createdAt: -1 });
+
+        res.json({ success: true, data: bookings });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+
+export const getMyProfile = async (req, res) => {
+    try {
+        const provider = await Provider.findById(req.user.id)
+            .select("-password")
+            .populate("servicesOffered", "name");
+
+        if (!provider) {
+            return res.status(404).json({ success: false, message: "Provider not found" });
+        }
+
+        res.json({ success: true, data: provider });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// Update logged-in provider profile
+export const updateMyProfile = async (req, res) => {
+    try {
+        const providerId = req.user.id;
+        const { name, email, phone, password, servicesOffered } = req.body;
+
+        const provider = await Provider.findById(providerId);
+        if (!provider) return res.status(404).json({ success: false, message: "Provider not found" });
+
+        if (name) provider.name = name.trim();
+
+        if (phone) {
+            if (!validator.isMobilePhone(phone, 'any')) {
+                return res.status(400).json({ success: false, message: "Invalid phone number" });
+            }
+            provider.phone = phone.trim();
+        }
+
+        if (email && email !== provider.email) {
+            const exists = await Provider.findOne({ email, _id: { $ne: providerId } });
+            if (exists) return res.status(400).json({ success: false, message: "Email already in use" });
+            provider.email = email.trim();
+        }
+
+        if (password) {
+            provider.password = await bcrypt.hash(password, 10);
+        }
+
+        if (servicesOffered) {
+            try {
+                provider.servicesOffered = JSON.parse(servicesOffered).map(id => new mongoose.Types.ObjectId(id));
+            } catch (err) {
+                return res.status(400).json({ success: false, message: "Invalid services format" });
+            }
+        }
+
+        if (req.file) {
+            provider.image = `/uploads/${req.file.filename}`;
+        }
+
+        await provider.save();
+
+        res.json({ success: true, message: "Profile updated successfully", data: provider });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+export const updateAvailability = async (req, res) => {
+    try {
+        const providerId = req.user.id;
+        const { workingDays, startTime, endTime, isAvailable } = req.body;
+
+        const provider = await Provider.findById(providerId);
+        if (!provider) return res.status(404).json({ success: false, message: "Provider not found" });
+
+        provider.availability = {
+            workingDays,
+            startTime,
+            endTime,
+            isAvailable: isAvailable ?? provider.availability.isAvailable
+        };
+
+        await provider.save();
+
+        res.json({ success: true, message: "Availability updated", data: provider.availability });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: "Server error" });

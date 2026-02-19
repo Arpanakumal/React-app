@@ -9,10 +9,12 @@ import {
     getProviderById,
     getDashboardSummary,
     getProviderCommissions,
-    markCommissionPaid,
+    getProviderBookingHistory,
+    getMyProfile,
+    updateMyProfile,
     updateProvider,
     toggleProviderStatus,
-    respondToBooking,
+    updateAvailability,
     startBooking,
     endBooking
 } from "../controllers/ProviderController.mjs";
@@ -27,25 +29,32 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 
-
 providerRouter.post("/add", authAdmin, upload.single("image"), addProvider);
-
 providerRouter.post("/login", loginProvider);
-
 
 providerRouter.get("/dashboard-summary", authmiddleware, getDashboardSummary);
 providerRouter.get("/commissions", authmiddleware, getProviderCommissions);
-providerRouter.post("/commissions/:bookingId/paid", authmiddleware, markCommissionPaid);
+
+providerRouter.get("/booking/history", authmiddleware, getProviderBookingHistory);
+providerRouter.get("/profile", authmiddleware, getMyProfile);
+providerRouter.get("/commissions", authmiddleware, getProviderCommissions);
+providerRouter.put("/profile", authmiddleware, upload.single("image"), updateMyProfile);
+providerRouter.put("/availability", authmiddleware, updateAvailability);
 
 
-providerRouter.patch("/booking/:bookingId/respond", authmiddleware, respondToBooking);
+
+
+
 providerRouter.patch("/booking/:bookingId/start", authmiddleware, startBooking);
 providerRouter.patch("/booking/:bookingId/end", authmiddleware, endBooking);
 
 
 providerRouter.get("/", listProviders);
-providerRouter.get("/:id", getProviderById); 
-providerRouter.put("/:id", upload.single("image"), updateProvider);
+providerRouter.get("/:id", getProviderById);
+providerRouter.put("/:id", authmiddleware, upload.single("image"), updateProvider);
+
 providerRouter.patch("/:id/toggle", toggleProviderStatus);
+
+
 
 export default providerRouter;

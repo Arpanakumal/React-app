@@ -9,6 +9,13 @@ const providerSchema = new mongoose.Schema({
     servicesOffered: [{ type: mongoose.Schema.Types.ObjectId, ref: "Service" }],
     defaultCommissionPercent: { type: Number, default: 10 },
     available: { type: Boolean, default: true },
+    availability: {
+    workingDays: [String],
+    startTime: String,   
+    endTime: String,  
+    isAvailable: { type: Boolean, default: true } 
+}
+
 }, { timestamps: true });
 
 
