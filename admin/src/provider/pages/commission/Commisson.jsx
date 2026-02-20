@@ -89,16 +89,7 @@ const Commission = ({ url }) => {
                                 <td>{Number(b.commissionAmount).toFixed(2)}</td>
                                 <td>{Number(b.providerEarning).toFixed(2)}</td>
                                 <td>{b.commissionPaid ? "Paid" : "Pending"}</td>
-                                <td>
-                                    {!b.commissionPaid && (
-                                        <button
-                                            onClick={() => handleMarkPaid(b._id)}
-                                            disabled={updatingId === b._id}
-                                        >
-                                            {updatingId === b._id ? "Updating..." : "Mark Paid"}
-                                        </button>
-                                    )}
-                                </td>
+
                             </tr>
                         ))}
                     </tbody>

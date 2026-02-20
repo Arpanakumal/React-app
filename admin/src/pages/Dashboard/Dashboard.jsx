@@ -184,7 +184,12 @@ const AdminDashboard = ({ url }) => {
                                     <tr key={i}>
                                         <td>{b.username || b.customer?.name || 'N/A'}</td>
                                         <td>{b.service?.name || 'N/A'}</td>
-                                        <td>{b.provider?.name || 'Unassigned'}</td>
+                                        <td>
+                                            {Array.isArray(b.providers) && b.providers.length > 0
+                                                ? b.providers.map(p => p.name || 'N/A').join(', ')
+                                                : 'Unassigned'}
+                                        </td>
+
                                         <td>{displayStatus(b.status)}</td>
                                         <td>{b.appointmentDate ? new Date(b.appointmentDate).toLocaleDateString() : 'N/A'}</td>
                                         <td>Rs. {jobValue}</td>

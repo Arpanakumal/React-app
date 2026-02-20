@@ -48,12 +48,16 @@ const BookingDetail = ({ url }) => {
                 />
                 <h2>{booking.service?.name || "No Name"}</h2>
             </div>
-
             <div className="detail-info">
                 <p><strong>Customer:</strong> {booking.username || booking.customer?.name}</p>
                 <p><strong>Email:</strong> {booking.customer?.email || "-"}</p>
                 <p><strong>Phone:</strong> {booking.customer?.phone || "-"}</p>
-                <p><strong>Provider:</strong> {booking.provider?.name || "Not assigned"}</p>
+                <p>
+                    <strong>Providers:</strong>{" "}
+                    {Array.isArray(booking.providers) && booking.providers.length > 0
+                        ? booking.providers.map(p => p.name || 'N/A').join(", ")
+                        : "Not assigned"}
+                </p>
                 <p><strong>Provider Count:</strong> {booking.providerCount || 1}</p>
                 <p>
                     <strong>Appointment:</strong> {new Date(booking.appointmentDate).toLocaleDateString()} at {booking.appointmentTime}
@@ -63,15 +67,19 @@ const BookingDetail = ({ url }) => {
                 </p>
                 <p><strong>Notes:</strong> {booking.notes || "None"}</p>
                 <p><strong>Price/Hour:</strong> Rs. {booking.pricePerHour}</p>
-                <p><strong>Total Price:</strong> Rs. {booking.finalPrice}</p>
+                <p><strong>Total Price:</strong> Rs. {Number(booking.finalPrice).toFixed(2)}</p>
                 <p><strong>Commission %:</strong> {booking.commissionPercent}</p>
-                <p><strong>Commission Amount:</strong> Rs. {booking.commissionAmount}</p>
+
+                {booking.status === "completed" && (
+                    <p><strong>Commission Amount:</strong> Rs. {Number(booking.commissionAmount).toFixed(2)}</p>
+                )}
+
+                <p><strong>Provider Earning:</strong> Rs. {Number(booking.providerEarning).toFixed(2)}</p>
                 <p><strong>Booking Created:</strong> {new Date(booking.createdAt).toLocaleString()}</p>
-                {/* <p><strong>Service Started:</strong> {booking.startedAt ? new Date(booking.startedAt).toLocaleString() : "Not started"}</p>
-                <p><strong>Service Ended:</strong> {booking.endedAt ? new Date(booking.endedAt).toLocaleString() : "Not ended"}</p> */}
-                <p><strong>Provider Earning:</strong> Rs. {booking.providerEarning}</p>
                 <p><strong>Status:</strong> <span className={`status ${booking.status}`}>{booking.status}</span></p>
             </div>
+
+
         </div>
     );
 };
