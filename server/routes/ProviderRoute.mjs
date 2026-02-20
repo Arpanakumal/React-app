@@ -10,6 +10,7 @@ import {
     getDashboardSummary,
     getProviderCommissions,
     getProviderBookingHistory,
+    respondToBooking,
     getMyProfile,
     updateMyProfile,
     updateProvider,
@@ -45,16 +46,19 @@ providerRouter.put("/availability", authmiddleware, updateAvailability);
 
 
 
+
 providerRouter.patch("/booking/:bookingId/start", authmiddleware, startBooking);
 providerRouter.patch("/booking/:bookingId/end", authmiddleware, endBooking);
 
 
-providerRouter.get("/", listProviders);
+
+
 providerRouter.get("/:id", getProviderById);
 providerRouter.put("/:id", authmiddleware, upload.single("image"), updateProvider);
 
 providerRouter.patch("/:id/toggle", toggleProviderStatus);
+providerRouter.patch("/booking/respond", authmiddleware, respondToBooking)
 
-
+providerRouter.get("/", listProviders);
 
 export default providerRouter;

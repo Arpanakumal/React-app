@@ -188,35 +188,62 @@ export const acceptBooking = async (req, res) => {
         const { bookingId } = req.body;
 
         const booking = await Booking.findById(bookingId);
-        if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
+        if (!booking)
+            return res.status(404).json({ success: false, message: "Booking not found" });
+
+        if (["completed", "cancelled"].includes(booking.status)) {
+            return res.status(400).json({ success: false, message: "Booking already closed" });
+        }
 
 
         const alreadyAccepted = booking.providerCommissions.some(
             pc => pc.providerId?.toString() === providerId
         );
+
         if (alreadyAccepted) {
-            return res.status(400).json({ success: false, message: "You already accepted this booking" });
+            return res.status(400).json({
+                success: false,
+                message: "You already accepted this booking"
+            });
         }
 
+
         const emptySlot = booking.providerCommissions.find(pc => !pc.accepted);
-        if (!emptySlot) return res.status(400).json({ success: false, message: "No available slot" });
+        if (!emptySlot) {
+            return res.status(400).json({
+                success: false,
+                message: "All provider slots already filled"
+            });
+        }
 
         emptySlot.providerId = providerId;
         emptySlot.accepted = true;
 
-        // Update providerIds array
         booking.providerIds = booking.providerCommissions
-            .filter(pc => pc.accepted && pc.providerId)
+            .filter(pc => pc.accepted)
             .map(pc => pc.providerId);
 
-        // Only mark status as accepted if ALL providers have accepted
-        const allAccepted = booking.providerCommissions.every(pc => pc.accepted);
+        const totalRequired = booking.providerCommissions.length;
+        const totalAccepted = booking.providerCommissions.filter(pc => pc.accepted).length;
+        const remainingProviders = totalRequired - totalAccepted;
+
+        const allAccepted = remainingProviders === 0;
+
         booking.status = allAccepted ? "accepted" : "pending";
 
         await booking.save();
 
-
-        res.json({ success: true, message: "Booking accepted", data: booking });
+        res.json({
+            success: true,
+            message: allAccepted
+                ? "All providers accepted. Ready to start."
+                : `${remainingProviders} more provider(s) needed`,
+            data: {
+                remainingProviders,
+                allAccepted,
+                status: booking.status
+            }
+        });
 
     } catch (err) {
         console.error(err);
@@ -224,57 +251,70 @@ export const acceptBooking = async (req, res) => {
     }
 };
 
-
 export const listBookingsForProvider = async (req, res) => {
     try {
         const providerId = req.user.id;
 
+
         const provider = await Provider.findById(providerId).select("servicesOffered");
-        if (!provider) return res.status(404).json({ success: false, message: "Provider not found" });
+        if (!provider)
+            return res.status(404).json({ success: false, message: "Provider not found" });
+
 
         const bookings = await Booking.find({
             serviceId: { $in: provider.servicesOffered },
-            "providerCommissions.accepted": false
+            status: { $in: ["pending", "accepted", "in-progress", "completed"] },
+            providerCommissions: {
+                $elemMatch: {
+                    $or: [
+                        { providerId: providerId },
+                        { providerId: null, accepted: false, rejected: false }
+                    ]
+                }
+            }
         })
             .sort({ createdAt: -1 })
             .populate("serviceId", "name image category price_info commissionPercent")
-            .populate("providerCommissions.providerId", "name image")
-            .populate("userId", "firstName lastName email");
+            .populate("providerCommissions.providerId", "name image phone") 
+            .populate("customer", "name phone");
+
 
         const formatted = bookings.map(b => {
-            const mySlot = b.providerCommissions.find(pc => pc.providerId?.toString() === providerId);
+            const mySlot = b.providerCommissions.find(
+                pc => pc.providerId?._id?.toString() === providerId
+            );
             const allAccepted = b.providerCommissions.every(pc => pc.accepted);
 
             return {
                 _id: b._id,
-                customer: b.customer,
-                username: b.username,
                 status: b.status,
+                customer: b.customer,
                 appointmentDate: b.appointmentDate,
                 appointmentTime: b.appointmentTime,
-                notes: b.notes,
                 pricePerHour: b.pricePerHour,
                 providerCount: b.providerCount,
                 finalPrice: b.finalPrice,
-                commissionAmount: b.commissionAmount,
-                providerEarning: b.providerEarning,
+                service: b.serviceId,
                 providers: b.providerCommissions.map(pc => ({
                     id: pc.providerId?._id,
                     name: pc.providerId?.name,
                     accepted: pc.accepted
                 })),
-                service: b.serviceId,
-                canRespond: !mySlot || !mySlot.accepted,
-                canStart: allAccepted && b.status === "accepted"
+                providerCommissions: b.providerCommissions,
+                isAssigned: !!mySlot,
+                canAccept: !mySlot && b.status === "pending",
+                canStart: mySlot && allAccepted && b.status === "accepted",
+                canComplete: mySlot && b.status === "in-progress"
             };
         });
 
         res.json({ success: true, data: formatted });
     } catch (err) {
-        console.error("listBookingsForProvider error:", err);
+        console.error(err);
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
+
 
 
 export const completeBooking = async (req, res) => {
@@ -284,42 +324,71 @@ export const completeBooking = async (req, res) => {
         const { bookingId } = req.params;
 
         const booking = await Booking.findById(bookingId);
-        if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
+        if (!booking)
+            return res.status(404).json({ success: false, message: "Booking not found" });
 
-        // Ensure provider is assigned
-        const mySlot = booking.providerCommissions.find(pc => pc.providerId?.toString() === providerId);
+        if (booking.status !== "in-progress") {
+            return res.status(400).json({
+                success: false,
+                message: "Booking is not in progress"
+            });
+        }
+
+        const mySlot = booking.providerCommissions.find(
+            pc => pc.providerId?.toString() === providerId
+        );
+
         if (!mySlot || !mySlot.accepted) {
-            return res.status(403).json({ success: false, message: "You are not assigned to this booking" });
+            return res.status(403).json({
+                success: false,
+                message: "You are not assigned to this booking"
+            });
         }
 
         if (isNaN(hoursWorked) || hoursWorked <= 0) {
-            return res.status(400).json({ success: false, message: "Invalid hours worked" });
+            return res.status(400).json({
+                success: false,
+                message: "Invalid hours worked"
+            });
         }
 
-        // calculate final price for all providers
-        const finalPrice = booking.pricePerHour * hoursWorked * (booking.providerCount || 1);
-        const totalCommission = (finalPrice * (booking.commissionPercent || 10)) / 100;
-        const providerEarning = finalPrice - totalCommission;
+
+        const providerCount = booking.providerCount || 1;
+        const finalPrice = booking.pricePerHour * hoursWorked * providerCount;
+        const totalCommission = (finalPrice * booking.commissionPercent) / 100;
+
+
+        const acceptedProviders = booking.providerCommissions.filter(pc => pc.accepted);
+
+        const perProviderCommission = totalCommission / acceptedProviders.length;
+        const perProviderEarning =
+            (finalPrice - totalCommission) / acceptedProviders.length;
 
         booking.finalPrice = finalPrice;
         booking.commissionAmount = totalCommission;
-        booking.providerEarning = providerEarning;
+        booking.providerEarning = finalPrice - totalCommission;
         booking.status = "completed";
         booking.endedAt = new Date();
 
-        // split commission among providers
-        const perProviderCommission = totalCommission / booking.providerCommissions.length;
-
-        booking.providerCommissions = booking.providerCommissions.map(pc => ({
-            ...pc.toObject(),
-            commissionShare: perProviderCommission,
-
-            commissionPaid: pc.commissionPaid || false
-        }));
+        booking.providerCommissions = booking.providerCommissions.map(pc => {
+            if (pc.accepted) {
+                return {
+                    ...pc.toObject(),
+                    commissionShare: perProviderCommission,
+                    earningShare: perProviderEarning,
+                    commissionPaid: pc.commissionPaid || false
+                };
+            }
+            return pc;
+        });
 
         await booking.save();
 
-        res.json({ success: true, message: "Booking completed", data: booking });
+        res.json({
+            success: true,
+            message: "Booking completed successfully",
+            data: booking
+        });
 
     } catch (err) {
         console.error(err);
