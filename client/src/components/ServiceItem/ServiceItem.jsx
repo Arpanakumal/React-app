@@ -10,7 +10,10 @@ const ServiceItem = ({ id, image, name }) => {
             className="service-item-image-only"
             onClick={() => navigate(`/service/${id}`)}
         >
-            <img src={image} alt={name} />
+            <img
+                src={`http://localhost:3001${image}`}
+                alt={name}
+            />
         </div>
     );
 };

@@ -5,12 +5,28 @@ import { cross } from '../../assets/assets';
 import { useNavigate } from 'react-router-dom';
 
 const Book = () => {
-    const { selectedServices, Service_list, removeService, updateProviders, getTotalAmount } = useContext(StoreContext);
+
+    const {
+        selectedServices,
+        Service_list,
+        removeService,
+        updateProviders,
+        getTotalAmount,
+        token,
+        url
+    } = useContext(StoreContext);
 
     const serviceEntries = Object.entries(selectedServices);
+    const navigate = useNavigate();
 
-    const navigate=useNavigate();
+    const handleConfirm = () => {
+        if (!token) {
+            alert("Please login first");
+            return;
+        }
 
+        navigate('/booking');
+    };
 
     return (
         <div className="book">
@@ -36,12 +52,18 @@ const Book = () => {
                         return (
                             <div key={serviceId} className="book-item">
                                 <p>{service.name}</p>
+
                                 <div className="book-item-image">
-                                    <img src={service.image} alt={service.name} />
+                                    <img
+                                        src={`${url.replace("/api", "")}${service.image}`}
+                                        alt={service.name}
+                                    />
                                 </div>
 
                                 <div className="providers-input-container">
-                                    <label htmlFor={`providers-${serviceId}`}>Providers:</label>
+                                    <label htmlFor={`providers-${serviceId}`}>
+                                        Providers:
+                                    </label>
                                     <input
                                         id={`providers-${serviceId}`}
                                         type="number"
@@ -53,9 +75,12 @@ const Book = () => {
                                     />
                                 </div>
 
-
                                 <p>{service.price_info}</p>
-                                <p>Rs.{(service.price * data.providers).toFixed(2)}</p>
+
+                                <p>
+                                    Rs.
+                                    {(Number(service.price_info) * data.providers).toFixed(2)}
+                                </p>
 
                                 <button
                                     className="remove-btn"
@@ -68,6 +93,7 @@ const Book = () => {
                     })
                 )}
             </div>
+
             <hr />
 
             {serviceEntries.length > 0 && (
@@ -75,10 +101,13 @@ const Book = () => {
                     <div className="book-total">
                         <h3>Total: Rs.{getTotalAmount().toFixed(2)}</h3>
                     </div>
-                    <button onClick={()=>navigate('/booking')}
 
-
-                    className="confirm-btn">Confirm Appointment</button>
+                    <button
+                        onClick={handleConfirm}
+                        className="confirm-btn"
+                    >
+                        Confirm Appointment
+                    </button>
                 </div>
             )}
         </div>

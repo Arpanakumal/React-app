@@ -1,49 +1,162 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import './booking.css';
 import { StoreContext } from '../../context/StoreContext';
-import { provider_list } from '../../assets/providers';
-
+import { useNavigate } from "react-router-dom";
 
 const Booking = () => {
-    const { selectedServices, Service_list, getTotalAmount } = useContext(StoreContext);
+    const { selectedServices, Service_list, getTotalAmount, token, getAuthAxios } = useContext(StoreContext);
+    const navigate = useNavigate();
+
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        street: '',
+        city: '',
+        state: '',
+        zip: '',
+        country: '',
+        phone: '',
+        date: '',
+        time: '',
+        notes: ''
+    });
+
+    const handleChange = (e) => {
+        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    };
+
+    const handleBooking = async (e) => {
+        e.preventDefault();
+
+        if (!token) {
+            alert("You must be logged in to book a service.");
+            return;
+        }
+
+        if (Object.keys(selectedServices).length === 0) {
+            alert("No services selected.");
+            return;
+        }
+
+        try {
+            const authAxios = getAuthAxios();
+
+            // Create bookings for each selected service
+            const bookingPromises = Object.entries(selectedServices).map(([serviceId, data]) => {
+                const username = `${formData.firstName.trim()} ${formData.lastName.trim()}`;
+                return authAxios.post("/booking/create", {
+                    serviceId,
+                    providerCount: Number(data.providers) || 1,
+                    username,
+                    phone: formData.phone.trim(),
+                    appointmentDate: formData.date,
+                    appointmentTime: formData.time,
+                    address: {
+                        street: formData.street || "",
+                        city: formData.city || "",
+                        state: formData.state || "",
+                        zip: formData.zip || "",
+                        country: formData.country || ""
+                    },
+                    notes: formData.notes?.trim() || ""
+                });
+            });
+
+            const responses = await Promise.all(bookingPromises);
+
+            // Check if all bookings succeeded
+            const success = responses.every(res => res.data.success);
+            if (success) {
+                alert("Booking(s) created successfully!");
+                navigate("/my-bookings");
+            } else {
+                const failedMessages = responses
+                    .filter(res => !res.data.success)
+                    .map(res => res.data.message);
+                alert(`Some bookings failed: ${failedMessages.join(", ")}`);
+            }
+
+        } catch (error) {
+            console.error("Booking error:", error?.response?.data || error.message);
+            const message = error?.response?.data?.message || error.message;
+            alert(`Booking error: ${message}`);
+        }
+    };
 
     return (
-        <form className='confirm-booking'>
+        <form className='confirm-booking' onSubmit={handleBooking}>
             <div className="confirm-booking-left">
                 <p className='title'>Booking Information</p>
 
                 <div className="multi-fields">
-                    <input type="text" placeholder='First name' required />
-                    <input type="text" placeholder='Last name' required />
+                    <input
+                        type="text"
+                        name="firstName"
+                        placeholder='First name'
+                        required
+                        value={formData.firstName}
+                        onChange={handleChange}
+                    />
+                    <input
+                        type="text"
+                        name="lastName"
+                        placeholder='Last name'
+                        required
+                        value={formData.lastName}
+                        onChange={handleChange}
+                    />
                 </div>
 
-                <input type="email" placeholder='Email address' required />
-                <input type="text" placeholder='Street' required />
+                <input
+                    type="email"
+                    name="email"
+                    placeholder='Email address'
+                    value={formData.email}
+                    onChange={handleChange}
+                />
+                <input
+                    type="text"
+                    name="street"
+                    placeholder='Street'
+                    value={formData.street}
+                    onChange={handleChange}
+                />
 
                 <div className="multi-fields">
-                    <input type="text" placeholder='City' required />
-                    <input type="text" placeholder='State' required />
+                    <input type="text" name="city" placeholder='City' value={formData.city} onChange={handleChange} />
+                    <input type="text" name="state" placeholder='State' value={formData.state} onChange={handleChange} />
                 </div>
 
                 <div className="multi-fields">
-                    <input type="text" placeholder='Zip Code' required />
-                    <input type="text" placeholder='Country' required />
+                    <input type="text" name="zip" placeholder="Zip Code" value={formData.zip} onChange={handleChange} />
+                    <input type="text" name="country" placeholder='Country' value={formData.country} onChange={handleChange} />
                 </div>
 
-                <input type="tel" placeholder='Phone' required />
+                <input
+                    type="tel"
+                    name="phone"
+                    placeholder='Phone'
+                    required
+                    value={formData.phone}
+                    onChange={handleChange}
+                />
 
                 <div className="multi-fields">
                     <label htmlFor="date">Date:</label>
-                    <input type="date" id="date" name="date" required />
+                    <input type="date" id="date" name="date" required value={formData.date} onChange={handleChange} />
 
                     <label htmlFor="time">Time:</label>
-                    <input type="time" id="time" name="time" required />
+                    <input type="time" id="time" name="time" required value={formData.time} onChange={handleChange} />
                 </div>
 
                 <textarea
+                    name="notes"
                     placeholder="Special instructions or notes"
                     rows={4}
                     maxLength={500}
+                    value={formData.notes}
+                    onChange={handleChange}
                 ></textarea>
             </div>
 
@@ -57,14 +170,13 @@ const Booking = () => {
                         const service = Service_list.find(s => s._id === serviceId);
                         if (!service) return null;
 
+                        const price = Number(service.price_info || service.price || 0) * data.providers;
+
                         return (
                             <div key={serviceId} className="summary-item">
                                 <p><strong>Service:</strong> {service.name}</p>
                                 <p><strong>Providers:</strong> {data.providers}</p>
-                                <p><strong>Provider Name:</strong> {data.provider?.name}</p>
-                                <p><strong>Phone:</strong> {data.provider?.phone}</p>
-                                <p><strong>Email:</strong> {data.provider?.email}</p>
-                                <p><strong>Price:</strong> Rs.{(service.price * data.providers).toFixed(2)}</p>
+                                <p><strong>Price:</strong> Rs.{price.toFixed(2)}</p>
                                 <hr />
                             </div>
                         );
@@ -75,9 +187,8 @@ const Booking = () => {
                     <p><strong>Total:</strong> Rs.{getTotalAmount().toFixed(2)}</p>
                 )}
 
-                <button>Confirm Booking</button>
+                <button type="submit">Confirm Booking</button>
             </div>
-
         </form>
     );
 };
