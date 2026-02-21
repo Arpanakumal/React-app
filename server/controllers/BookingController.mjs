@@ -3,6 +3,7 @@ import Service from "../models/ServiceModel.mjs";
 import Provider from "../models/ProviderModel.mjs";
 import validator from "validator";
 import User from "../models/UserModel.mjs";
+import { hasScheduleConflict } from "../utils/ScheduleCheck.mjs";
 
 
 
@@ -27,7 +28,6 @@ export const createBooking = async (req, res) => {
         const commissionAmount = (finalPrice * commissionPercent) / 100;
         const providerEarning = finalPrice - commissionAmount;
 
-        // initialize providerCommissions array
         const providerCommissions = Array.from({ length: providerCountNumber }, () => ({
             providerId: null,
             accepted: false,
@@ -55,6 +55,11 @@ export const createBooking = async (req, res) => {
             providerEarning,
         });
 
+        const conflict = await hasScheduleConflict(serviceId, appointmentDate, appointmentTime, providerCount);
+        if (conflict) {
+            return res.status(400).json({ success: false, message: "Requested time conflicts with provider schedule" });
+        }
+        
         res.status(201).json({ success: true, message: "Booking created", data: booking });
 
     } catch (error) {
@@ -78,9 +83,11 @@ export const listBookings = async (req, res) => {
         }
 
         const formattedBookings = bookings.map(b => {
-            const totalPrice = b.pricePerHour * (b.providerCount || 1);
-            const commissionAmount = (totalPrice * (b.commissionPercent || 10)) / 100;
-            const providerEarning = totalPrice - commissionAmount;
+
+            const totalPrice = b.finalPrice || 0;
+            const commissionAmount = b.commissionAmount || 0;
+            const providerEarning = b.providerEarning || 0;
+
 
             return {
                 _id: b._id,
@@ -136,9 +143,8 @@ export const getBookingById = async (req, res) => {
 
         if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
 
-        const totalPrice = booking.pricePerHour * (booking.providerCount || 1);
-        const commissionAmount = (totalPrice * (booking.commissionPercent || 10)) / 100;
-        const providerEarning = totalPrice - commissionAmount;
+        const commissionAmount = booking.commissionAmount || 0;
+        const providerEarning = booking.providerEarning || 0;
 
         const formattedBooking = {
             _id: booking._id,
@@ -170,7 +176,8 @@ export const getBookingById = async (req, res) => {
             createdAt: booking.createdAt,
             finalPrice: booking.finalPrice,
             commissionAmount,
-            providerEarning
+            providerEarning,
+            hoursWorked: booking.hoursWorked || 0
         };
 
         res.json({ success: true, data: formattedBooking });
@@ -186,6 +193,11 @@ export const acceptBooking = async (req, res) => {
     try {
         const providerId = req.user.id;
         const { bookingId } = req.body;
+
+        const conflict = await hasScheduleConflict(providerId, booking.appointmentDate, booking.appointmentTime, booking.serviceDuration);
+        if (conflict) {
+            return res.status(400).json({ success: false, message: "You are unavailable or time conflicts with another booking." });
+        }
 
         const booking = await Booking.findById(bookingId);
         if (!booking)
@@ -275,7 +287,7 @@ export const listBookingsForProvider = async (req, res) => {
         })
             .sort({ createdAt: -1 })
             .populate("serviceId", "name image category price_info commissionPercent")
-            .populate("providerCommissions.providerId", "name image phone") 
+            .populate("providerCommissions.providerId", "name image phone")
             .populate("customer", "name phone");
 
 
@@ -304,7 +316,8 @@ export const listBookingsForProvider = async (req, res) => {
                 isAssigned: !!mySlot,
                 canAccept: !mySlot && b.status === "pending",
                 canStart: mySlot && allAccepted && b.status === "accepted",
-                canComplete: mySlot && b.status === "in-progress"
+                canComplete: mySlot && b.status === "in-progress",
+                hoursWorked: b.hoursWorked || 0
             };
         });
 
@@ -367,8 +380,10 @@ export const completeBooking = async (req, res) => {
         booking.finalPrice = finalPrice;
         booking.commissionAmount = totalCommission;
         booking.providerEarning = finalPrice - totalCommission;
+        booking.commissionPaid = false;
         booking.status = "completed";
         booking.endedAt = new Date();
+        booking.hoursWorked = hoursWorked;
 
         booking.providerCommissions = booking.providerCommissions.map(pc => {
             if (pc.accepted) {

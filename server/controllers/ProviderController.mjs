@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 import jwt from 'jsonwebtoken';
 import validator from "validator";
 import crypto from 'crypto';
-
+import { calculateProviderEarnings } from "../utils/BookingHelpers.mjs";
 
 
 
@@ -295,14 +295,11 @@ export const respondToBooking = async (req, res) => {
 
 
         if (booking.finalPrice) {
-            const totalProviders = booking.providerCommissions.filter(pc => pc.accepted).length;
-            booking.providerCommissions.forEach(pc => {
-                if (pc.accepted) {
-                    pc.earning = (booking.finalPrice - (booking.finalPrice * (booking.commissionPercent || 0) / 100)) / totalProviders;
-                } else {
-                    pc.earning = 0;
-                }
-            });
+            const result = calculateProviderEarnings(booking);
+            booking.providerCommissions = result.booking.providerCommissions;
+            booking.finalPrice = result.finalPrice;
+            booking.commissionAmount = result.commissionAmount;
+            booking.providerEarning = result.providerEarning;
         }
 
         const totalRequired = booking.providerCommissions.length;
@@ -385,23 +382,16 @@ export const endBooking = async (req, res) => {
         if (booking.status !== "in-progress") return res.status(400).json({ success: false, message: "Booking not in progress" });
 
         booking.endedAt = new Date();
-
         const hoursWorked = (booking.endedAt - booking.startedAt) / 3600000;
 
-
-        booking.providerCommissions.forEach(pc => {
-            if (pc.accepted) {
-                pc.earning = hoursWorked * booking.pricePerHour;
-            }
-        });
-
-        const finalPrice = hoursWorked * booking.pricePerHour * (booking.providerCount || 1);
-
-        booking.finalPrice = finalPrice;
-        booking.commissionAmount = (finalPrice * booking.commissionPercent) / 100;
-        booking.providerEarning = finalPrice - booking.commissionAmount;
+        const result = calculateProviderEarnings(booking, hoursWorked);
+        booking.providerCommissions = result.booking.providerCommissions;
+        booking.finalPrice = result.finalPrice;
+        booking.commissionAmount = result.commissionAmount;
+        booking.providerEarning = result.providerEarning;
         booking.commissionPaid = false;
         booking.status = "completed";
+        booking.hoursWorked = hoursWorked;
 
         await booking.save();
 
@@ -412,6 +402,7 @@ export const endBooking = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+
 
 
 export const getDashboardSummary = async (req, res) => {

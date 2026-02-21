@@ -99,6 +99,147 @@ export const getAdminDashboard = async (req, res) => {
     }
 };
 
+export const getRevenueReport = async (req, res) => {
+    try {
+        const period = req.query.period || 'monthly';
+
+        let groupBy = {};
+        if (period === 'weekly') {
+            groupBy = { year: { $year: "$createdAt" }, week: { $week: "$createdAt" } };
+        } else if (period === 'monthly') {
+            groupBy = { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } };
+        } else {
+            groupBy = { year: { $year: "$createdAt" } };
+        }
+
+
+        const overTimeAgg = await Booking.aggregate([
+            { $match: { status: 'completed', commissionPaid: true } },
+            { $group: { _id: groupBy, total: { $sum: "$commissionAmount" } } },
+            { $sort: { "_id.year": 1, "_id.month": 1, "_id.week": 1 } }
+        ]);
+
+        const overTime = overTimeAgg.map(item => {
+            let label = '';
+            if (period === 'weekly') label = `W${item._id.week}-${item._id.year}`;
+            else if (period === 'monthly') label = `${item._id.month}-${item._id.year}`;
+            else label = `${item._id.year}`;
+            return { label, total: item.total };
+        });
+
+
+        const topProvidersAgg = await Booking.aggregate([
+            { $match: { status: 'completed', commissionPaid: true } },
+            { $unwind: "$providerCommissions" },
+            { $match: { "providerCommissions.commissionPaid": true } },
+            { $group: { _id: "$providerCommissions.providerId", totalCommission: { $sum: "$providerCommissions.commissionAmount" } } },
+            { $sort: { totalCommission: -1 } },
+            { $limit: 5 },
+            {
+                $lookup: {
+                    from: "providers",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "providerInfo"
+                }
+            },
+            { $unwind: "$providerInfo" },
+            { $project: { _id: 0, name: "$providerInfo.name", totalCommission: 1 } }
+        ]);
+
+
+        const topServicesAgg = await Booking.aggregate([
+            { $match: { status: 'completed', commissionPaid: true } },
+            { $group: { _id: "$serviceId", totalCommission: { $sum: "$commissionAmount" } } },
+            { $sort: { totalCommission: -1 } },
+            { $limit: 5 },
+            {
+                $lookup: {
+                    from: "services",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "serviceInfo"
+                }
+            },
+            { $unwind: "$serviceInfo" },
+            { $project: { _id: 0, name: "$serviceInfo.name", totalCommission: 1 } }
+        ]);
+
+
+        const detailedAgg = await Booking.aggregate([
+            { $match: { status: 'completed', commissionPaid: true } },
+            { $unwind: "$providerCommissions" },
+            { $match: { "providerCommissions.commissionPaid": true } },
+            {
+                $lookup: {
+                    from: "providers",
+                    localField: "providerCommissions.providerId",
+                    foreignField: "_id",
+                    as: "providerInfo"
+                }
+            },
+            { $unwind: "$providerInfo" },
+            {
+                $lookup: {
+                    from: "services",
+                    localField: "serviceId",
+                    foreignField: "_id",
+                    as: "serviceInfo"
+                }
+            },
+            { $unwind: "$serviceInfo" },
+            {
+                $project: {
+                    bookingId: "$_id",
+                    serviceName: "$serviceInfo.name",
+                    providerId: "$providerInfo._id",
+                    providerName: "$providerInfo.name",
+                    commissionAmount: "$providerCommissions.commissionAmount",
+                    commissionPaid: "$providerCommissions.commissionPaid",
+                    paidAt: "$updatedAt"
+                }
+            }
+        ]);
+        res.json({
+            success: true,
+            data: { overTime, topProviders: topProvidersAgg, topServices: topServicesAgg, detailed: detailedAgg }
+        });
+
+    } catch (err) {
+        console.error("Revenue report error:", err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+export const getPendingCommissions = async (req, res) => {
+    try {
+        const bookings = await Booking.find({ status: "completed", commissionPaid: false })
+            .populate("serviceId", "name")
+            .populate("providerCommissions.providerId", "name email");
+
+        const pendingList = [];
+
+        bookings.forEach(b => {
+            b.providerCommissions.forEach(pc => {
+                if (!pc.commissionPaid) {
+                    pendingList.push({
+                        bookingId: b._id,
+                        service: b.serviceId?.name || "N/A",
+                        providerId: pc.providerId?._id,
+                        providerName: pc.providerId?.name || "N/A",
+                        commissionAmount: pc.earning * (b.commissionPercent / 100),
+                        date: b.createdAt
+                    });
+                }
+            });
+        });
+
+        res.json({ success: true, data: pendingList });
+    } catch (err) {
+        console.error("Get pending commissions error:", err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
 
 export const markCommissionPaid = async (req, res) => {
     try {
