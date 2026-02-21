@@ -75,7 +75,9 @@ const BookingDetail = ({ url }) => {
                 )}
 
                 <p><strong>Provider Earning:</strong> Rs. {Number(booking.providerEarning).toFixed(2)}</p>
+                <p><strong>Hours Worked:</strong> {booking.hoursWorked || 0} hrs</p>
                 <p><strong>Booking Created:</strong> {new Date(booking.createdAt).toLocaleString()}</p>
+
                 <p><strong>Status:</strong> <span className={`status ${booking.status}`}>{booking.status}</span></p>
             </div>
 

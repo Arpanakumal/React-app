@@ -9,5 +9,4 @@ export const bookings_list = [
         time: "15:00",
         total: 500
     },
-    // more bookings
 ];

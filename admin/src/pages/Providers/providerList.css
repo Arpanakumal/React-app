@@ -24,7 +24,7 @@
     padding: 15px;
     text-align: center;
     cursor: pointer;
-    transition: box-shadow 0.3s ease;
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -32,6 +32,7 @@
 
 .list-table-format:hover {
     box-shadow: 0 4px 14px rgb(0 0 0 / 0.2);
+    transform: translateY(-3px);
 }
 
 .provider-image {
@@ -51,40 +52,61 @@
 
 .status-active {
     color: green;
-    font-weight: 600;
+    font-weight: bold;
 }
 
 .status-inactive {
     color: red;
-    font-weight: 600;
+    font-weight: bold;
 }
-.checkbox-icon {
+
+.service-filter {
+    margin-bottom: 20px;
+}
+
+.service-filter label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 1rem;
+}
+
+.service-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.service-button {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid #1976d2;
+    background: #fff;
     color: #1976d2;
-    margin-bottom: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.service-button.selected {
+    background: #0a4b8b;
+    color: #fff;
+    border-color: #1976d2;
+}
+
+.service-button:hover {
+    opacity: 0.85;
 }
 
 
-
-.status-active {
-    color: green;
-    font-weight: bold;
-}
-
-.status-inactive {
-    color: red;
-    font-weight: bold;
-}
-
-
-
-@media (max-width:600px) {
-    .list-table-format {
-        grid-template-columns: 1fr 3fr 1fr;
+@media (max-width: 600px) {
+    .list-table {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
         gap: 15px;
     }
 
-    .list-table-format.title {
-        display: none;
+    .provider-image {
+        width: 100px;
+        height: 100px;
     }
-
 }

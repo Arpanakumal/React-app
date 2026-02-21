@@ -136,7 +136,7 @@ const AdminDashboard = ({ url }) => {
             <h2>Admin Dashboard</h2>
 
             <div className="kpi-cards">
-                <div className="card">
+                <div className="card" onClick={()=>navigate('/commission')}>
                     <h3>Rs.{metrics.pendingCommission}</h3>
                     <p>Pending Commission</p>
                 </div>

@@ -98,6 +98,7 @@ const Service = ({ url }) => {
                                 <option value="Plumbing">Plumbing</option>
                                 <option value="Gardening">Gardening</option>
                                 <option value="Electrical">Electrical</option>
+                                <option value="MoveIn/Out">Move In/Out</option>
                             </select>
                         </div>
 

@@ -25,7 +25,7 @@ const Bookinghistory = ({ url }) => {
     }, []);
 
     return (
-        <div  className="booking-history-container" >
+        <div className="booking-history-container" >
             <h2>Booking History</h2>
 
             {bookings.length === 0 ? (
@@ -38,6 +38,7 @@ const Bookinghistory = ({ url }) => {
                             <th>Service</th>
                             <th>Status</th>
                             <th>Date</th>
+                            <th>Hours</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -50,6 +51,12 @@ const Bookinghistory = ({ url }) => {
                                     {b.appointmentDate
                                         ? new Date(b.appointmentDate).toLocaleDateString()
                                         : "N/A"}
+                                </td>
+
+                                <td>
+                                    {b.status === "completed"
+                                        ? Number(b.hoursWorked || 0).toFixed(2)
+                                        : "-"}
                                 </td>
                             </tr>
                         ))}

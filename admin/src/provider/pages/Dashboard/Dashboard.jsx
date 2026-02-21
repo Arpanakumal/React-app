@@ -151,6 +151,7 @@ const ProviderDashboard = () => {
                                         <th>Date</th>
                                         <th>Time</th>
                                         <th>Status</th>
+                                        <th>Hours</th>
                                         <th>Final Price</th>
                                         <th>Commission</th>
                                         <th>Provider Earning</th>
@@ -166,6 +167,13 @@ const ProviderDashboard = () => {
                                         <td>{b.status}</td>
                                         <td>{b.finalPrice?.toFixed(2) || "-"}</td>
                                         <td>{b.status === "completed" ? b.commissionAmount?.toFixed(2) : "-"}</td>
+                                        <td>
+                                            {b.status === "completed"
+                                                ? Number(b.hoursWorked || 0).toFixed(2)
+                                                : b.status === "in-progress" && b.startedAt
+                                                    ? ((Date.now() - new Date(b.startedAt)) / 3600000).toFixed(2)
+                                                    : "-"}
+                                        </td>
                                         <td>{b.status === "completed" ? b.providerEarning?.toFixed(2) : "-"}</td>
                                         <td>
                                             {b.status === "accepted" && <button onClick={() => handleStart(b._id)}>Start</button>}

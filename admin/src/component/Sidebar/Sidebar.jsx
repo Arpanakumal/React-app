@@ -10,9 +10,6 @@ const Sidebar = () => {
         <div className="sidebar">
             <nav className="sidebar-nav">
 
-                <NavLink to="/dashboard" className="sidebar-link">
-                    Dashboard
-                </NavLink>
 
                 <div
                     className="sidebar-link"

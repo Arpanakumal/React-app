@@ -18,10 +18,11 @@ import Customers from "./pages/Customers/Customer";
 import Providers from "./pages/Providers/Provider";
 import ProviderList from "./pages/Providers/ProviderList";
 import Detail from "./pages/Providers/Detail";
-import EditProvider from "./pages/Providers/Edit";
+import EditProvider from "./pages/Providers/edit";
 import Messages from "./pages/Messages/Message";
 import Login from "./pages/login/AdminLogin";
 import Revenue from "./pages/Commission/Revenue";
+import Commission from "./pages/Commission/Commission";
 
 
 // Provider Pages
@@ -69,6 +70,7 @@ const App = () => {
           <Route path="/providers/detail/:id" element={<Detail url={url} />} />
           <Route path="/providers/update/:id" element={<EditProvider url={url} />} />
           <Route path="/revenue" element={<Revenue url={url} />} />
+          <Route path="/commission" element={<Commission url={url} />} />
 
 
         </Route>

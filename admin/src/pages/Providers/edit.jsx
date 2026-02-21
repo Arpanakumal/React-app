@@ -47,7 +47,7 @@ const EditProvider = ({ url }) => {
                     headers: { atoken: token },
                 });
                 if (res.data.success) {
-                    const prov = res.data.data;
+                    const prov = res.data.provider; // <-- use provider, not data
                     setData({ name: prov.name, phone: prov.phone, email: prov.email });
                     setDefaultCommission(prov.defaultCommissionPercent || 10);
                     setSelectedServices(prov.servicesOffered.map(s => s._id));
@@ -85,7 +85,7 @@ const EditProvider = ({ url }) => {
 
         const formData = new FormData();
         formData.append('name', data.name);
-        formData.append('phone',data.phone);
+        formData.append('phone', data.phone);
         formData.append('email', data.email);
         formData.append('defaultCommissionPercent', defaultCommission);
         formData.append('servicesOffered', JSON.stringify(selectedServices));
