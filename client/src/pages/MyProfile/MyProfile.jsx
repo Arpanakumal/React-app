@@ -10,7 +10,7 @@ const MyProfile = () => {
     const [loading, setLoading] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
 
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("user_token");
     const API_URL = process.env.REACT_APP_API_URL;
     const navigate = useNavigate();
 

@@ -10,16 +10,10 @@ const Navbar = ({ setShowLogin }) => {
     const [menu, setMenu] = useState("Home");
     const [pendingCount, setPendingCount] = useState(0);
 
-    const { token, setToken } = useContext(StoreContext);
+    const { token, setToken,logout } = useContext(StoreContext);
 
     const navigate = useNavigate();
 
-    const logout = () => {
-        localStorage.removeItem("token");
-        setToken("");
-        navigate("/")
-
-    }
 
     return (
         <div className="navbar">

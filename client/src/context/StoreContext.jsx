@@ -62,18 +62,45 @@ const StoreContextProvider = ({ children }) => {
     const [userName, setUserName] = useState(localStorage.getItem("user_name") || "");
     const [userId, setUserId] = useState(localStorage.getItem("user_id") || "");
 
+    const clearServices = () => {
+
+        setSelectedServices({});
+
+        localStorage.removeItem("selectedServices");
+
+    };
+
     const getAuthAxios = () => {
         return axios.create({
             baseURL: url,
-            headers: { Authorization: `Bearer ${token}` } 
+            headers: { Authorization: `Bearer ${token}` }
         });
     };
-
     useEffect(() => {
-        if (token) localStorage.setItem("user_token", token);
-        if (role) localStorage.setItem("user_role", role);
-        if (userName) localStorage.setItem("user_name", userName);
-        if (userId) localStorage.setItem("user_id", userId);
+        if (token) {
+            localStorage.setItem("user_token", token);
+        } else {
+            localStorage.removeItem("user_token");
+        }
+
+        if (role) {
+            localStorage.setItem("user_role", role);
+        } else {
+            localStorage.removeItem("user_role");
+        }
+
+        if (userName) {
+            localStorage.setItem("user_name", userName);
+        } else {
+            localStorage.removeItem("user_name");
+        }
+
+        if (userId) {
+            localStorage.setItem("user_id", userId);
+        } else {
+            localStorage.removeItem("user_id");
+        }
+
     }, [token, role, userName, userId]);
 
     useEffect(() => {
@@ -89,12 +116,15 @@ const StoreContextProvider = ({ children }) => {
     }, []);
 
     const logout = () => {
+        localStorage.removeItem("user_token");
+        localStorage.removeItem("user_role");
+        localStorage.removeItem("user_name");
+        localStorage.removeItem("user_id");
+
         setToken("");
         setRole("");
         setUserName("");
         setUserId("");
-        localStorage.clear();
-        window.location.href = "/";
     };
 
     return (
@@ -117,6 +147,7 @@ const StoreContextProvider = ({ children }) => {
                 setUserId,
                 logout,
                 getAuthAxios,
+                clearServices,
             }}
         >
             {children}

@@ -4,7 +4,7 @@ import { StoreContext } from '../../context/StoreContext';
 import { useNavigate } from "react-router-dom";
 
 const Booking = () => {
-    const { selectedServices, Service_list, getTotalAmount, token, getAuthAxios } = useContext(StoreContext);
+    const { selectedServices, Service_list, getTotalAmount, token, getAuthAxios, clearServices } = useContext(StoreContext);
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
@@ -63,12 +63,15 @@ const Booking = () => {
                 });
             });
 
+            // ✅ Await responses inside the async function
             const responses = await Promise.all(bookingPromises);
 
             // Check if all bookings succeeded
             const success = responses.every(res => res.data.success);
+
             if (success) {
                 alert("Booking(s) created successfully!");
+                clearServices(); // clear selected services after booking
                 navigate("/my-bookings");
             } else {
                 const failedMessages = responses

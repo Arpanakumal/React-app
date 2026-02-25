@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { ToastContainer } from 'react-toastify';
-import './index.css';
+import { ToastContainer } from "react-toastify";
+import "./index.css";
 import Navbar from "./components/navbar/Navbar";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/home/home";
@@ -11,9 +11,11 @@ import ServiceDetail from "./pages/ServiceDetail/ServiceDetail";
 import Footer from "./components/Footer/Footer";
 import Contact from "./pages/Contact/Contact";
 import About from "./pages/Aboutus/About";
-import LoginPopup from './components/LoginPopup/Loginpopup';
+import LoginPopup from "./components/LoginPopup/Loginpopup";
 import StoreContextProvider from "./context/StoreContext";
 import MyProfile from "./pages/MyProfile/MyProfile";
+import MyBooking from "./pages/MyBooking/MyBooking";
+import ProtectedRoute from "./routes/ProtectedRoute";
 
 const App = () => {
   const [showLogin, setShowLogin] = useState(false);
@@ -21,7 +23,8 @@ const App = () => {
   return (
     <StoreContextProvider>
       <BrowserRouter>
-      <ToastContainer/>
+        <ToastContainer />
+
         {showLogin && <LoginPopup setShowLogin={setShowLogin} />}
 
         <div className="app">
@@ -29,14 +32,49 @@ const App = () => {
 
           <div className="content">
             <Routes>
+
               <Route path="/" element={<Home />} />
               <Route path="/service" element={<ServiceDisplay />} />
               <Route path="/service/:id" element={<ServiceDetail />} />
-              <Route path="/book" element={<Book />} />
-              <Route path="/booking" element={<BookingConfirmation />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
-              <Route path="/profile" element={<MyProfile />}></Route>
+
+      
+              <Route
+                path="/book"
+                element={
+                  <ProtectedRoute allowedRole="customer">
+                    <Book />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/booking"
+                element={
+                  <ProtectedRoute allowedRole="customer">
+                    <BookingConfirmation />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute allowedRole="customer">
+                    <MyProfile />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/my-bookings"
+                element={
+                  <ProtectedRoute allowedRole="customer">
+                    <MyBooking />
+                  </ProtectedRoute>
+                }
+              />
             </Routes>
           </div>
 
@@ -44,7 +82,6 @@ const App = () => {
         </div>
       </BrowserRouter>
     </StoreContextProvider>
-
   );
 };
 

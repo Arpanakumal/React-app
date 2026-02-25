@@ -1,74 +1,76 @@
-import React, { useState, useEffect } from 'react';
-
-const mockBookings = [
-    {
-        id: "b1",
-        services: [
-            { name: "Haircut", providers: 1, provider: { name: "John Doe", phone: "12345", email: "john@example.com" } },
-        ],
-        date: "2026-01-20",
-        time: "15:00",
-        total: 500,
-    },
-    {
-        id: "b2",
-        services: [
-            { name: "Massage", providers: 2, provider: { name: "Alice Smith", phone: "67890", email: "alice@example.com" } },
-        ],
-        date: "2026-01-22",
-        time: "12:00",
-        total: 1200,
-    },
-];
+import React, { useEffect, useState, useContext } from "react";
+import axios from "axios";
+import './mybooking.css';
+import { StoreContext } from "../../context/StoreContext";
+import { toast } from "react-toastify";
 
 const MyBooking = () => {
+    const { url, token } = useContext(StoreContext);
     const [bookings, setBookings] = useState([]);
 
-
     useEffect(() => {
-        setBookings(mockBookings);
+        fetchBookings();
     }, []);
 
+    const fetchBookings = async () => {
+        try {
+            const res = await axios.get(`${url}/booking/user`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.data.success) setBookings(res.data.data);
+        } catch {
+            toast.error("Failed to load bookings");
+        }
+    };
 
-    const cancelBooking = (id) => {
-        const confirmCancel = window.confirm("Are you sure you want to cancel this booking?");
-        if (!confirmCancel) return;
-
-        setBookings((prev) => prev.filter(b => b.id !== id));
+    const cancelBooking = async (id) => {
+        if (!window.confirm("Cancel booking?")) return;
+        try {
+            const res = await axios.patch(`${url}/booking/${id}/cancel`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.data.success) {
+                toast.success("Booking cancelled");
+                fetchBookings();
+            }
+        } catch {
+            toast.error("Cancel failed");
+        }
     };
 
     return (
-        <div style={{ padding: '20px' }}>
-            <h2>My Bookings</h2>
-            {bookings.length === 0 ? (
-                <p>No bookings found.</p>
-            ) : (
-                bookings.map((booking) => (
-                    <div key={booking.id} style={{ border: '1px solid #ccc', padding: '15px', marginBottom: '15px', borderRadius: '5px' }}>
-                        <h4>Booking ID: {booking.id}</h4>
-                        <p><strong>Date:</strong> {booking.date}</p>
-                        <p><strong>Time:</strong> {booking.time}</p>
-                        <p><strong>Total:</strong> Rs.{booking.total}</p>
-                        <div>
-                            {booking.services.map((s, idx) => (
-                                <div key={idx} style={{ marginTop: '10px', paddingLeft: '10px' }}>
-                                    <p><strong>Service:</strong> {s.name}</p>
-                                    <p><strong>Providers:</strong> {s.providers}</p>
-                                    <p><strong>Provider Name:</strong> {s.provider.name}</p>
-                                    <p><strong>Phone:</strong> {s.provider.phone}</p>
-                                    <p><strong>Email:</strong> {s.provider.email}</p>
-                                </div>
-                            ))}
-                        </div>
-                        <button
-                            style={{ marginTop: '10px', backgroundColor: '#ff4d4f', color: '#fff', padding: '8px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                            onClick={() => cancelBooking(booking.id)}
-                        >
-                            Cancel Booking
-                        </button>
+        <div className="mybooking-container">
+            <h2 className="mybooking-title">My Bookings</h2>
+
+            {bookings.length === 0 && <p>No bookings found</p>}
+
+            {bookings.map(b => (
+                <div key={b._id} className="booking-card">
+                    <div className="booking-info">
+                        <h3>{b.service?.name || b.serviceName}</h3>
+                        <p>Date: {new Date(b.appointmentStart).toLocaleDateString()}</p>
+                        <p>Time: {new Date(b.appointmentStart).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        <p className={`status ${b.status}`}>{b.status}</p>
+
+
+                        <p>
+                            Total: Rs.{Number(b.finalPrice ?? 0).toFixed(2)}
+                        </p>
+                        <p>Address: {b.address?.city}</p>
+
+                        {b.providers?.length > 0 && b.providers.map(p => (
+                            <div key={p._id}>
+                                Provider: {p.name}<br />
+                                Phone: {p.phone}
+                            </div>
+                        ))}
                     </div>
-                ))
-            )}
+
+                    {b.status !== "completed" && b.status !== "cancelled" &&
+                        <button className="cancel-btn" onClick={() => cancelBooking(b._id)}>Cancel</button>
+                    }
+                </div>
+            ))}
         </div>
     );
 };
