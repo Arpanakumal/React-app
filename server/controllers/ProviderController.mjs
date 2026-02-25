@@ -409,25 +409,34 @@ export const getDashboardSummary = async (req, res) => {
     try {
         const providerId = req.user.id;
 
+
         const totalBookings = await Booking.countDocuments({
             providerCommissions: {
                 $elemMatch: { providerId: new mongoose.Types.ObjectId(providerId) }
             }
         });
 
+
         const pendingCommissionsAgg = await Booking.aggregate([
             {
                 $match: {
-                    providerIds: new mongoose.Types.ObjectId(providerId),
+                    "providerCommissions.providerId": new mongoose.Types.ObjectId(providerId),
                     status: "completed",
                     commissionPaid: false
                 }
             },
             {
+                $unwind: "$providerCommissions"
+            },
+            {
+                $match: {
+                    "providerCommissions.providerId": new mongoose.Types.ObjectId(providerId),
+                    "providerCommissions.accepted": true
+                }
+            },
+            {
                 $project: {
-                    commissionShare: {
-                        $divide: ["$commissionAmount", "$providerCount"]
-                    }
+                    commissionShare: "$providerCommissions.commissionShare"
                 }
             },
             {
@@ -438,9 +447,7 @@ export const getDashboardSummary = async (req, res) => {
             }
         ]);
 
-
-        const pendingCommission =
-            pendingCommissionsAgg[0]?.totalPending || 0;
+        const pendingCommission = pendingCommissionsAgg[0]?.totalPending || 0;
 
         res.json({
             success: true,
@@ -451,43 +458,52 @@ export const getDashboardSummary = async (req, res) => {
         });
 
     } catch (err) {
+        console.error("Error in getDashboardSummary:", err);
         res.status(500).json({ success: false, message: err.message });
     }
 };
 
 
 
-// GET provider commissions
 export const getProviderCommissions = async (req, res) => {
     try {
         const providerId = req.user.id;
 
+
         const bookings = await Booking.find({
-            providerIds: providerId,
+            "providerCommissions.providerId": providerId,
             status: "completed"
         })
             .populate("serviceId", "name")
             .sort({ endedAt: -1 });
 
-        const formatted = bookings.map(b => ({
-            _id: b._id,
-            service: b.serviceId?.name || "N/A",
-            finalPrice: b.finalPrice,
-            commissionPercent: b.commissionPercent,
-            commissionAmount: b.commissionAmount / (b.providerCount || 1),
-            providerEarning: b.providerEarning / (b.providerCount || 1),
-            commissionPaid: b.commissionPaid
-        }));
 
+        const formatted = bookings.map(booking => {
+            const mySlot = booking.providerCommissions.find(
+                pc => pc.providerId?.toString() === providerId && pc.accepted
+            );
+
+            if (!mySlot) return null;
+
+            return {
+                _id: booking._id,
+                service: booking.serviceId?.name || "N/A",
+                finalPrice: booking.finalPrice,
+                commissionPercent: booking.commissionPercent,
+                commissionAmount: mySlot.commissionShare || 0,
+                providerEarning: mySlot.earningShare || 0,
+                commissionPaid: mySlot.commissionPaid || false,
+                endedAt: booking.endedAt
+            };
+        }).filter(Boolean);
 
         res.json({ success: true, data: formatted });
 
     } catch (err) {
+        console.error("Error in getProviderCommissions:", err);
         res.status(500).json({ success: false, message: err.message });
     }
 };
-
-
 
 
 export const getProviderBookingHistory = async (req, res) => {
@@ -580,24 +596,59 @@ export const updateMyProfile = async (req, res) => {
     }
 };
 
+
+
 export const updateAvailability = async (req, res) => {
     try {
         const providerId = req.user.id;
         const { workingDays, startTime, endTime, isAvailable } = req.body;
 
         const provider = await Provider.findById(providerId);
-        if (!provider) return res.status(404).json({ success: false, message: "Provider not found" });
+        if (!provider)
+            return res.status(404).json({ success: false, message: "Provider not found" });
 
-        provider.availability = {
-            workingDays,
-            startTime,
-            endTime,
-            isAvailable: isAvailable ?? provider.availability.isAvailable
-        };
+        if (!Array.isArray(workingDays)) {
+            return res.status(400).json({
+                success: false,
+                message: "Working days must be an array"
+            });
+        }
+
+        if (!startTime || !endTime) {
+            return res.status(400).json({
+                success: false,
+                message: "Start time and end time are required"
+            });
+        }
+
+        if (startTime >= endTime) {
+            return res.status(400).json({
+                success: false,
+                message: "End time must be after start time"
+            });
+        }
+
+
+        if (!provider.availability) {
+            provider.availability = {};
+        }
+
+        provider.availability.workingDays = workingDays;
+        provider.availability.startTime = startTime;
+        provider.availability.endTime = endTime;
+        provider.availability.isAvailable =
+            typeof isAvailable === "boolean"
+                ? isAvailable
+                : provider.availability.isAvailable ?? true;
 
         await provider.save();
 
-        res.json({ success: true, message: "Availability updated", data: provider.availability });
+        res.json({
+            success: true,
+            message: "Availability updated",
+            data: provider.availability
+        });
+
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: "Server error" });

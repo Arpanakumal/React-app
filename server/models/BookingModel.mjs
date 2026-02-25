@@ -3,8 +3,8 @@ import mongoose from "mongoose";
 const providerCommissionSchema = new mongoose.Schema({
     providerId: { type: mongoose.Schema.Types.ObjectId, ref: "Provider", default: null },
     accepted: { type: Boolean, default: false },
-    rejected: { type: Boolean, default: false }, 
-    earning: { type: Number, default: 0 },     
+    rejected: { type: Boolean, default: false },
+    earning: { type: Number, default: 0 },
     commissionPaid: { type: Boolean, default: false }
 });
 
@@ -13,13 +13,13 @@ const bookingSchema = new mongoose.Schema({
     username: String,
     serviceId: { type: mongoose.Schema.Types.ObjectId, ref: "Service", required: true },
     providerCount: { type: Number, default: 1 },
-    providerIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Provider" }], 
+    providerIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Provider" }],
     providerCommissions: [providerCommissionSchema],
     customer: Object,
     phone: String,
     address: Object,
-    appointmentDate: Date,
-    appointmentTime: String,
+    appointmentStart: { type: Date, required: true },
+    appointmentEnd: { type: Date, required: true },
     notes: String,
     pricePerHour: Number,
     commissionPercent: Number,
@@ -31,9 +31,9 @@ const bookingSchema = new mongoose.Schema({
     startedAt: Date,
     endedAt: Date,
     hoursWorked: {
-    type: Number,
-    default: 0
-}
+        type: Number,
+        default: 0
+    }
 }, { timestamps: true });
 
 

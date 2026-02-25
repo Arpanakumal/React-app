@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-dotenv.config();
+
 
 import express from 'express';
 import mongoose from 'mongoose';
@@ -14,8 +14,9 @@ import messageRouter from './routes/MessageRoute.mjs';
 
 
 
+dotenv.config({ path: path.resolve('./.env') });
 
-
+console.log("ENV CHECK:", process.env.MONGO_URI, process.env.PORT);
 
 const app = express();
 app.use(express.json());

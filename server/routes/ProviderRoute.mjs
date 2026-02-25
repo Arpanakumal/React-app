@@ -33,8 +33,9 @@ const upload = multer({ storage });
 providerRouter.post("/add", authAdmin, upload.single("image"), addProvider);
 providerRouter.post("/login", loginProvider);
 
-providerRouter.get("/dashboard-summary", authmiddleware, getDashboardSummary);
+
 providerRouter.get("/commissions", authmiddleware, getProviderCommissions);
+providerRouter.get("/dashboard-summery",authmiddleware,getDashboardSummary);
 
 providerRouter.get("/booking/history", authmiddleware, getProviderBookingHistory);
 providerRouter.get("/profile", authmiddleware, getMyProfile);
