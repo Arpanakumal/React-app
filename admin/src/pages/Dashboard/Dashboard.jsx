@@ -191,7 +191,7 @@ const AdminDashboard = ({ url }) => {
                                         </td>
 
                                         <td>{displayStatus(b.status)}</td>
-                                        <td>{b.appointmentDate ? new Date(b.appointmentDate).toLocaleDateString() : 'N/A'}</td>
+                                        <td>{b.appointmentStart ? new Date(b.appointmentStart).toLocaleDateString() : 'N/A'}</td>
                                         <td>Rs. {jobValue}</td>
                                         <td>Rs. {b.commissionAmount || 0}</td>
                                         <td>

@@ -7,7 +7,6 @@ import { toast } from "react-toastify";
 const ProviderDashboard = () => {
     const [summary, setSummary] = useState({
         totalBookings: 0,
-        newRequests: 0,
         pendingCommission: 0,
     });
     const [bookings, setBookings] = useState([]);
@@ -18,6 +17,7 @@ const ProviderDashboard = () => {
     const currentProviderId = localStorage.getItem("provider_id");
 
     const navigate = useNavigate();
+
 
     const fetchRecentBookings = async () => {
         try {
@@ -40,17 +40,20 @@ const ProviderDashboard = () => {
         }
     };
 
-
-    const fetchSummary = async () => {
+    const fetchDashboardSummary = async () => {
         try {
             const res = await axios.get(`${API_URL}/api/provider/dashboard-summary`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (res.data.success) {
-                setSummary(res.data.data);
+                setSummary({
+                    totalBookings: res.data.data.totalBookings || 0,
+                    pendingCommission: res.data.data.pendingCommission || 0,
+                });
             }
         } catch (err) {
-            console.error("Error fetching summary:", err);
+            console.error("Error fetching dashboard summary:", err);
+            toast.error("Failed to load dashboard summary");
         }
     };
 
@@ -58,7 +61,7 @@ const ProviderDashboard = () => {
         const fetchAll = async () => {
             setLoading(true);
             await fetchRecentBookings();
-            await fetchSummary();
+            await fetchDashboardSummary();
             setLoading(false);
         };
         fetchAll();
@@ -80,6 +83,7 @@ const ProviderDashboard = () => {
         }
     };
 
+
     const handleEnd = async (bookingId) => {
         try {
             const res = await axios.patch(
@@ -100,49 +104,69 @@ const ProviderDashboard = () => {
 
     const pendingRequests = bookings.filter(b => b.status === "pending");
     const recentBookings = bookings.filter(b =>
-        ["accepted", "in-progress"].includes(b.status)
+        ["accepted", "in-progress", "completed"].includes(b.status)
     );
 
     return (
         <div className="dashboard-container">
             <h2>Dashboard</h2>
 
+
             <div className="kpi-cards">
-                <div className="card new-requests" style={{ cursor: "pointer", position: "relative" }} onClick={() => navigate("/provider/booking")}>
+                <div
+                    className="card new-requests"
+                    onClick={() => navigate("/provider/booking")}
+                >
                     <h3>New Requests</h3>
-                    <p>{pendingRequests.length}</p>
-                    {pendingRequests.length > 0 && <span className="badge">{pendingRequests.length}</span>}
+                    <p className="kpi-number">{pendingRequests.length}</p>
                 </div>
 
-                <div className="card total-bookings" style={{ cursor: "pointer" }} onClick={() => navigate("/provider/history")}>
+                <div
+                    className="card total-bookings"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate("/provider/history")}
+                >
                     <h3>Total Bookings</h3>
                     <p>{summary.totalBookings}</p>
                 </div>
 
-                <div className="card pending-commission" style={{ cursor: "pointer" }} onClick={() => navigate("/provider/commission")}>
+                <div
+                    className="card pending-commission"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate("/provider/commission")}
+                >
                     <h3>Pending Commission</h3>
-                    <p>Rs. {Number(summary.pendingCommission || 0).toFixed(2)}</p>
+                    <p>Rs. {Number(summary.pendingCommission).toFixed(2)}</p>
                 </div>
             </div>
 
             <h3>Recent Bookings</h3>
+
             {recentBookings.length === 0 ? (
                 <p>No recent bookings.</p>
             ) : (
                 recentBookings.map(b => {
 
                     const partnerProviders = (b.providerCommissions || [])
-                        .filter(pc => pc.accepted && pc.providerId && pc.providerId._id?.toString() !== currentProviderId)
+                        .filter(
+                            pc =>
+                                pc.accepted &&
+                                pc.providerId &&
+                                pc.providerId._id?.toString() !== currentProviderId
+                        )
                         .map(pc => ({
                             id: pc.providerId._id,
                             name: pc.providerId?.name || "N/A",
                             phone: pc.providerId?.phone || "N/A",
-                            earning: pc.earning || pc.commissionShare || 0
+                            earning: pc.earningShare || pc.commissionShare || 0
                         }));
+
+                    const mySlot = (b.providerCommissions || []).find(
+                        pc => pc.providerId?._id?.toString() === currentProviderId
+                    );
 
                     return (
                         <div key={b._id} className="booking-block" style={{ marginBottom: "2rem" }}>
-
                             <table className="booking-table">
                                 <thead>
                                     <tr>
@@ -162,19 +186,13 @@ const ProviderDashboard = () => {
                                     <tr>
                                         <td>{b.customer?.name || "N/A"}</td>
                                         <td>{b.service?.name || "N/A"}</td>
-                                        <td>{b.appointmentDate ? new Date(b.appointmentDate).toLocaleDateString() : "N/A"}</td>
-                                        <td>{b.appointmentTime || "N/A"}</td>
+                                        <td>{b.appointmentStart ? new Date(b.appointmentStart).toLocaleDateString() : "N/A"}</td>
+                                        <td>{b.appointmentStart ? new Date(b.appointmentStart).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "N/A"}</td>
                                         <td>{b.status}</td>
+                                        <td>{b.hoursWorked?.toFixed(2) || "-"}</td>
                                         <td>{b.finalPrice?.toFixed(2) || "-"}</td>
-                                        <td>{b.status === "completed" ? b.commissionAmount?.toFixed(2) : "-"}</td>
-                                        <td>
-                                            {b.status === "completed"
-                                                ? Number(b.hoursWorked || 0).toFixed(2)
-                                                : b.status === "in-progress" && b.startedAt
-                                                    ? ((Date.now() - new Date(b.startedAt)) / 3600000).toFixed(2)
-                                                    : "-"}
-                                        </td>
-                                        <td>{b.status === "completed" ? b.providerEarning?.toFixed(2) : "-"}</td>
+                                        <td>{mySlot?.commissionShare?.toFixed(2) || "-"}</td>
+                                        <td>{mySlot?.earningShare?.toFixed(2) || "-"}</td>
                                         <td>
                                             {b.status === "accepted" && <button onClick={() => handleStart(b._id)}>Start</button>}
                                             {b.status === "in-progress" && <button onClick={() => handleEnd(b._id)}>End</button>}

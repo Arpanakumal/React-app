@@ -60,7 +60,7 @@ const BookingDetail = ({ url }) => {
                 </p>
                 <p><strong>Provider Count:</strong> {booking.providerCount || 1}</p>
                 <p>
-                    <strong>Appointment:</strong> {new Date(booking.appointmentDate).toLocaleDateString()} at {booking.appointmentTime}
+                    <strong>Appointment:</strong> {new Date(booking.appointmentStart).toLocaleDateString()} at {booking.appointmentStart}
                 </p>
                 <p>
                     <strong>Address:</strong> {booking.address?.street || "-"}, {booking.address?.city || "-"}

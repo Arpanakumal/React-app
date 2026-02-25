@@ -49,7 +49,7 @@ const Navbar = () => {
         localStorage.removeItem("provider_role");
         localStorage.removeItem("provider_name");
         localStorage.removeItem("provider_id");
-        window.location.href = "http://localhost:3000";
+        window.location.href = "http://localhost:5173/provider/login";
     };
 
     return (
