@@ -115,7 +115,7 @@ export const getRevenueReport = async (req, res) => {
 
         const overTimeAgg = await Booking.aggregate([
             { $match: { status: 'completed', commissionPaid: true } },
-            { $group: { _id: groupBy, total: { $sum: "$commissionAmount" } } },
+            { $group: { _id: "$providerCommissions.providerId", totalCommission: { $sum: "$providerCommissions.commissionShare" } } },
             { $sort: { "_id.year": 1, "_id.month": 1, "_id.week": 1 } }
         ]);
 
@@ -194,7 +194,7 @@ export const getRevenueReport = async (req, res) => {
                     serviceName: "$serviceInfo.name",
                     providerId: "$providerInfo._id",
                     providerName: "$providerInfo.name",
-                    commissionAmount: "$providerCommissions.commissionAmount",
+                    commissionAmount: "$providerCommissions.commissionShare",
                     commissionPaid: "$providerCommissions.commissionPaid",
                     paidAt: "$updatedAt"
                 }
@@ -211,6 +211,8 @@ export const getRevenueReport = async (req, res) => {
     }
 };
 
+
+
 export const getPendingCommissions = async (req, res) => {
     try {
         const bookings = await Booking.find({ status: "completed", commissionPaid: false })
@@ -221,13 +223,13 @@ export const getPendingCommissions = async (req, res) => {
 
         bookings.forEach(b => {
             b.providerCommissions.forEach(pc => {
-                if (!pc.commissionPaid) {
+                if (pc.accepted && !pc.commissionPaid) {
                     pendingList.push({
                         bookingId: b._id,
                         service: b.serviceId?.name || "N/A",
                         providerId: pc.providerId?._id,
                         providerName: pc.providerId?.name || "N/A",
-                        commissionAmount: pc.earning * (b.commissionPercent / 100),
+                        commissionAmount: pc.commissionShare || 0,
                         date: b.createdAt
                     });
                 }
@@ -241,27 +243,45 @@ export const getPendingCommissions = async (req, res) => {
     }
 };
 
+
+
 export const markCommissionPaid = async (req, res) => {
     try {
         const { bookingId, providerId } = req.body;
 
         const booking = await Booking.findById(bookingId);
-        if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
+        if (!booking) {
+            return res.status(404).json({ success: false, message: "Booking not found" });
+        }
 
+        const slot = booking.providerCommissions.find(
+            pc => pc.providerId?.toString() === providerId
+        );
 
-        const slot = booking.providerCommissions.find(pc => pc.providerId?.toString() === providerId);
-        if (!slot) return res.status(404).json({ success: false, message: "Provider commission not found" });
+        if (!slot) {
+            return res.status(404).json({ success: false, message: "Provider commission not found" });
+        }
+
+        if (slot.commissionPaid) {
+            return res.json({ success: true, message: "Already marked as paid" });
+        }
 
         slot.commissionPaid = true;
 
-        booking.commissionPaid = booking.providerCommissions.every(pc => pc.commissionPaid);
+
+        booking.commissionPaid = booking.providerCommissions
+            .filter(pc => pc.accepted)
+            .every(pc => pc.commissionPaid);
 
         await booking.save();
 
-        res.json({ success: true, message: "Commission marked as paid", data: booking });
+        res.json({
+            success: true,
+            message: "Commission marked as paid"
+        });
 
     } catch (err) {
-        console.error(err);
+        console.error("Mark commission error:", err);
         res.status(500).json({ success: false, message: "Server error" });
     }
 };

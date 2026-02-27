@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 import Booking from "../models/BookingModel.mjs";
 import Service from "../models/ServiceModel.mjs";
 import Provider from "../models/ProviderModel.mjs";
@@ -539,4 +541,3 @@ export const updateBookingStatus = async (req, res) => {
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
-

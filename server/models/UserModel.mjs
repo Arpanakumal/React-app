@@ -7,6 +7,9 @@ const userSchema = new mongoose.Schema({
     role: { type: String, default: "customer" },
     isActive: { type: Boolean, default: true },
 
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date }
+
 }, { timestamps: true });
 
 export default mongoose.model("User", userSchema);

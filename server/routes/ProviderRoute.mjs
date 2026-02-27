@@ -17,7 +17,9 @@ import {
     toggleProviderStatus,
     updateAvailability,
     startBooking,
-    endBooking
+    endBooking,
+    forgotPassword,
+    resetPassword
 } from "../controllers/ProviderController.mjs";
 
 const providerRouter = express.Router();
@@ -35,7 +37,7 @@ providerRouter.post("/login", loginProvider);
 
 
 providerRouter.get("/commissions", authmiddleware, getProviderCommissions);
-providerRouter.get("/dashboard-summery",authmiddleware,getDashboardSummary);
+providerRouter.get("/dashboard-summary", authmiddleware, getDashboardSummary);
 
 providerRouter.get("/booking/history", authmiddleware, getProviderBookingHistory);
 providerRouter.get("/profile", authmiddleware, getMyProfile);
@@ -44,8 +46,8 @@ providerRouter.put("/profile", authmiddleware, upload.single("image"), updateMyP
 providerRouter.put("/availability", authmiddleware, updateAvailability);
 
 
-
-
+providerRouter.post("/forgot-password", forgotPassword);
+providerRouter.post("/reset-password", resetPassword);
 
 
 providerRouter.patch("/booking/:bookingId/start", authmiddleware, startBooking);
@@ -58,7 +60,11 @@ providerRouter.get("/:id", getProviderById);
 providerRouter.put("/:id", authmiddleware, upload.single("image"), updateProvider);
 
 providerRouter.patch("/:id/toggle", toggleProviderStatus);
-providerRouter.patch("/booking/respond", authmiddleware, respondToBooking)
+providerRouter.patch("/booking/respond", authmiddleware, respondToBooking);
+
+
+
+
 
 providerRouter.get("/", listProviders);
 

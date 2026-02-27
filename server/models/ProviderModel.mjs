@@ -10,12 +10,13 @@ const providerSchema = new mongoose.Schema({
     defaultCommissionPercent: { type: Number, default: 10 },
     available: { type: Boolean, default: true },
     availability: {
-    workingDays: [String],
-    startTime: String,   
-    endTime: String,  
-    isAvailable: { type: Boolean, default: true } 
-}
-
+        workingDays: [String],
+        startTime: String,
+        endTime: String,
+        isAvailable: { type: Boolean, default: true }
+    },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date
 }, { timestamps: true });
 
 

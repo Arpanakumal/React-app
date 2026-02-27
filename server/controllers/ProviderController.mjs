@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 import validator from "validator";
 import crypto from 'crypto';
 import { calculateProviderEarnings } from "../utils/BookingHelpers.mjs";
+import UserModel from "../models/UserModel.mjs";
 
 
 
@@ -651,6 +652,101 @@ export const updateAvailability = async (req, res) => {
 
     } catch (err) {
         console.error(err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+
+export const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email || !validator.isEmail(email)) {
+            return res.status(400).json({ success: false, message: "Valid email is required" });
+        }
+
+        const provider = await Provider.findOne({ email });
+
+        if (!provider) {
+
+            return res.json({
+                success: true,
+                message: "Redirect to reset password page",
+                redirect: true
+            });
+        }
+
+
+        const token = jwt.sign(
+            { id: provider._id, role: "provider" },
+            process.env.JWT_SECRET,
+            { expiresIn: "1h" }
+        );
+
+
+        provider.resetPasswordToken = token;
+        provider.resetPasswordExpires = Date.now() + 3600000;
+        await provider.save();
+
+
+        res.json({
+            success: true,
+            message: "Redirect to reset password page",
+            redirect: true,
+            resetToken: token
+        });
+
+    } catch (err) {
+        console.error("Forgot password error:", err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+
+
+export const resetPassword = async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+
+        if (!token || !newPassword) {
+            return res.status(400).json({ success: false, message: "Token and new password are required" });
+        }
+
+
+        let decoded;
+        try {
+            decoded = jwt.verify(token, process.env.JWT_SECRET);
+        } catch (err) {
+            return res.status(400).json({ success: false, message: "Invalid or expired token" });
+        }
+
+        const provider = await Provider.findById(decoded.id);
+        if (!provider) {
+            return res.status(404).json({ success: false, message: "Provider not found" });
+        }
+
+        if (
+            !provider.resetPasswordToken ||
+            provider.resetPasswordToken !== token ||
+            provider.resetPasswordExpires < Date.now()
+        ) {
+            return res.status(400).json({ success: false, message: "Token expired or invalid" });
+        }
+
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        provider.password = hashedPassword;
+
+    
+        provider.resetPasswordToken = undefined;
+        provider.resetPasswordExpires = undefined;
+
+        await provider.save();
+
+        res.json({ success: true, message: "Password reset successfully" });
+
+    } catch (err) {
+        console.error("Reset password error:", err);
         res.status(500).json({ success: false, message: "Server error" });
     }
 };

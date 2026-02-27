@@ -25,7 +25,7 @@ export const calculateProviderEarnings = (booking, hoursWorked = null) => {
         ? providerEarning / acceptedProviders.length
         : 0;
 
-    // Update earnings for each provider slot
+
     booking.providerCommissions = booking.providerCommissions.map(pc => {
         if (pc.accepted) {
             return {

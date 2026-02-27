@@ -4,7 +4,10 @@ const providerCommissionSchema = new mongoose.Schema({
     providerId: { type: mongoose.Schema.Types.ObjectId, ref: "Provider", default: null },
     accepted: { type: Boolean, default: false },
     rejected: { type: Boolean, default: false },
-    earning: { type: Number, default: 0 },
+
+    commissionShare: { type: Number, default: 0 },   
+    earningShare: { type: Number, default: 0 },    
+
     commissionPaid: { type: Boolean, default: false }
 });
 

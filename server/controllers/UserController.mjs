@@ -86,7 +86,7 @@ export const loginUser = async (req, res) => {
             { expiresIn: "7d" }
         );
 
-        
+
         res.json({
             success: true,
             token,
@@ -206,6 +206,83 @@ export const deleteUser = async (req, res) => {
         res.json({ success: true, message: "User deleted" });
     } catch (err) {
         console.error(err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+
+
+export const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email || !validator.isEmail(email)) {
+            return res.status(400).json({ success: false, message: "Valid email is required" });
+        }
+
+        const user = await userModel.findOne({ email });
+
+        if (!user) {
+            return res.json({
+                success: true,
+                message: "Redirect to reset password page",
+                redirect: true
+            });
+        }
+        const token = jwt.sign(
+            { id: user._id, role: "customer" },
+            process.env.JWT_SECRET
+        );
+
+        user.resetPasswordToken = token;
+        user.resetPasswordExpires = Date.now() + 3600000;
+        await user.save();
+
+        res.json({
+            success: true,
+            message: "Redirect to reset password page",
+            redirect: true,
+            resetToken: token
+        });
+    } catch (err) {
+        console.error("User forgot password error:", err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+
+export const resetPassword = async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+
+        if (!token || !newPassword) {
+            return res.status(400).json({ success: false, message: "Token and new password are required" });
+        }
+
+        let decoded;
+        try {
+            decoded = jwt.verify(token, process.env.JWT_SECRET, { ignoreExpiration: true });
+        } catch (err) {
+            return res.status(400).json({ success: false, message: "Invalid token" });
+        }
+        const user = await userModel.findById(decoded.id);
+        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+        if (!user.resetPasswordToken ||
+            user.resetPasswordExpires < Date.now()) {
+            return res.status(400).json({ success: false, message: "Token expired" });
+        }
+
+        user.password = await bcrypt.hash(newPassword, 10);
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+
+        await user.save();
+
+        res.json({ success: true, message: "Password reset successfully" });
+
+    } catch (err) {
+        console.error("User reset password error:", err);
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
