@@ -1,0 +1,9 @@
+.forgot-popup {
+    width: 100%;
+    max-width: 400px;
+    margin: 50px auto; /* centered but not full-screen overlay */
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}

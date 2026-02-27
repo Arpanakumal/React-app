@@ -3,6 +3,7 @@ import { ToastContainer } from "react-toastify";
 import "./index.css";
 import Navbar from "./components/navbar/Navbar";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import Home from "./pages/home/home";
 import Book from "./pages/Book/Book";
 import BookingConfirmation from "./pages/BookingConfirmation/Booking";
@@ -12,10 +13,15 @@ import Footer from "./components/Footer/Footer";
 import Contact from "./pages/Contact/Contact";
 import About from "./pages/Aboutus/About";
 import LoginPopup from "./components/LoginPopup/Loginpopup";
+
 import StoreContextProvider from "./context/StoreContext";
 import MyProfile from "./pages/MyProfile/MyProfile";
 import MyBooking from "./pages/MyBooking/MyBooking";
 import ProtectedRoute from "./routes/ProtectedRoute";
+
+
+import UserForgotPassword from "./components/LoginPopup/UserForgotPassword";
+import UserResetPassword from "./components/LoginPopup/UserResetpassword";
 
 const App = () => {
   const [showLogin, setShowLogin] = useState(false);
@@ -39,7 +45,10 @@ const App = () => {
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
 
-      
+
+              <Route path="/user/forgot-password" element={<UserForgotPassword />} />
+              <Route path="/user/reset-password/:token" element={<UserResetPassword />} />
+
               <Route
                 path="/book"
                 element={
