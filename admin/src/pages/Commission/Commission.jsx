@@ -73,7 +73,7 @@ const Commission = ({ url }) => {
                             <tr key={`${pc.bookingId}-${pc.providerId}`}>
                                 <td>{pc.service || "N/A"}</td>
                                 <td>{pc.providerName || "N/A"}</td>
-                                <td>{pc.commissionAmount.toFixed(2)}</td>
+                                <td>{Number(pc.commissionAmount || 0).toFixed(2)}</td>
                                 <td>{new Date(pc.date).toLocaleDateString()}</td>
                                 <td>
                                     <button

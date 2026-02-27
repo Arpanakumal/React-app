@@ -32,7 +32,6 @@ const Providerlogin = () => {
                 localStorage.setItem("provider_name", res.data.name);
                 localStorage.setItem("provider_id", res.data.id);
 
-                // Redirect to provider dashboard
                 navigate("/provider/dashboard");
             } else {
                 alert(res.data.message || "Invalid credentials");
@@ -74,6 +73,10 @@ const Providerlogin = () => {
                                 alt="toggle"
                             />
                         </span>
+                    </div>
+
+                    <div className="forgot-password">
+                        <a href="/provider/forgot-password">Forgot Password?</a>
                     </div>
                 </div>
 

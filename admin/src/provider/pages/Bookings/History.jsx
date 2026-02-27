@@ -48,8 +48,8 @@ const Bookinghistory = ({ url }) => {
                                 <td>{b.serviceId?.name || "N/A"}</td>
                                 <td>{b.status}</td>
                                 <td>
-                                    {b.appointmentDate
-                                        ? new Date(b.appointmentDate).toLocaleDateString()
+                                    {b.appointmentStart
+                                        ? `${new Date(b.appointmentStart).toLocaleDateString()} ${new Date(b.appointmentStart).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
                                         : "N/A"}
                                 </td>
 

@@ -104,7 +104,7 @@ const ProviderDashboard = () => {
 
     const pendingRequests = bookings.filter(b => b.status === "pending");
     const recentBookings = bookings.filter(b =>
-        ["accepted", "in-progress", "completed"].includes(b.status)
+        ["accepted", "in-progress"].includes(b.status)
     );
 
     return (

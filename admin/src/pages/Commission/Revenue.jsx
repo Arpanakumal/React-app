@@ -17,7 +17,7 @@ import {
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
 
 const Revenue = ({ url }) => {
-    const [period, setPeriod] = useState('monthly'); // weekly, monthly, yearly
+    const [period, setPeriod] = useState('monthly');
     const [revenueOverTime, setRevenueOverTime] = useState({ labels: [], data: [] });
     const [topProviders, setTopProviders] = useState([]);
     const [topServices, setTopServices] = useState([]);
@@ -42,7 +42,7 @@ const Revenue = ({ url }) => {
 
                 setRevenueOverTime({
                     labels: overTime.map(item => item.label),
-                    data: overTime.map(item => item.total)
+                    data: overTime.map(item => Number(item.total || 0))
                 });
 
                 setTopProviders(topProviders);
@@ -69,7 +69,7 @@ const Revenue = ({ url }) => {
         labels: topProviders.map(p => p.name),
         datasets: [{
             label: 'Commission Earned (Rs)',
-            data: topProviders.map(p => p.totalCommission),
+            data: topProviders.map(p => Number(p.totalCommission || 0)),
             backgroundColor: '#38a169'
         }]
     };
@@ -78,7 +78,7 @@ const Revenue = ({ url }) => {
         labels: topServices.map(s => s.name),
         datasets: [{
             label: 'Commission Earned (Rs)',
-            data: topServices.map(s => s.totalCommission),
+            data: topServices.map(s => Number(s.totalCommission || 0)),
             backgroundColor: '#dd6b20'
         }]
     };
@@ -128,8 +128,8 @@ const Revenue = ({ url }) => {
                             <tr key={i}>
                                 <td>{c.serviceName}</td>
                                 <td>{c.providerName}</td>
-                                <td>{c.commissionPaid ? "Yes" : "No"}</td>
-                                <td>{new Date(c.paidAt).toLocaleDateString()}</td>
+                                <td>{Number(c.commissionAmount || 0).toFixed(2)}</td>
+                                <td>{c.paidAt ? new Date(c.paidAt).toLocaleDateString() : "N/A"}</td>
                             </tr>
                         )) : (
                             <tr><td colSpan="4">No commissions paid in this period</td></tr>

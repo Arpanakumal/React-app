@@ -25,16 +25,20 @@ import Revenue from "./pages/Commission/Revenue";
 import Commission from "./pages/Commission/Commission";
 
 
+
 // Provider Pages
 import ProviderDashboard from "./provider/pages/Dashboard/Dashboard";
 import Providerlogin from "./provider/pages/login/Providerlogin";
 import ProviderBooking from "./provider/pages/Bookings/Booking";
 import ProviderMessage from "./provider/pages/message/Message";
 import ProviderProtectRoute from "./routes/ProviderProtectRoute";
-import Bookinghistory from "./provider/pages/Bookings/history";
+import Bookinghistory from "./provider/pages/Bookings/History";
 import BookingDetails from "./provider/pages/Bookings/BookingDetail";
 import Commisson from "./provider/pages/commission/Commisson";
 import Profile from "./provider/pages/Profile/Profile";
+import Resetpassword from "./provider/pages/login/Resetpassword";
+import Forgotpassword from "./provider/pages/login/Forgotpassword";
+
 
 
 const App = () => {
@@ -47,6 +51,8 @@ const App = () => {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/provider/login" element={<Providerlogin />} />
+        <Route path="/provider/forgot-password" element={<Forgotpassword />} />
+        <Route path="/provider/reset-password" element={<Resetpassword url={url} />} />
 
         {/* Admin Routes */}
         <Route
@@ -82,6 +88,7 @@ const App = () => {
               <ProviderLayout />
             </ProviderProtectRoute>
           }
+
         >
           <Route path="/provider/dashboard" element={<ProviderDashboard url={url} />} />
           <Route path="/provider/booking" element={<ProviderBooking />} />
@@ -90,6 +97,7 @@ const App = () => {
           <Route path="/provider/bookings/:id" element={<BookingDetails url={url} />} />
           <Route path="/provider/commission" element={<Commisson url={url} />} />
           <Route path="/provider/profile" element={<Profile url={url} />} />
+
 
         </Route>
       </Routes>
