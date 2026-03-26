@@ -27,15 +27,8 @@ const ServiceDetail = () => {
             <div className="service-detail-info">
                 <h2>{service.name}</h2>
                 <p>{service.description}</p>
-                <p><strong>{service.price_info}</strong></p>
+                <p><strong>Rs.{service.price_info} per hour </strong></p>
 
-                <div className="rating">
-                    {[1, 2, 3, 4, 5].map(star => (
-                        <span key={star}>
-                            {star <= Math.round(service.rating || 0) ? "⭐" : "☆"}
-                        </span>
-                    ))}
-                </div>
 
                 <button onClick={handleBooking}>
                     Continue to Booking

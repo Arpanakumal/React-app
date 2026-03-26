@@ -7,6 +7,8 @@ import { toast } from "react-toastify";
 const MyBooking = () => {
     const { url, token } = useContext(StoreContext);
     const [bookings, setBookings] = useState([]);
+    const [rating, setRating] = useState({});
+    const [review, setReview] = useState({});
 
     useEffect(() => {
         fetchBookings();
@@ -38,11 +40,41 @@ const MyBooking = () => {
         }
     };
 
+    const submitRating = async (bookingId, providerId) => {
+        if (!rating[providerId]) return toast.error("Select a rating");
+        try {
+            const res = await axios.post(`${url}/booking/rate`, {
+                bookingId,
+                providerId,
+                rating: Number(rating[providerId]),
+                review: review[providerId] || ""
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (res.data.success) {
+                toast.success("Rating submitted");
+                fetchBookings();
+                setRating(prev => ({ ...prev, [providerId]: "" }));
+                setReview(prev => ({ ...prev, [providerId]: "" }));
+            }
+        } catch {
+            toast.error("Rating failed");
+        }
+    };
+
+    const getAverageRating = (booking, providerId) => {
+        const ratings = booking.ratings?.filter(r => r.providerId === providerId) || [];
+        if (!ratings.length) return 0;
+        const sum = ratings.reduce((acc, r) => acc + r.rating, 0);
+        return (sum / ratings.length).toFixed(1);
+    };
+
     return (
         <div className="mybooking-container">
             <h2 className="mybooking-title">My Bookings</h2>
 
-            {bookings.length === 0 && <p>No bookings found</p>}
+            {bookings.length === 0 && <p className="no-bookings">No bookings found</p>}
 
             {bookings.map(b => (
                 <div key={b._id} className="booking-card">
@@ -51,17 +83,40 @@ const MyBooking = () => {
                         <p>Date: {new Date(b.appointmentStart).toLocaleDateString()}</p>
                         <p>Time: {new Date(b.appointmentStart).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                         <p className={`status ${b.status}`}>{b.status}</p>
-
-
-                        <p>
-                            Total: Rs.{Number(b.finalPrice ?? 0).toFixed(2)}
-                        </p>
-                        <p>Address: {b.address?.city}</p>
+                        <p>Total: Rs.{Number(b.finalPrice ?? 0).toFixed(2)}</p>
+                        <p>Address: {b.address?.city || "N/A"}</p>
 
                         {b.providers?.length > 0 && b.providers.map(p => (
-                            <div key={p._id}>
-                                Provider: {p.name}<br />
-                                Phone: {p.phone}
+                            <div key={p._id} className="provider-info">
+                                <p>Provider: {p.name}</p>
+                                <p>Phone: {p.phone}</p>
+
+
+                                {b.ratings?.some(r => r.providerId === p._id) && (
+                                    <p>
+                                        Average Rating: {"★".repeat(Math.round(getAverageRating(b, p._id)))}{"☆".repeat(5 - Math.round(getAverageRating(b, p._id)))} ({getAverageRating(b, p._id)})
+                                    </p>
+                                )}
+
+
+                                {b.status === "completed" && !b.ratings?.some(r => r.providerId === p._id) && (
+                                    <div className="rating-section">
+                                        <select
+                                            value={rating[p._id] || ""}
+                                            onChange={e => setRating({ ...rating, [p._id]: e.target.value })}
+                                        >
+                                            <option value="">Rate</option>
+                                            {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
+                                        </select>
+                                        <input
+                                            type="text"
+                                            placeholder="Leave a review"
+                                            value={review[p._id] || ""}
+                                            onChange={e => setReview({ ...review, [p._id]: e.target.value })}
+                                        />
+                                        <button onClick={() => submitRating(b._id, p._id)}>Submit</button>
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
