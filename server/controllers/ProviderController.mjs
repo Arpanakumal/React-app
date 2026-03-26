@@ -7,6 +7,7 @@ import validator from "validator";
 import crypto from 'crypto';
 import { calculateProviderEarnings } from "../utils/BookingHelpers.mjs";
 import UserModel from "../models/UserModel.mjs";
+import { rankProviders } from "../utils/ProviderRanking.mjs";
 
 
 
@@ -117,15 +118,16 @@ export const loginProvider = async (req, res) => {
 export const listProviders = async (req, res) => {
     try {
         const providers = await Provider.find()
-            .select("name image servicesOffered available")
             .populate("servicesOffered", "name");
 
-        res.json({ success: true, data: providers });
+        const rankedProviders = rankProviders(providers);
+
+        res.json({ success: true, data: rankedProviders });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: err.message });
     }
-}
+};
 
 
 
@@ -737,7 +739,7 @@ export const resetPassword = async (req, res) => {
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         provider.password = hashedPassword;
 
-    
+
         provider.resetPasswordToken = undefined;
         provider.resetPasswordExpires = undefined;
 
@@ -748,5 +750,50 @@ export const resetPassword = async (req, res) => {
     } catch (err) {
         console.error("Reset password error:", err);
         res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+
+
+export const getProviderRatings = async (req, res) => {
+    try {
+        const providerId = req.params.id;
+
+        const bookings = await Booking.find({
+            "ratings.providerId": providerId
+        })
+            .populate("customer", "name")
+            .populate("serviceId", "name");
+
+        let ratings = [];
+
+        bookings.forEach(b => {
+            b.ratings.forEach(r => {
+                if (r.providerId.toString() === providerId) {
+                    ratings.push({
+                        rating: r.rating,
+                        review: r.review,
+                        userName: b.customer?.name || "User",
+                        service: b.serviceId?.name || "N/A",
+                        date: b.createdAt
+                    });
+                }
+            });
+        });
+
+        const avgRating =
+            ratings.length > 0
+                ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length
+                : 0;
+
+        res.json({
+            success: true,
+            ratings,
+            averageRating: avgRating.toFixed(1)
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: err.message });
     }
 };

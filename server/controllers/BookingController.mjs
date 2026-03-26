@@ -541,3 +541,74 @@ export const updateBookingStatus = async (req, res) => {
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
+
+
+// Rate a provider
+export const rateProvider = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { bookingId, providerId, rating, review } = req.body;
+
+        if (!bookingId || !providerId || !rating) {
+            return res.status(400).json({ success: false, message: "Booking ID, Provider ID, and rating are required" });
+        }
+
+        if (rating < 1 || rating > 5) {
+            return res.status(400).json({ success: false, message: "Rating must be between 1 and 5" });
+        }
+
+        const booking = await Booking.findById(bookingId);
+        if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
+
+        if (booking.userId.toString() !== userId) {
+            return res.status(403).json({ success: false, message: "You can only rate your own bookings" });
+        }
+
+        if (booking.status !== "completed") {
+            return res.status(400).json({ success: false, message: "You can only rate a completed booking" });
+        }
+
+
+        if (!booking.providerIds.map(id => id.toString()).includes(providerId)) {
+            return res.status(400).json({ success: false, message: "Provider not part of this booking" });
+        }
+
+
+        if (!booking.ratings) booking.ratings = [];
+        const existingRatingIndex = booking.ratings?.findIndex(r => r.providerId.toString() === providerId);
+
+        if (existingRatingIndex >= 0) {
+
+            booking.ratings[existingRatingIndex] = { providerId, rating, review };
+        } else {
+            booking.ratings.push({ providerId, rating, review });
+        }
+
+        await booking.save();
+
+
+        const providerBookings = await Booking.find({
+            providerIds: providerId,
+            "ratings.providerId": providerId
+        });
+
+        let total = 0;
+        let count = 0;
+        providerBookings.forEach(b => {
+            const r = b.ratings.find(r => r.providerId.toString() === providerId);
+            if (r) {
+                total += r.rating;
+                count++;
+            }
+        });
+
+        const avgRating = count ? total / count : 0;
+
+        await Provider.findByIdAndUpdate(providerId, { averageRating: avgRating, ratingCount: count });
+
+        res.json({ success: true, message: "Provider rated successfully", averageRating: avgRating, ratingCount: count });
+    } catch (err) {
+        console.error("Error in rateProvider:", err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};

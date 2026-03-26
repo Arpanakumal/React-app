@@ -19,7 +19,8 @@ import {
     startBooking,
     endBooking,
     forgotPassword,
-    resetPassword
+    resetPassword,
+    getProviderRatings
 } from "../controllers/ProviderController.mjs";
 
 const providerRouter = express.Router();
@@ -34,38 +35,29 @@ const upload = multer({ storage });
 
 providerRouter.post("/add", authAdmin, upload.single("image"), addProvider);
 providerRouter.post("/login", loginProvider);
-
-
-providerRouter.get("/commissions", authmiddleware, getProviderCommissions);
-providerRouter.get("/dashboard-summary", authmiddleware, getDashboardSummary);
-
-providerRouter.get("/booking/history", authmiddleware, getProviderBookingHistory);
-providerRouter.get("/profile", authmiddleware, getMyProfile);
-providerRouter.get("/commissions", authmiddleware, getProviderCommissions);
-providerRouter.put("/profile", authmiddleware, upload.single("image"), updateMyProfile);
-providerRouter.put("/availability", authmiddleware, updateAvailability);
-
-
 providerRouter.post("/forgot-password", forgotPassword);
 providerRouter.post("/reset-password", resetPassword);
 
 
+providerRouter.get("/:id/ratings", getProviderRatings);
+
+
+providerRouter.get("/commissions", authmiddleware, getProviderCommissions);
+providerRouter.get("/dashboard-summary", authmiddleware, getDashboardSummary);
+providerRouter.get("/booking/history", authmiddleware, getProviderBookingHistory);
+providerRouter.get("/profile", authmiddleware, getMyProfile);
+providerRouter.put("/profile", authmiddleware, upload.single("image"), updateMyProfile);
+providerRouter.put("/availability", authmiddleware, updateAvailability);
+
+
+providerRouter.patch("/booking/respond", authmiddleware, respondToBooking);
 providerRouter.patch("/booking/:bookingId/start", authmiddleware, startBooking);
 providerRouter.patch("/booking/:bookingId/end", authmiddleware, endBooking);
 
 
-
-
-providerRouter.get("/:id", getProviderById);
-providerRouter.put("/:id", authmiddleware, upload.single("image"), updateProvider);
-
-providerRouter.patch("/:id/toggle", toggleProviderStatus);
-providerRouter.patch("/booking/respond", authmiddleware, respondToBooking);
-
-
-
-
-
-providerRouter.get("/", listProviders);
+providerRouter.get("/", listProviders); 
+providerRouter.get("/:id", getProviderById); 
+providerRouter.put("/:id", authmiddleware, upload.single("image"), updateProvider); 
+providerRouter.patch("/:id/toggle", toggleProviderStatus); 
 
 export default providerRouter;

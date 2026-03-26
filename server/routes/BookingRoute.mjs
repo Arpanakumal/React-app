@@ -10,7 +10,8 @@ import {
     completeBooking,
     listBookingsForProvider,
     listBookingsForUser,
-    cancelBooking
+    cancelBooking,
+    rateProvider
 } from "../controllers/BookingController.mjs";
 
 
@@ -23,6 +24,8 @@ bookingRouter.get("/provider", authmiddleware, listBookingsForProvider);
 bookingRouter.get("/user", authmiddleware, listBookingsForUser);
 bookingRouter.patch("/booking/:bookingId/cancel", authmiddleware, cancelBooking);
 bookingRouter.put("/complete/:id", authmiddleware, completeBooking);
+
+bookingRouter.post("/rate", authmiddleware, rateProvider);
 
 bookingRouter.get("/:id", authmiddleware, getBookingById);
 bookingRouter.put("/update/:id", authmiddleware, updateBookingStatus);

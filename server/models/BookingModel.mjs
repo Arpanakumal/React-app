@@ -5,12 +5,11 @@ const providerCommissionSchema = new mongoose.Schema({
     accepted: { type: Boolean, default: false },
     rejected: { type: Boolean, default: false },
 
-    commissionShare: { type: Number, default: 0 },   
-    earningShare: { type: Number, default: 0 },    
+    commissionShare: { type: Number, default: 0 },
+    earningShare: { type: Number, default: 0 },
 
     commissionPaid: { type: Boolean, default: false }
 });
-
 const bookingSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     username: String,
@@ -33,10 +32,16 @@ const bookingSchema = new mongoose.Schema({
     status: { type: String, default: "pending" },
     startedAt: Date,
     endedAt: Date,
-    hoursWorked: {
-        type: Number,
-        default: 0
-    }
+    hoursWorked: { type: Number, default: 0 },
+
+
+    ratings: [
+        {
+            providerId: { type: mongoose.Schema.Types.ObjectId, ref: "Provider" },
+            rating: { type: Number, min: 1, max: 5 },
+            review: String,
+        }
+    ]
 }, { timestamps: true });
 
 
