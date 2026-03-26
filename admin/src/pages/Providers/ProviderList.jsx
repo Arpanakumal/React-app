@@ -10,11 +10,13 @@ const ProviderList = ({ url }) => {
     const [services, setServices] = useState([]);
     const [selectedServices, setSelectedServices] = useState([]);
     const [loading, setLoading] = useState(false);
+
     const navigate = useNavigate();
 
     const fetchProviders = async () => {
         try {
             setLoading(true);
+
             const token = localStorage.getItem("token");
             if (!token) return toast.error("Admin not logged in");
 
@@ -22,14 +24,20 @@ const ProviderList = ({ url }) => {
                 headers: { atoken: token },
             });
 
-            if (res.data.success) {
-                setProviders(res.data.data);
-                const allServices = res.data.data.flatMap(p => p.servicesOffered.map(s => s.name));
-                setServices([...new Set(allServices)]);
-                setFilteredProviders([]);
-            } else {
-                toast.error("Failed to fetch providers");
+            if (!res.data.success) {
+                return toast.error("Failed to fetch providers");
             }
+
+            const data = res.data.data;
+
+            setProviders(data);
+
+            const allServices = data.flatMap(p =>
+                p.servicesOffered.map(s => s.name)
+            );
+            setServices([...new Set(allServices)]);
+
+            setFilteredProviders([]); 
         } catch (err) {
             console.error(err);
             toast.error("Server error while fetching providers");
@@ -42,15 +50,20 @@ const ProviderList = ({ url }) => {
         fetchProviders();
     }, []);
 
+
     useEffect(() => {
-        if (selectedServices.length === 0) {
-            setFilteredProviders([]);
-        } else {
-            const filtered = providers.filter(provider =>
+        let filtered = providers;
+
+        if (selectedServices.length > 0) {
+            filtered = providers.filter(provider =>
                 provider.servicesOffered?.some(s => selectedServices.includes(s.name))
             );
-            setFilteredProviders(filtered);
         }
+
+
+        filtered.sort((a, b) => (b.rankingScore || 0) - (a.rankingScore || 0));
+
+        setFilteredProviders(filtered);
     }, [selectedServices, providers]);
 
     const toggleService = (serviceName) => {
@@ -67,7 +80,6 @@ const ProviderList = ({ url }) => {
         <div className="list-container">
             <p className="list-title">All Providers</p>
 
-            {/* --- Filter --- */}
             <div className="service-filter">
                 <label>Filter by Services:</label>
                 <div className="service-options">
@@ -83,9 +95,10 @@ const ProviderList = ({ url }) => {
                 </div>
             </div>
 
-            {/* --- Providers --- */}
             <div className="list-table">
-                {filteredProviders.length === 0 ? (
+                {selectedServices.length === 0 ? (
+                    <p>Please select a service to view providers</p>
+                ) : filteredProviders.length === 0 ? (
                     <p>No providers found for selected services</p>
                 ) : (
                     filteredProviders.map(provider => (
@@ -99,12 +112,18 @@ const ProviderList = ({ url }) => {
                                 alt={provider.name}
                                 className="provider-image"
                             />
-                            <p>{provider.name}</p>
-                            <p>{provider.email}</p>
-                            <p>{provider.servicesOffered.map(s => s.name).join(", ")}</p>
+
+                            <p className="provider-name">{provider.name}</p>
+                            <p className="provider-email">{provider.email}</p>
+                            <p className="provider-services">
+                                {provider.servicesOffered.map(s => s.name).join(", ")}
+                            </p>
+
                             <p className={provider.available ? "status-active" : "status-inactive"}>
                                 {provider.available ? "Available" : "Not Available"}
                             </p>
+
+                            <p className="provider-score">⭐ Score: {provider.rankingScore?.toFixed(2) || 0}</p>
                         </div>
                     ))
                 )}

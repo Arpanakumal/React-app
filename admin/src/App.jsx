@@ -38,6 +38,7 @@ import Commisson from "./provider/pages/commission/Commisson";
 import Profile from "./provider/pages/Profile/Profile";
 import Resetpassword from "./provider/pages/login/Resetpassword";
 import Forgotpassword from "./provider/pages/login/Forgotpassword";
+import Review from "./provider/pages/reviews/Review";
 
 
 
@@ -97,6 +98,7 @@ const App = () => {
           <Route path="/provider/bookings/:id" element={<BookingDetails url={url} />} />
           <Route path="/provider/commission" element={<Commisson url={url} />} />
           <Route path="/provider/profile" element={<Profile url={url} />} />
+          <Route path="/provider/review" element={<Review url={url} />} />
 
 
         </Route>

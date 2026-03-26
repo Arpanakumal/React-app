@@ -94,8 +94,8 @@ const ProviderBooking = () => {
                         <tr key={b._id} onClick={() => navigate(`/provider/bookings/${b._id}`)}>
                             <td>{b.customer?.name || "N/A"}</td>
                             <td>{b.service?.name || "N/A"}</td>
-                            <td>{new Date(b.appointmentDate).toLocaleDateString()}</td>
-                            <td>{b.appointmentTime}</td>
+                            <td>{b.appointmentStart ? new Date(b.appointmentStart).toLocaleDateString() : 'N/A'}</td>
+                            <td>{b.appointmentStart ? new Date(b.appointmentStart).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}</td>
                             <td>
                                 {(b.providerCommissions || [])
                                     .filter(pc => pc.accepted && pc.providerId !== providerId)

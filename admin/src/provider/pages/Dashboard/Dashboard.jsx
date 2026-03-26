@@ -8,6 +8,8 @@ const ProviderDashboard = () => {
     const [summary, setSummary] = useState({
         totalBookings: 0,
         pendingCommission: 0,
+        averageRating: 0,
+        rankingScore: 0,
     });
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -17,7 +19,6 @@ const ProviderDashboard = () => {
     const currentProviderId = localStorage.getItem("provider_id");
 
     const navigate = useNavigate();
-
 
     const fetchRecentBookings = async () => {
         try {
@@ -49,6 +50,8 @@ const ProviderDashboard = () => {
                 setSummary({
                     totalBookings: res.data.data.totalBookings || 0,
                     pendingCommission: res.data.data.pendingCommission || 0,
+                    averageRating: res.data.data.averageRating || 0,
+                    rankingScore: res.data.data.rankingScore || 0,
                 });
             }
         } catch (err) {
@@ -83,7 +86,6 @@ const ProviderDashboard = () => {
         }
     };
 
-
     const handleEnd = async (bookingId) => {
         try {
             const res = await axios.patch(
@@ -111,14 +113,15 @@ const ProviderDashboard = () => {
         <div className="dashboard-container">
             <h2>Dashboard</h2>
 
-
             <div className="kpi-cards">
+
                 <div
-                    className="card new-requests"
-                    onClick={() => navigate("/provider/booking")}
+                    className="card reviews"
+                    onClick={() => navigate("/provider/review")}
+                    style={{ cursor: "pointer" }}
                 >
-                    <h3>New Requests</h3>
-                    <p className="kpi-number">{pendingRequests.length}</p>
+                    <h3>{summary.totalReviews || 0}</h3>
+                    <p>Reviews</p>
                 </div>
 
                 <div
@@ -126,8 +129,8 @@ const ProviderDashboard = () => {
                     style={{ cursor: "pointer" }}
                     onClick={() => navigate("/provider/history")}
                 >
-                    <h3>Total Bookings</h3>
-                    <p>{summary.totalBookings}</p>
+                    <h3>{summary.totalBookings}</h3>
+                    <p>Total Bookings</p>
                 </div>
 
                 <div
@@ -135,10 +138,11 @@ const ProviderDashboard = () => {
                     style={{ cursor: "pointer" }}
                     onClick={() => navigate("/provider/commission")}
                 >
-                    <h3>Pending Commission</h3>
-                    <p>Rs. {Number(summary.pendingCommission).toFixed(2)}</p>
+                    <h3>Rs. {Number(summary.pendingCommission).toFixed(2)}</h3>
+                    <p>Pending Commission</p>
                 </div>
             </div>
+
 
             <h3>Recent Bookings</h3>
 
@@ -146,7 +150,6 @@ const ProviderDashboard = () => {
                 <p>No recent bookings.</p>
             ) : (
                 recentBookings.map(b => {
-
                     const partnerProviders = (b.providerCommissions || [])
                         .filter(
                             pc =>
@@ -179,6 +182,7 @@ const ProviderDashboard = () => {
                                         <th>Final Price</th>
                                         <th>Commission</th>
                                         <th>Provider Earning</th>
+                                        <th>Review</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -193,6 +197,7 @@ const ProviderDashboard = () => {
                                         <td>{b.finalPrice?.toFixed(2) || "-"}</td>
                                         <td>{mySlot?.commissionShare?.toFixed(2) || "-"}</td>
                                         <td>{mySlot?.earningShare?.toFixed(2) || "-"}</td>
+                                
                                         <td>
                                             {b.status === "accepted" && <button onClick={() => handleStart(b._id)}>Start</button>}
                                             {b.status === "in-progress" && <button onClick={() => handleEnd(b._id)}>End</button>}
