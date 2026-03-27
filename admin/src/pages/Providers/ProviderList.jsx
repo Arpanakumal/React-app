@@ -29,15 +29,15 @@ const ProviderList = ({ url }) => {
             }
 
             const data = res.data.data;
-
             setProviders(data);
 
-            const allServices = data.flatMap(p =>
-                p.servicesOffered.map(s => s.name)
+
+            const allServices = data.flatMap((p) =>
+                p.servicesOffered.map((s) => s.name)
             );
             setServices([...new Set(allServices)]);
 
-            setFilteredProviders([]); 
+            setFilteredProviders([]);
         } catch (err) {
             console.error(err);
             toast.error("Server error while fetching providers");
@@ -50,26 +50,52 @@ const ProviderList = ({ url }) => {
         fetchProviders();
     }, []);
 
+    // --- Custom Filtering Algorithm ---
+    const customFilterProviders = (providers, selectedServices) => {
+        if (selectedServices.length === 0) return [];
 
-    useEffect(() => {
-        let filtered = providers;
+        const filtered = [];
+        for (let i = 0; i < providers.length; i++) {
+            const servicesOffered = providers[i].servicesOffered || [];
+            for (let j = 0; j < servicesOffered.length; j++) {
+                if (selectedServices.includes(servicesOffered[j].name)) {
+                    filtered.push(providers[i]);
+                    break;
+                }
+            }
+        }
+        return filtered;
+    };
 
-        if (selectedServices.length > 0) {
-            filtered = providers.filter(provider =>
-                provider.servicesOffered?.some(s => selectedServices.includes(s.name))
-            );
+    // --- Insertion Sort Algorithm (descending by rankingScore) ---
+    const insertionSortProviders = (providers) => {
+        const arr = [...providers];
+
+        for (let i = 1; i < arr.length; i++) {
+            let key = arr[i];
+            let j = i - 1;
+
+            while (j >= 0 && (arr[j].rankingScore || 0) < (key.rankingScore || 0)) {
+                arr[j + 1] = arr[j];
+                j--;
+            }
+            arr[j + 1] = key;
         }
 
+        return arr;
+    };
 
-        filtered.sort((a, b) => (b.rankingScore || 0) - (a.rankingScore || 0));
-
+    // Apply filtering + sorting whenever selection changes
+    useEffect(() => {
+        let filtered = customFilterProviders(providers, selectedServices);
+        filtered = insertionSortProviders(filtered);
         setFilteredProviders(filtered);
     }, [selectedServices, providers]);
 
     const toggleService = (serviceName) => {
-        setSelectedServices(prev =>
+        setSelectedServices((prev) =>
             prev.includes(serviceName)
-                ? prev.filter(s => s !== serviceName)
+                ? prev.filter((s) => s !== serviceName)
                 : [...prev, serviceName]
         );
     };
@@ -86,7 +112,8 @@ const ProviderList = ({ url }) => {
                     {services.map((s, idx) => (
                         <button
                             key={idx}
-                            className={`service-button ${selectedServices.includes(s) ? "selected" : ""}`}
+                            className={`service-button ${selectedServices.includes(s) ? "selected" : ""
+                                }`}
                             onClick={() => toggleService(s)}
                         >
                             {s}
@@ -101,14 +128,16 @@ const ProviderList = ({ url }) => {
                 ) : filteredProviders.length === 0 ? (
                     <p>No providers found for selected services</p>
                 ) : (
-                    filteredProviders.map(provider => (
+                    filteredProviders.map((provider) => (
                         <div
                             key={provider._id}
                             className="list-table-format"
                             onClick={() => navigate(`/providers/detail/${provider._id}`)}
                         >
                             <img
-                                src={provider.image ? `${url}${provider.image}` : "/default-avatar.png"}
+                                src={
+                                    provider.image ? `${url}${provider.image}` : "/default-avatar.png"
+                                }
                                 alt={provider.name}
                                 className="provider-image"
                             />
@@ -116,14 +145,16 @@ const ProviderList = ({ url }) => {
                             <p className="provider-name">{provider.name}</p>
                             <p className="provider-email">{provider.email}</p>
                             <p className="provider-services">
-                                {provider.servicesOffered.map(s => s.name).join(", ")}
+                                {provider.servicesOffered.map((s) => s.name).join(", ")}
                             </p>
 
                             <p className={provider.available ? "status-active" : "status-inactive"}>
                                 {provider.available ? "Available" : "Not Available"}
                             </p>
 
-                            <p className="provider-score">⭐ Score: {provider.rankingScore?.toFixed(2) || 0}</p>
+                            <p className="provider-score">
+                                ⭐ Score: {provider.rankingScore?.toFixed(2) || 0}
+                            </p>
                         </div>
                     ))
                 )}
