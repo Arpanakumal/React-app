@@ -21,6 +21,7 @@ import {
     forgotPassword,
     resetPassword,
     getProviderRatings
+
 } from "../controllers/ProviderController.mjs";
 
 const providerRouter = express.Router();
@@ -33,14 +34,13 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 
+// AUTH
 providerRouter.post("/add", authAdmin, upload.single("image"), addProvider);
 providerRouter.post("/login", loginProvider);
 providerRouter.post("/forgot-password", forgotPassword);
 providerRouter.post("/reset-password", resetPassword);
 
-
-providerRouter.get("/:id/ratings", getProviderRatings);
-
+//  PROVIDER PANEL
 
 providerRouter.get("/commissions", authmiddleware, getProviderCommissions);
 providerRouter.get("/dashboard-summary", authmiddleware, getDashboardSummary);
@@ -49,15 +49,18 @@ providerRouter.get("/profile", authmiddleware, getMyProfile);
 providerRouter.put("/profile", authmiddleware, upload.single("image"), updateMyProfile);
 providerRouter.put("/availability", authmiddleware, updateAvailability);
 
-
+// BOOKINGS
 providerRouter.patch("/booking/respond", authmiddleware, respondToBooking);
 providerRouter.patch("/booking/:bookingId/start", authmiddleware, startBooking);
 providerRouter.patch("/booking/:bookingId/end", authmiddleware, endBooking);
 
+// PUBLIC
+providerRouter.get("/", listProviders);
 
-providerRouter.get("/", listProviders); 
-providerRouter.get("/:id", getProviderById); 
-providerRouter.put("/:id", authmiddleware, upload.single("image"), updateProvider); 
-providerRouter.patch("/:id/toggle", toggleProviderStatus); 
+// DYNAMIC LAST ALWAYS
+providerRouter.get("/:id/ratings", getProviderRatings);
+providerRouter.get("/:id", getProviderById);
+providerRouter.put("/:id", authmiddleware, upload.single("image"), updateProvider);
+providerRouter.patch("/:id/toggle", toggleProviderStatus);
 
 export default providerRouter;

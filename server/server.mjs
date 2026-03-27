@@ -11,6 +11,7 @@ import providerRouter from './routes/ProviderRoute.mjs';
 import adminRouter from './routes/AdminRoutes.mjs';
 import bookingRouter from './routes/BookingRoute.mjs';
 import messageRouter from './routes/MessageRoute.mjs';
+import blogRouter from './routes/BlogRoute.mjs'
 
 
 
@@ -47,6 +48,7 @@ const connectDB = async () => {
     await connectDB();
     app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
     app.use("/api/Service", ServiceRouter);
+    app.use("/api/blog",blogRouter);
     app.use("/api/user", userRouter);
     app.use("/api/provider", providerRouter);
     app.use("/api/booking", bookingRouter);

@@ -100,5 +100,24 @@ const removeService = async (req, res) => {
         res.status(500).json({ success: false, message: "Error removing service" });
     }
 };
+// Search services
+const searchService = async (req, res) => {
+    try {
+        const query = req.query.q || "";
 
-export { addService, listService, updateService, removeService };
+        const services = await ServiceModel.find({
+            $or: [
+                { name: { $regex: query, $options: "i" } },
+                { category: { $regex: query, $options: "i" } }
+            ]
+        }).limit(20);
+
+        res.json({ success: true, data: services });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Error searching services" });
+    }
+};
+
+export { addService, listService, updateService, removeService,searchService };
+
