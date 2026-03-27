@@ -13,6 +13,9 @@ import Footer from "./components/Footer/Footer";
 import Contact from "./pages/Contact/Contact";
 import About from "./pages/Aboutus/About";
 import LoginPopup from "./components/LoginPopup/Loginpopup";
+import SearchResults from "./pages/ServiceDetail/SearchResults";
+import Blog from "./pages/Blog/Blog";
+import BlogDetail from "./pages/Blog/BlogDetail";
 
 import StoreContextProvider from "./context/StoreContext";
 import MyProfile from "./pages/MyProfile/MyProfile";
@@ -41,9 +44,13 @@ const App = () => {
 
               <Route path="/" element={<Home />} />
               <Route path="/service" element={<ServiceDisplay />} />
+              <Route path="/search" element={<SearchResults />} />
               <Route path="/service/:id" element={<ServiceDetail />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:id" element={<BlogDetail />} />
+
 
 
               <Route path="/user/forgot-password" element={<UserForgotPassword />} />

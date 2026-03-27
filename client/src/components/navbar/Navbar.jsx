@@ -10,9 +10,10 @@ const Navbar = ({ setShowLogin }) => {
     const [menu, setMenu] = useState("Home");
     const [pendingCount, setPendingCount] = useState(0);
 
-    const { token, setToken,logout } = useContext(StoreContext);
+    const { token, setToken, logout } = useContext(StoreContext);
 
     const navigate = useNavigate();
+
 
 
     return (
@@ -82,7 +83,7 @@ const Navbar = ({ setShowLogin }) => {
 
 
             <div className="navbar-right">
-                <img src={searchIcon} alt="Search" className="search-icon" />
+                
                 {!token ?
                     <button onClick={() => setShowLogin(true)}>Sign In</button>
                     : <div className='navbar-profile'>
