@@ -23,7 +23,10 @@ import Messages from "./pages/Messages/Message";
 import Login from "./pages/login/AdminLogin";
 import Revenue from "./pages/Commission/Revenue";
 import Commission from "./pages/Commission/Commission";
-
+import Blog from "./pages/Blog/Blog";
+import Displayblog from "./pages/Blog/Displayblog";
+import Edit from "./pages/Blog/Edit";
+import BlogDetails from "./pages/Blog/Detail";
 
 
 // Provider Pages
@@ -39,6 +42,7 @@ import Profile from "./provider/pages/Profile/Profile";
 import Resetpassword from "./provider/pages/login/Resetpassword";
 import Forgotpassword from "./provider/pages/login/Forgotpassword";
 import Review from "./provider/pages/reviews/Review";
+
 
 
 
@@ -78,6 +82,12 @@ const App = () => {
           <Route path="/providers/update/:id" element={<EditProvider url={url} />} />
           <Route path="/revenue" element={<Revenue url={url} />} />
           <Route path="/commission" element={<Commission url={url} />} />
+          <Route path="/blog" element={<Blog url={url} />} />
+          <Route path="/display" element={<Displayblog url={url} />} />
+          <Route path="/blog/:id" element={<BlogDetails url={url} />} />
+          <Route path="/blogs/edit/:id" element={<Edit url={url} />} />
+
+
 
 
         </Route>

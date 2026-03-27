@@ -3,9 +3,8 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
-
 const Review = () => {
-    const { providerId } = useParams();
+
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
@@ -17,10 +16,14 @@ const Review = () => {
     const fetchReviews = async (pageNum = 1) => {
         try {
             setLoading(true);
-            const res = await axios.get(`${API_URL}/api/provider/${providerId}/reviews`, {
-                params: { page: pageNum, limit: 10 },
-                headers: { Authorization: `Bearer ${token}` }
-            });
+
+            const res = await axios.get(
+                `${API_URL}/api/provider/my-reviews`,
+                {
+                    params: { page: pageNum, limit: 10 },
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+            );
 
             if (res.data.success) {
                 setReviews(res.data.data.reviews);
@@ -29,8 +32,8 @@ const Review = () => {
                 toast.error(res.data.message || "Failed to fetch reviews");
             }
         } catch (err) {
-            console.error("Error fetching reviews:", err);
-            toast.error("Server error while fetching reviews");
+            console.error(err);
+            toast.error("Error fetching reviews");
         } finally {
             setLoading(false);
         }
@@ -46,6 +49,7 @@ const Review = () => {
     return (
         <div className="reviews-container">
             <h2>Provider Reviews</h2>
+
             <table className="reviews-table">
                 <thead>
                     <tr>
@@ -55,11 +59,13 @@ const Review = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {reviews.map((r) => (
-                        <tr key={r._id}>
-                            <td>{'⭐'.repeat(Math.round(r.rating))}</td>
+                    {reviews.map((r, index) => (
+                        <tr key={index}>
+                            <td>{"⭐".repeat(Math.round(r.rating))}</td>
                             <td>{r.comment || "-"}</td>
-                            <td>{new Date(r.createdAt).toLocaleDateString()}</td>
+                            <td>
+                                {new Date(r.createdAt).toLocaleDateString()}
+                            </td>
                         </tr>
                     ))}
                 </tbody>
@@ -72,7 +78,11 @@ const Review = () => {
                 >
                     Previous
                 </button>
-                <span>Page {page} of {totalPages}</span>
+
+                <span>
+                    Page {page} of {totalPages}
+                </span>
+
                 <button
                     disabled={page === totalPages}
                     onClick={() => setPage(prev => prev + 1)}

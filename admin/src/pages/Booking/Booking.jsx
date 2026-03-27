@@ -100,7 +100,7 @@ const BookingList = ({ url }) => {
                         <p><strong>{b.service?.name || "No Name"}</strong></p>
                         <p><strong>Customer:</strong> {b.username || b.customer?.name}</p>
                         <p><strong>Status:</strong> {displayStatus(b.status)}</p>
-                        <p><strong>Date:</strong> {new Date(b.appointmentDate).toLocaleDateString()}</p>
+                        <p><strong>Date:</strong> {new Date(b.appointmentStart).toLocaleDateString()}</p>
 
 
                     </div>

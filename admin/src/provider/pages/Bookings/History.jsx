@@ -39,6 +39,7 @@ const Bookinghistory = ({ url }) => {
                             <th>Status</th>
                             <th>Date</th>
                             <th>Hours</th>
+                            <th>Rating/Review</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -57,6 +58,19 @@ const Bookinghistory = ({ url }) => {
                                     {b.status === "completed"
                                         ? Number(b.hoursWorked || 0).toFixed(2)
                                         : "-"}
+                                </td>
+                                <td>
+                                    {b.ratings && b.ratings.length > 0 ? (
+                                        b.ratings.map((r) => (
+                                            <div key={r._id} className="review-item">
+                                                <strong>Rating:</strong> {r.rating} / 5<br />
+                                                <strong>Review:</strong> {r.review || "No review"}<br />
+                                            
+                                            </div>
+                                        ))
+                                    ) : (
+                                        "-"
+                                    )}
                                 </td>
                             </tr>
                         ))}

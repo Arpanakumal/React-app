@@ -115,14 +115,7 @@ const ProviderDashboard = () => {
 
             <div className="kpi-cards">
 
-                <div
-                    className="card reviews"
-                    onClick={() => navigate("/provider/review")}
-                    style={{ cursor: "pointer" }}
-                >
-                    <h3>{summary.totalReviews || 0}</h3>
-                    <p>Reviews</p>
-                </div>
+
 
                 <div
                     className="card total-bookings"
