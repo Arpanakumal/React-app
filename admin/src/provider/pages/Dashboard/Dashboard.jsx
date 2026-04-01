@@ -115,7 +115,14 @@ const ProviderDashboard = () => {
 
             <div className="kpi-cards">
 
-
+                <div
+                    className="card new-requests"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate("/provider/booking")} // adjust route if needed
+                >
+                    <h3>{pendingRequests.length}</h3>
+                    <p>New Requests</p>
+                </div>
 
                 <div
                     className="card total-bookings"
@@ -190,7 +197,7 @@ const ProviderDashboard = () => {
                                         <td>{b.finalPrice?.toFixed(2) || "-"}</td>
                                         <td>{mySlot?.commissionShare?.toFixed(2) || "-"}</td>
                                         <td>{mySlot?.earningShare?.toFixed(2) || "-"}</td>
-                                
+
                                         <td>
                                             {b.status === "accepted" && <button onClick={() => handleStart(b._id)}>Start</button>}
                                             {b.status === "in-progress" && <button onClick={() => handleEnd(b._id)}>End</button>}
