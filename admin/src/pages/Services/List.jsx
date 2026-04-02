@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './list.css'; // renamed CSS file for clarity
+import './list.css';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -31,7 +31,7 @@ const List = ({ url }) => {
             const response = await axios.post(`${url}/api/Service/remove`, { id: serviceId });
             if (response.data.success) {
                 toast.success("Service Removed");
-                fetchServices(); // refresh list
+                fetchServices(); 
             } else {
                 toast.error(response.data.message);
             }

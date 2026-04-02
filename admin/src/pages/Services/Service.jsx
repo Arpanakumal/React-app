@@ -92,7 +92,7 @@ const Service = ({ url }) => {
                     <div className="add-category-price_info">
                         <div className="add-category flex-col">
                             <p>Service Category</p>
-                            <select onChange={onChangeHandler} name="category">
+                            <select onChange={onChangeHandler} name="category" value={data.category}>
                                 <option value="Cleaning">Cleaning</option>
                                 <option value="Interior">Interior</option>
                                 <option value="Plumbing">Plumbing</option>
