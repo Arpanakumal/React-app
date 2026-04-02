@@ -1,9 +1,7 @@
 import Booking from "../models/BookingModel.mjs";
 import Provider from "../models/ProviderModel.mjs";
 
-/**
- * Checks if a provider has a scheduling conflict
- */
+
 export const hasScheduleConflict = async (
     providerId,
     appointmentStart,
