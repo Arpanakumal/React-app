@@ -46,7 +46,9 @@
 .blog-content p {
     font-size: 14px;
     color: #555;
-    flex-grow: 1;
+    margin-bottom: 10px;
+    /* spacing between paragraphs */
+    line-height: 1.5;
 }
 
 .read-more {
