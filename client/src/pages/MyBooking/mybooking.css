@@ -109,6 +109,18 @@
     background-color: #d9363e;
 }
 
+.delete-btn {
+    margin-top: 10px;
+    background-color: #ff4d4f;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.delete-btn:hover {
+    background-color: #d9363e;
+}
 
 .no-bookings {
     font-style: italic;
