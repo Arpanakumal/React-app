@@ -224,19 +224,6 @@ export const acceptBooking = async (req, res) => {
             return res.status(400).json({ success: false, message: "Booking already closed" });
         }
 
-        const conflict = await hasScheduleConflict(
-            providerId,
-            booking.appointmentStart,
-            booking.appointmentEnd
-        );
-
-        if (conflict) {
-            return res.status(400).json({
-                success: false,
-                message: "You are unavailable or time conflicts with another booking."
-            });
-        }
-
 
         const alreadyAccepted = booking.providerCommissions.some(
             pc => pc.providerId?.toString() === providerId
@@ -249,15 +236,16 @@ export const acceptBooking = async (req, res) => {
             });
         }
 
-
-        const emptySlot = booking.providerCommissions.find(
-            pc => !pc.accepted && !pc.rejected
+        const emptySlot = booking.providerCommissions.find(pc =>
+            !pc.accepted &&
+            pc.providerId === null &&
+            !pc.rejectedBy.includes(providerId)
         );
 
         if (!emptySlot) {
             return res.status(400).json({
                 success: false,
-                message: "All provider slots already filled"
+                message: "No available slots for you"
             });
         }
 
@@ -265,27 +253,21 @@ export const acceptBooking = async (req, res) => {
         emptySlot.providerId = providerId;
         emptySlot.accepted = true;
 
-
         booking.providerIds = booking.providerCommissions
             .filter(pc => pc.accepted)
             .map(pc => pc.providerId);
 
         const totalRequired = booking.providerCommissions.length;
         const totalAccepted = booking.providerCommissions.filter(pc => pc.accepted).length;
-        const remainingProviders = totalRequired - totalAccepted;
-        booking.status = remainingProviders === 0 ? "accepted" : "pending";
+
+        booking.status = totalAccepted === totalRequired ? "accepted" : "pending";
 
         await booking.save();
 
         res.json({
             success: true,
-            message: remainingProviders === 0
-                ? "All providers accepted. Ready to start."
-                : `${remainingProviders} more provider(s) needed`,
-            data: {
-                remainingProviders,
-                status: booking.status
-            }
+            message: "Booking accepted",
+            data: booking
         });
 
     } catch (err) {
@@ -294,6 +276,37 @@ export const acceptBooking = async (req, res) => {
     }
 };
 
+export const rejectBooking = async (req, res) => {
+    try {
+        const providerId = req.user.id;
+        const { bookingId } = req.body;
+
+        const booking = await Booking.findById(bookingId);
+
+        if (!booking)
+            return res.status(404).json({ success: false, message: "Booking not found" });
+
+        booking.providerCommissions.forEach(pc => {
+            if (!pc.accepted) {
+
+                pc.providerId = null;
+
+
+                if (!pc.rejectedBy.includes(providerId)) {
+                    pc.rejectedBy.push(providerId);
+                }
+            }
+        });
+
+        await booking.save();
+
+        res.json({ success: true, message: "Booking rejected" });
+
+    } catch (err) {
+        console.error("Reject error:", err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
 
 export const listBookingsForProvider = async (req, res) => {
     try {
@@ -310,20 +323,28 @@ export const listBookingsForProvider = async (req, res) => {
                 $elemMatch: {
                     $or: [
                         { providerId: new mongoose.Types.ObjectId(providerId) },
-                        { providerId: null, accepted: false, rejected: false }
+                        {
+                            providerId: null,
+                            accepted: false,
+                            rejectedBy: { $ne: new mongoose.Types.ObjectId(providerId) }
+                        }
                     ]
                 }
             }
         })
             .sort({ createdAt: -1 })
             .populate("serviceId", "name image category price_info commissionPercent")
-            .populate("providerCommissions.providerId", "name image phone")
-            .populate("customer", "name phone");
+            .populate("providerCommissions.providerId", "name image phone");
+
 
         const formatted = bookings.map(b => {
 
             const mySlot = b.providerCommissions.find(
                 pc => pc.providerId?._id?.toString() === providerId
+            );
+
+            const hasRejected = b.providerCommissions.some(
+                pc => pc.rejectedBy?.some(id => id.toString() === providerId)
             );
 
             const allAccepted = b.providerCommissions.every(pc => pc.accepted);
@@ -338,16 +359,24 @@ export const listBookingsForProvider = async (req, res) => {
                 providerCount: b.providerCount,
                 finalPrice: b.finalPrice,
                 service: b.serviceId,
+
                 providers: b.providerCommissions.map(pc => ({
                     id: pc.providerId?._id,
                     name: pc.providerId?.name,
                     accepted: pc.accepted
                 })),
+
                 providerCommissions: b.providerCommissions,
+
                 isAssigned: !!mySlot,
-                canAccept: !mySlot && b.status === "pending",
+
+
+                canAccept: !mySlot && !hasRejected && b.status === "pending",
+
                 canStart: mySlot && allAccepted && b.status === "accepted",
+
                 canComplete: mySlot && b.status === "in-progress",
+
                 hoursWorked: b.hoursWorked || 0
             };
         });
@@ -359,7 +388,6 @@ export const listBookingsForProvider = async (req, res) => {
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
-
 
 
 

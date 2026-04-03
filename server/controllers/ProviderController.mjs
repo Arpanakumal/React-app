@@ -256,46 +256,47 @@ export const respondToBooking = async (req, res) => {
         }
 
 
-        let mySlot = booking.providerCommissions.find(pc => pc.providerId?.toString() === providerId);
+        let mySlot = booking.providerCommissions.find(pc =>
+            pc.providerId?.toString() === providerId
+        );
+
+        if (!mySlot) {
+            mySlot = booking.providerCommissions.find(pc =>
+                !pc.accepted && !(pc.rejectedBy || []).includes(providerId)
+            );
+        }
+
+        if (!mySlot) {
+            return res.status(400).json({ success: false, message: "No available slot to respond" });
+        }
 
         if (action === "accept") {
-            if (mySlot?.accepted) {
+            if (mySlot.accepted) {
                 return res.status(400).json({ success: false, message: "You already accepted this booking" });
-            }
-
-            if (!mySlot) {
-
-                mySlot = booking.providerCommissions.find(pc => !pc.accepted && !pc.rejected);
-                if (!mySlot) {
-                    return res.status(400).json({ success: false, message: "No available slots for acceptance" });
-                }
-
-                mySlot.providerId = providerId;
             }
 
             mySlot.accepted = true;
             mySlot.rejected = false;
+            mySlot.providerId = providerId;
 
-        } else if (action === "reject") {
-            if (!mySlot || !mySlot.accepted) {
-
-                mySlot = booking.providerCommissions.find(pc => pc.providerId?.toString() === providerId) || booking.providerCommissions.find(pc => !pc.accepted && !pc.rejected);
-                if (!mySlot) {
-
-                    return res.status(400).json({ success: false, message: "No booking slot to reject" });
-                }
+            if (mySlot.rejectedBy?.includes(providerId)) {
+                mySlot.rejectedBy = mySlot.rejectedBy.filter(id => id.toString() !== providerId);
             }
 
+        } else if (action === "reject") {
             mySlot.accepted = false;
             mySlot.rejected = true;
-            mySlot.providerId = providerId;
+            mySlot.providerId = null;
+            mySlot.rejectedBy = mySlot.rejectedBy || [];
+            if (!mySlot.rejectedBy.includes(providerId)) {
+                mySlot.rejectedBy.push(providerId);
+            }
         }
 
 
         booking.providerIds = booking.providerCommissions
             .filter(pc => pc.accepted)
             .map(pc => pc.providerId);
-
 
         if (booking.finalPrice) {
             const result = calculateProviderEarnings(booking);
@@ -316,11 +317,12 @@ export const respondToBooking = async (req, res) => {
 
         res.json({
             success: true,
-            message: action === "accept"
-                ? (allAccepted
-                    ? "All providers accepted. Ready to start."
-                    : `${remainingProviders} more provider(s) needed`)
-                : "You rejected the booking",
+            message:
+                action === "accept"
+                    ? allAccepted
+                        ? "All providers accepted. Ready to start."
+                        : `${remainingProviders} more provider(s) needed`
+                    : "You rejected the booking",
             data: {
                 remainingProviders,
                 allAccepted,
@@ -329,6 +331,7 @@ export const respondToBooking = async (req, res) => {
                     providerId: pc.providerId,
                     accepted: pc.accepted,
                     rejected: pc.rejected,
+                    rejectedBy: pc.rejectedBy,
                     earning: pc.earning
                 })),
                 status: booking.status
@@ -336,11 +339,10 @@ export const respondToBooking = async (req, res) => {
         });
 
     } catch (err) {
-        console.error(err);
+        console.error("Error in respondToBooking:", err);
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
-
 
 
 export const startBooking = async (req, res) => {

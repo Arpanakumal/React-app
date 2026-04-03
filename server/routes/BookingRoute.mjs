@@ -5,6 +5,7 @@ import {
     createBooking,
     listBookings,
     acceptBooking,
+    rejectBooking,
     getBookingById,
     updateBookingStatus,
     completeBooking,
@@ -19,10 +20,13 @@ const bookingRouter = express.Router();
 
 bookingRouter.post("/create", authmiddleware, createBooking);
 bookingRouter.post("/accept", authmiddleware, acceptBooking);
+bookingRouter.post("/reject", authmiddleware, rejectBooking);
+
+
 bookingRouter.get("/list", listBookings);
 bookingRouter.get("/provider", authmiddleware, listBookingsForProvider);
 bookingRouter.get("/user", authmiddleware, listBookingsForUser);
-bookingRouter.patch("/booking/:bookingId/cancel", authmiddleware, cancelBooking);
+bookingRouter.patch("/:bookingId/cancel", authmiddleware, cancelBooking);
 bookingRouter.put("/complete/:id", authmiddleware, completeBooking);
 
 bookingRouter.post("/rate", authmiddleware, rateProvider);
