@@ -79,6 +79,7 @@ const AdminDashboard = ({ url }) => {
         }
     };
 
+
     const fetchRecentBookings = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -89,7 +90,13 @@ const AdminDashboard = ({ url }) => {
             });
 
             const bookings = res.data?.data || [];
-            setRecentBookings(bookings.slice(-5).reverse());
+
+            const latestBookings = bookings
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                .slice(0, 3);
+
+            setRecentBookings(latestBookings);
+
         } catch (error) {
             console.error("Error fetching recent bookings:", error);
         }
@@ -136,7 +143,7 @@ const AdminDashboard = ({ url }) => {
             <h2>Admin Dashboard</h2>
 
             <div className="kpi-cards">
-                <div className="card" onClick={()=>navigate('/commission')}>
+                <div className="card" onClick={() => navigate('/commission')}>
                     <h3>Rs.{metrics.pendingCommission}</h3>
                     <p>Pending Commission</p>
                 </div>

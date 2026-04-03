@@ -100,34 +100,31 @@ const ProviderBooking = () => {
                                 {(b.providerCommissions || [])
                                     .filter(pc => pc.accepted && pc.providerId !== providerId)
                                     .map(pc => (
-                                        <div key={pc.providerId}>
-                                            Partner: {pc.providerName || "N/A"}
+                                        <div key={pc._id}>
+                                            Partner: {pc.providerId?.name || "N/A"}
                                         </div>
                                     ))
                                 }
                             </td>
                             <td>
                                 {b.canAccept && (
-                                    <button
-                                        onClick={e => {
-                                            e.stopPropagation();
-                                            respondToBooking(b._id, "accept");
-                                        }}
-                                    >
-                                        Accept
-                                    </button>
+                                    <>
+                                        <button
+                                            onClick={e => {
+                                                e.stopPropagation();
+                                                respondToBooking(b._id, "accept");
+                                            }}
+                                        >Accept</button>
+                                        <button
+                                            className="reject"
+                                            onClick={e => {
+                                                e.stopPropagation();
+                                                respondToBooking(b._id, "reject");
+                                            }}
+                                        >Reject</button>
+                                    </>
                                 )}
-                                {b.canAccept && (
-                                    <button
-                                        className="reject"
-                                        onClick={e => {
-                                            e.stopPropagation();
-                                            respondToBooking(b._id, "reject");
-                                        }}
-                                    >
-                                        Reject
-                                    </button>
-                                )}
+                                {!b.canAccept && <span>—</span>}
                             </td>
                         </tr>
                     ))}
