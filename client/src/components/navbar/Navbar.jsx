@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import { toast } from 'react-toastify';
 import './Navbar.css';
 import { logo, searchIcon, profile, logoutIcon, booking } from '../../assets/assets';
 import { Link } from "react-router-dom";
@@ -43,7 +43,16 @@ const Navbar = ({ setShowLogin }) => {
                 <li>
                     <Link
                         to="/book"
-                        onClick={() => setMenu("book")}
+                        onClick={(e) => {
+                            if (!token) {
+                                e.preventDefault();
+                                localStorage.setItem("redirect_after_login", "/book");
+                                setShowLogin(true);
+                                toast.error("Please login first");
+                            } else {
+                                setMenu("book");
+                            }
+                        }}
                         className={menu === "book" ? "active" : ""}
                     >
                         Book
@@ -83,7 +92,7 @@ const Navbar = ({ setShowLogin }) => {
 
 
             <div className="navbar-right">
-                
+
                 {!token ?
                     <button onClick={() => setShowLogin(true)}>Sign In</button>
                     : <div className='navbar-profile'>

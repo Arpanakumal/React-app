@@ -44,13 +44,13 @@ const LoginPopup = ({ setShowLogin }) => {
             }
 
             const { token, role, name, id } = response.data;
-
+            const redirectPath = localStorage.getItem("redirect_after_login") || "/";
 
             localStorage.setItem("user_token", token);
             localStorage.setItem("user_role", role);
             localStorage.setItem("user_name", name);
             localStorage.setItem("user_id", id);
-
+            localStorage.removeItem("redirect_after_login");
             setToken(token);
             setRole(role);
             setUserName(name);
@@ -59,8 +59,7 @@ const LoginPopup = ({ setShowLogin }) => {
             toast.success("Login successful!");
 
             setShowLogin(false);
-            navigate("/");
-
+            navigate(redirectPath || "/");
         } catch (error) {
             console.error("Login error:", error);
             toast.error("Server error. Please try again.");

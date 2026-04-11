@@ -12,6 +12,14 @@ const BlogDetail = () => {
     const [reply, setReply] = useState("");
     const [comments, setComments] = useState([]);
 
+    const formatDate = (date) => {
+        return new Date(date).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        });
+    };
+
     useEffect(() => {
         fetchBlog();
     }, [id]);
@@ -37,7 +45,7 @@ const BlogDetail = () => {
         return text
             .split(". ")
             .reduce((acc, sentence, index) => {
-                const paraIndex = Math.floor(index / 3); 
+                const paraIndex = Math.floor(index / 3);
                 if (!acc[paraIndex]) acc[paraIndex] = "";
                 acc[paraIndex] += sentence + ". ";
                 return acc;
@@ -98,6 +106,16 @@ const BlogDetail = () => {
             </div>
 
             <hr />
+            <p className="blog-meta">
+                Written by{" "}
+                <strong>
+                    {blog.authorName || blog.author?.name || "Unknown"}
+                </strong>
+            </p>
+
+            <p className="blog-date">
+                {formatDate(blog.createdAt)}
+            </p>
 
             <h3>Comments</h3>
 

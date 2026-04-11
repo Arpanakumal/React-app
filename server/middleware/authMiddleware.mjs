@@ -1,36 +1,32 @@
+import userModel from "../models/UserModel.mjs";
 import jwt from "jsonwebtoken";
 
-const authmiddleware = (req, res, next) => {
+const authmiddleware = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
+
         if (!authHeader?.startsWith("Bearer ")) {
-            return res.status(401).json({ success: false, message: "Not authorized" });
+            return res.status(401).json({ message: "Not authorized" });
         }
 
         const token = authHeader.split(" ")[1];
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        if (!decoded?.id) {
-            return res.status(401).json({ success: false, message: "Invalid token payload" });
+        const user = await userModel.findById(decoded.id).select("name role");
+
+        if (!user) {
+            return res.status(401).json({ message: "User not found" });
         }
 
         req.user = {
-            id: decoded.id,
-            role: decoded.role || "user", 
+            id: user._id,
+            name: user.name,
+            role: user.role || "customer"
         };
-
-
-        if (req.requiredRole && req.user.role !== req.requiredRole) {
-            return res.status(403).json({
-                success: false,
-                message: "Access denied: insufficient permissions",
-            });
-        }
 
         next();
     } catch (err) {
-        console.error("Auth middleware error:", err.message);
-        return res.status(401).json({ success: false, message: "Invalid or expired token" });
+        return res.status(401).json({ message: "Invalid token" });
     }
 };
 

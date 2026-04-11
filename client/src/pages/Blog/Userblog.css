@@ -1,0 +1,28 @@
+.write-blog-container {
+    max-width: 700px;
+    margin: auto;
+    padding: 20px;
+}
+
+.write-blog-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.write-blog-form input,
+.write-blog-form textarea {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+.write-blog-form button {
+    padding: 10px;
+    background: black;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+}
