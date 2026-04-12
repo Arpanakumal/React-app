@@ -1,109 +1,183 @@
 import ServiceModel from "../models/ServiceModel.mjs";
 import fs from "fs";
+import mongoose from "mongoose";
 
-// Add service
-const addService = async (req, res) => {
+
+export const addService = async (req, res) => {
     try {
-        if (!req.file) {
-            return res.status(400).json({ success: false, message: "Image file is required" });
-        }
-
         const { name, description, price_info, category, commissionPercent } = req.body;
 
-        const existingService = await ServiceModel.findOne({ name, category });
-        if (existingService) {
-            return res.status(409).json({ success: false, message: "Service already exists" });
+        if (!name || !category || !price_info) {
+            return res.status(400).json({
+                success: false,
+                message: "Name, category and price are required"
+            });
         }
 
-        const service = new ServiceModel({
-            name,
-            description,
-            price_info,
-            category,
-            commissionPercent: commissionPercent ? Number(commissionPercent) : null,
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: "Image file is required"
+            });
+        }
+
+        const existingService = await ServiceModel.findOne({
+            name: name.trim(),
+            category: category.trim()
+        });
+
+        if (existingService) {
+            return res.status(409).json({
+                success: false,
+                message: "Service already exists"
+            });
+        }
+
+        const service = await ServiceModel.create({
+            name: name.trim(),
+            description: description?.trim() || "",
+            price_info: Number(price_info),
+            category: category.trim(),
+            commissionPercent: commissionPercent ? Number(commissionPercent) : 10,
             image: `/uploads/${req.file.filename}`
         });
 
-        await service.save();
-        res.status(201).json({ success: true, message: "Service added successfully", service });
+        res.status(201).json({
+            success: true,
+            message: "Service added successfully",
+            data: service
+        });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: "Error adding service", error: error.message });
+        console.error("Add service error:", error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 
 
-
-// List all services
-const listService = async (req, res) => {
+export const listService = async (req, res) => {
     try {
-        const services = await ServiceModel.find({});
-        res.json({ success: true, data: services });
+        const services = await ServiceModel.find().sort({ createdAt: -1 });
+
+        res.json({
+            success: true,
+            data: services
+        });
+
     } catch (error) {
         console.error(error);
-        res.status(500).json({ success: false, message: "Error fetching services" });
+        res.status(500).json({
+            success: false,
+            message: "Error fetching services"
+        });
     }
 };
 
-// Update service
-const updateService = async (req, res) => {
+export const updateService = async (req, res) => {
     try {
         const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid service ID"
+            });
+        }
+
         const service = await ServiceModel.findById(id);
-        if (!service) return res.status(404).json({ success: false, message: "Service not found" });
+        if (!service) {
+            return res.status(404).json({
+                success: false,
+                message: "Service not found"
+            });
+        }
 
         const { name, description, price_info, category, commissionPercent } = req.body;
 
-        service.name = name || service.name;
-        service.description = description || service.description;
-        service.price_info = price_info || service.price_info;
-        service.category = category || service.category;
-        service.commissionPercent = commissionPercent || service.commissionPercent;
+        if (name) service.name = name.trim();
+        if (description) service.description = description.trim();
+        if (price_info) service.price_info = Number(price_info);
+        if (category) service.category = category.trim();
+        if (commissionPercent !== undefined)
+            service.commissionPercent = Number(commissionPercent);
 
         if (req.file) {
-
-            const oldImage = service.image.replace("/uploads/", "uploads/");
-            if (fs.existsSync(oldImage)) fs.unlinkSync(oldImage);
+            if (service.image) {
+                const oldImage = service.image.replace("/uploads/", "uploads/");
+                if (fs.existsSync(oldImage)) {
+                    fs.unlinkSync(oldImage);
+                }
+            }
 
             service.image = `/uploads/${req.file.filename}`;
         }
 
         await service.save();
-        res.json({ success: true, message: "Service updated", service });
+
+        res.json({
+            success: true,
+            message: "Service updated successfully",
+            data: service
+        });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: "Error updating service" });
+        console.error("Update service error:", error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 
-
-// Remove service
-const removeService = async (req, res) => {
+export const removeService = async (req, res) => {
     try {
-        const { id } = req.body;
-        if (!id) return res.status(400).json({ success: false, message: "Service ID is required" });
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid service ID"
+            });
+        }
 
         const service = await ServiceModel.findById(id);
-        if (!service) return res.status(404).json({ success: false, message: "Service not found" });
+        if (!service) {
+            return res.status(404).json({
+                success: false,
+                message: "Service not found"
+            });
+        }
 
-        const imagePath = service.image.replace("/uploads/", "uploads/");
-        if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
+        if (service.image) {
+            const imagePath = service.image.replace("/uploads/", "uploads/");
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            }
+        }
 
         await ServiceModel.findByIdAndDelete(id);
 
-        res.json({ success: true, message: "Service removed" });
+        res.json({
+            success: true,
+            message: "Service removed successfully"
+        });
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ success: false, message: "Error removing service" });
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
-// Search services
-const searchService = async (req, res) => {
+
+
+export const searchService = async (req, res) => {
     try {
-        const query = req.query.q || "";
+        const query = req.query.q?.trim() || "";
 
         const services = await ServiceModel.find({
             $or: [
@@ -112,12 +186,16 @@ const searchService = async (req, res) => {
             ]
         }).limit(20);
 
-        res.json({ success: true, data: services });
+        res.json({
+            success: true,
+            data: services
+        });
+
     } catch (error) {
         console.error(error);
-        res.status(500).json({ success: false, message: "Error searching services" });
+        res.status(500).json({
+            success: false,
+            message: "Error searching services"
+        });
     }
 };
-
-export { addService, listService, updateService, removeService,searchService };
-

@@ -17,13 +17,8 @@ export const hasScheduleConflict = async (
         if (!provider || !provider.availability?.isAvailable) return true;
 
         const dayMap = [
-            "Sunday",
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday"
+            "Sunday", "Monday", "Tuesday", "Wednesday",
+            "Thursday", "Friday", "Saturday"
         ];
 
         const dayOfWeek = dayMap[start.getDay()];
@@ -48,7 +43,6 @@ export const hasScheduleConflict = async (
             return true;
         }
 
-
         const conflict = await Booking.findOne({
             providerIds: providerId,
             status: { $in: ["accepted", "in-progress"] },
@@ -60,6 +54,53 @@ export const hasScheduleConflict = async (
 
     } catch (error) {
         console.error("Schedule conflict check error:", error);
-        return true; 
+        return true;
+    }
+};
+
+
+
+export const findAvailableProvider = async (
+    providerIds,
+    appointmentStart,
+    appointmentEnd
+) => {
+    try {
+        const availableProviders = [];
+
+        for (let id of providerIds) {
+            const hasConflict = await hasScheduleConflict(
+                id,
+                appointmentStart,
+                appointmentEnd
+            );
+
+            if (!hasConflict) {
+                availableProviders.push(id);
+            }
+        }
+
+
+        if (availableProviders.length === 0) {
+            return {
+                success: false,
+                message: "All providers are booked for this time slot",
+                availableProviders: []
+            };
+        }
+
+        return {
+            success: true,
+            message: "Providers available",
+            availableProviders
+        };
+
+    } catch (error) {
+        console.error("Error finding available providers:", error);
+        return {
+            success: false,
+            message: "Error checking provider availability",
+            availableProviders: []
+        };
     }
 };

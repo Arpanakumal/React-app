@@ -95,7 +95,10 @@ export const loginProvider = async (req, res) => {
 
         // create tokon
         const token = jwt.sign(
-            { id: provider._id, role: "provider" },
+            {
+                id: provider._id.toString(),
+                role: "provider"
+            },
             process.env.JWT_SECRET,
             { expiresIn: "7d" }
         );
@@ -255,14 +258,14 @@ export const respondToBooking = async (req, res) => {
             return res.status(400).json({ success: false, message: "Booking already closed" });
         }
 
-
         let mySlot = booking.providerCommissions.find(pc =>
             pc.providerId?.toString() === providerId
         );
 
         if (!mySlot) {
             mySlot = booking.providerCommissions.find(pc =>
-                !pc.accepted && !(pc.rejectedBy || []).includes(providerId)
+                !pc.accepted &&
+                !(pc.rejectedBy || []).map(id => id.toString()).includes(providerId)
             );
         }
 
@@ -272,78 +275,48 @@ export const respondToBooking = async (req, res) => {
 
         if (action === "accept") {
             if (mySlot.accepted) {
-                return res.status(400).json({ success: false, message: "You already accepted this booking" });
+                return res.status(400).json({ success: false, message: "Already accepted" });
             }
 
             mySlot.accepted = true;
             mySlot.rejected = false;
             mySlot.providerId = providerId;
 
-            if (mySlot.rejectedBy?.includes(providerId)) {
-                mySlot.rejectedBy = mySlot.rejectedBy.filter(id => id.toString() !== providerId);
-            }
+            mySlot.rejectedBy = (mySlot.rejectedBy || []).filter(
+                id => id.toString() !== providerId
+            );
+        }
 
-        } else if (action === "reject") {
+        if (action === "reject") {
             mySlot.accepted = false;
             mySlot.rejected = true;
             mySlot.providerId = null;
+
             mySlot.rejectedBy = mySlot.rejectedBy || [];
-            if (!mySlot.rejectedBy.includes(providerId)) {
+
+            if (!mySlot.rejectedBy.some(id => id.toString() === providerId)) {
                 mySlot.rejectedBy.push(providerId);
             }
         }
 
-
+        // update providerIds safely
         booking.providerIds = booking.providerCommissions
             .filter(pc => pc.accepted)
             .map(pc => pc.providerId);
 
-        if (booking.finalPrice) {
-            const result = calculateProviderEarnings(booking);
-            booking.providerCommissions = result.booking.providerCommissions;
-            booking.finalPrice = result.finalPrice;
-            booking.commissionAmount = result.commissionAmount;
-            booking.providerEarning = result.providerEarning;
-        }
-
-        const totalRequired = booking.providerCommissions.length;
-        const totalAccepted = booking.providerCommissions.filter(pc => pc.accepted).length;
-        const remainingProviders = totalRequired - totalAccepted;
-        const allAccepted = remainingProviders === 0;
-
-        booking.status = allAccepted ? "accepted" : "pending";
-
         await booking.save();
 
-        res.json({
+        return res.json({
             success: true,
-            message:
-                action === "accept"
-                    ? allAccepted
-                        ? "All providers accepted. Ready to start."
-                        : `${remainingProviders} more provider(s) needed`
-                    : "You rejected the booking",
-            data: {
-                remainingProviders,
-                allAccepted,
-                providerIds: booking.providerIds,
-                providerCommissions: booking.providerCommissions.map(pc => ({
-                    providerId: pc.providerId,
-                    accepted: pc.accepted,
-                    rejected: pc.rejected,
-                    rejectedBy: pc.rejectedBy,
-                    earning: pc.earning
-                })),
-                status: booking.status
-            }
+            message: action === "accept" ? "Accepted" : "Rejected",
+            data: booking
         });
 
     } catch (err) {
-        console.error("Error in respondToBooking:", err);
+        console.error("respondToBooking error:", err);
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
-
 
 export const startBooking = async (req, res) => {
     try {
@@ -351,27 +324,33 @@ export const startBooking = async (req, res) => {
         const { bookingId } = req.params;
 
         const booking = await Booking.findById(bookingId);
-        if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
+        if (!booking) {
+            return res.status(404).json({ success: false, message: "Booking not found" });
+        }
 
+        const isAssigned = booking.providerCommissions.some(pc =>
+            pc.providerId?.toString() === providerId && pc.accepted
+        );
 
-        const isAssigned = booking.providerCommissions.some(pc => pc.providerId?.toString() === providerId && pc.accepted);
-        if (!isAssigned) return res.status(403).json({ success: false, message: "Not assigned to this booking" });
+        if (!isAssigned) {
+            return res.status(403).json({ success: false, message: "Not assigned" });
+        }
 
-        if (booking.status !== "accepted") return res.status(400).json({ success: false, message: "Booking must be accepted first" });
+        if (booking.status !== "accepted") {
+            return res.status(400).json({ success: false, message: "Must be accepted first" });
+        }
 
         booking.startedAt = new Date();
         booking.status = "in-progress";
 
         await booking.save();
 
-        res.json({ success: true, message: "Booking started", data: booking });
+        res.json({ success: true, message: "Started", data: booking });
 
     } catch (err) {
-        console.error(err);
         res.status(500).json({ success: false, message: err.message });
     }
 };
-
 
 export const endBooking = async (req, res) => {
     try {
@@ -379,36 +358,45 @@ export const endBooking = async (req, res) => {
         const { bookingId } = req.params;
 
         const booking = await Booking.findById(bookingId);
-        if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
+        if (!booking) {
+            return res.status(404).json({ success: false, message: "Booking not found" });
+        }
 
-        const isAssigned = booking.providerCommissions.some(pc => pc.providerId?.toString() === providerId && pc.accepted);
-        if (!isAssigned) return res.status(403).json({ success: false, message: "Not authorized for this booking" });
+        const isAssigned = booking.providerCommissions.some(pc =>
+            pc.providerId?.toString() === providerId && pc.accepted
+        );
 
-        if (booking.status !== "in-progress") return res.status(400).json({ success: false, message: "Booking not in progress" });
+        if (!isAssigned) {
+            return res.status(403).json({ success: false, message: "Not authorized" });
+        }
+
+        if (booking.status !== "in-progress") {
+            return res.status(400).json({ success: false, message: "Not in progress" });
+        }
 
         booking.endedAt = new Date();
-        const hoursWorked = (booking.endedAt - booking.startedAt) / 3600000;
+
+        const hoursWorked =
+            (booking.endedAt - booking.startedAt) / 3600000;
 
         const result = calculateProviderEarnings(booking, hoursWorked);
+
         booking.providerCommissions = result.booking.providerCommissions;
         booking.finalPrice = result.finalPrice;
         booking.commissionAmount = result.commissionAmount;
         booking.providerEarning = result.providerEarning;
-        booking.commissionPaid = false;
+
         booking.status = "completed";
         booking.hoursWorked = hoursWorked;
 
         await booking.save();
 
-        res.json({ success: true, message: "Booking completed", data: booking });
+        res.json({ success: true, message: "Completed", data: booking });
 
     } catch (err) {
-        console.error(err);
         res.status(500).json({ success: false, message: err.message });
     }
 };
-
-
 
 export const getDashboardSummary = async (req, res) => {
     try {

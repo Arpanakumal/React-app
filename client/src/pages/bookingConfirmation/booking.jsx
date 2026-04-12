@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import './booking.css';
 import { StoreContext } from '../../context/StoreContext';
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const Booking = () => {
     const { selectedServices, Service_list, getTotalAmount, token, getAuthAxios, clearServices } = useContext(StoreContext);
@@ -30,21 +31,21 @@ const Booking = () => {
         e.preventDefault();
 
         if (!token) {
-            alert("You must be logged in to book a service.");
+            toast.error("You must be logged in to book a service.");
             return;
         }
 
         if (Object.keys(selectedServices).length === 0) {
-            alert("No services selected.");
+            toast.error("No services selected.");
             return;
         }
 
         try {
             const authAxios = getAuthAxios();
 
-            // Create bookings for each selected service
             const bookingPromises = Object.entries(selectedServices).map(([serviceId, data]) => {
                 const username = `${formData.firstName.trim()} ${formData.lastName.trim()}`;
+
                 return authAxios.post("/booking/create", {
                     serviceId,
                     providerCount: Number(data.providers) || 1,
@@ -63,27 +64,48 @@ const Booking = () => {
                 });
             });
 
-            // ✅ Await responses inside the async function
             const responses = await Promise.all(bookingPromises);
 
-            // Check if all bookings succeeded
             const success = responses.every(res => res.data.success);
 
+
+            const warnings = responses
+                .map(res => res.data.warning)
+                .filter(w => w);
+
             if (success) {
-                alert("Booking(s) created successfully!");
-                clearServices(); // clear selected services after booking
+
+                if (warnings.length > 0) {
+                    toast.warn(
+                        <>
+                            <strong>Booking created with warning:</strong><br />
+                            {warnings.map((w, i) => (
+                                <div key={i}>{w}</div>
+                            ))}
+                            <br />
+                            Try another time or wait for provider confirmation.
+                        </>
+                    );
+                } else {
+                    toast.success("Booking(s) created successfully!");
+                }
+
+                clearServices();
                 navigate("/my-bookings");
+
             } else {
                 const failedMessages = responses
                     .filter(res => !res.data.success)
                     .map(res => res.data.message);
-                alert(`Some bookings failed: ${failedMessages.join(", ")}`);
+
+                toast.error(`Some bookings failed: ${failedMessages.join(", ")}`);
             }
 
         } catch (error) {
             console.error("Booking error:", error?.response?.data || error.message);
-            const message = error?.response?.data?.message || error.message;
-            alert(`Booking error: ${message}`);
+
+            const message = error?.response?.data?.message || "Something went wrong";
+            toast.error(`Booking error: ${message}`);
         }
     };
 
@@ -93,38 +115,12 @@ const Booking = () => {
                 <p className='title'>Booking Information</p>
 
                 <div className="multi-fields">
-                    <input
-                        type="text"
-                        name="firstName"
-                        placeholder='First name'
-                        required
-                        value={formData.firstName}
-                        onChange={handleChange}
-                    />
-                    <input
-                        type="text"
-                        name="lastName"
-                        placeholder='Last name'
-                        required
-                        value={formData.lastName}
-                        onChange={handleChange}
-                    />
+                    <input type="text" name="firstName" placeholder='First name' required value={formData.firstName} onChange={handleChange} />
+                    <input type="text" name="lastName" placeholder='Last name' required value={formData.lastName} onChange={handleChange} />
                 </div>
 
-                <input
-                    type="email"
-                    name="email"
-                    placeholder='Email address'
-                    value={formData.email}
-                    onChange={handleChange}
-                />
-                <input
-                    type="text"
-                    name="street"
-                    placeholder='Street'
-                    value={formData.street}
-                    onChange={handleChange}
-                />
+                <input type="email" name="email" placeholder='Email address' value={formData.email} onChange={handleChange} />
+                <input type="text" name="street" placeholder='Street' value={formData.street} onChange={handleChange} />
 
                 <div className="multi-fields">
                     <input type="text" name="city" placeholder='City' value={formData.city} onChange={handleChange} />
@@ -136,21 +132,14 @@ const Booking = () => {
                     <input type="text" name="country" placeholder='Country' value={formData.country} onChange={handleChange} />
                 </div>
 
-                <input
-                    type="tel"
-                    name="phone"
-                    placeholder='Phone'
-                    required
-                    value={formData.phone}
-                    onChange={handleChange}
-                />
+                <input type="tel" name="phone" placeholder='Phone' required value={formData.phone} onChange={handleChange} />
 
                 <div className="multi-fields">
-                    <label htmlFor="date">Date:</label>
-                    <input type="date" id="date" name="date" required value={formData.date} onChange={handleChange} />
+                    <label>Date:</label>
+                    <input type="date" name="date" required value={formData.date} onChange={handleChange} />
 
-                    <label htmlFor="time">Time:</label>
-                    <input type="time" id="time" name="time" required value={formData.time} onChange={handleChange} />
+                    <label>Time:</label>
+                    <input type="time" name="time" required value={formData.time} onChange={handleChange} />
                 </div>
 
                 <textarea
@@ -160,7 +149,7 @@ const Booking = () => {
                     maxLength={500}
                     value={formData.notes}
                     onChange={handleChange}
-                ></textarea>
+                />
             </div>
 
             <div className="confirm-booking-right">

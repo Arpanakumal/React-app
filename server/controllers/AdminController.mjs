@@ -2,19 +2,15 @@ import mongoose from "mongoose";
 import Booking from "../models/BookingModel.mjs";
 import Provider from "../models/ProviderModel.mjs";
 import User from "../models/UserModel.mjs";
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-
-
-
 
 
 export const adminLogin = async (req, res) => {
     const { email, password } = req.body;
 
     if (
-        email.toLowerCase().trim() === process.env.ADMIN_EMAIL.toLowerCase().trim() &&
-        password.trim() === process.env.ADMIN_PASSWORD.trim()
+        email?.toLowerCase().trim() === process.env.ADMIN_EMAIL?.toLowerCase().trim() &&
+        password?.trim() === process.env.ADMIN_PASSWORD?.trim()
     ) {
         const token = jwt.sign(
             { role: "admin", id: "admin" },
@@ -31,7 +27,10 @@ export const adminLogin = async (req, res) => {
         });
     }
 
-    return res.status(401).json({ success: false, message: "Invalid admin credentials" });
+    return res.status(401).json({
+        success: false,
+        message: "Invalid admin credentials"
+    });
 };
 
 
@@ -39,45 +38,59 @@ export const getAdminDashboard = async (req, res) => {
     try {
         const totalBookings = await Booking.countDocuments();
         const completedJobs = await Booking.countDocuments({ status: "completed" });
-        const activeProviders = await Provider.countDocuments({ available: true });
+
+        const activeProviders = await Provider.countDocuments({
+            available: true,
+            "availability.isAvailable": true
+        });
 
         const pendingCommissionAgg = await Booking.aggregate([
-            { $match: { status: "completed", commissionPaid: false } },
-            { $group: { _id: null, totalPending: { $sum: "$commissionAmount" } } }
+            {
+                $match: {
+                    status: "completed",
+                    commissionPaid: false
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalPending: { $sum: "$commissionAmount" }
+                }
+            }
         ]);
-        const pendingCommission = Math.round(pendingCommissionAgg[0]?.totalPending || 0);
+
+        const pendingCommission = pendingCommissionAgg[0]?.totalPending || 0;
 
         const recentBookings = await Booking.find()
             .sort({ createdAt: -1 })
             .limit(5)
             .populate("serviceId", "name price_info")
             .populate("providerIds", "name")
-            .populate("userId", "firstName lastName email");
+            .populate("userId", "name email");
 
         const recentUsers = await User.find()
             .sort({ createdAt: -1 })
-            .limit(5);
-
+            .limit(5)
+            .select("name email role createdAt");
 
         const monthlyCommissionAgg = await Booking.aggregate([
-            {
-                $match: { status: "completed" }
-            },
+            { $match: { status: "completed" } },
             {
                 $group: {
-                    _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+                    _id: {
+                        year: { $year: "$createdAt" },
+                        month: { $month: "$createdAt" }
+                    },
                     totalCommission: { $sum: "$commissionAmount" }
                 }
             },
-            {
-                $sort: { "_id.year": 1, "_id.month": 1 }
-            }
+            { $sort: { "_id.year": 1, "_id.month": 1 } }
         ]);
 
         const monthlyCommission = monthlyCommissionAgg.map(item => ({
             year: item._id.year,
             month: item._id.month,
-            totalCommission: Math.round(item.totalCommission || 0)
+            totalCommission: item.totalCommission || 0
         }));
 
         res.json({
@@ -95,44 +108,72 @@ export const getAdminDashboard = async (req, res) => {
 
     } catch (err) {
         console.error("Admin dashboard error:", err);
-        res.status(500).json({ success: false, message: "Server error" });
+        res.status(500).json({ success: false, message: err.message });
     }
 };
 
+
 export const getRevenueReport = async (req, res) => {
     try {
-        const period = req.query.period || 'monthly';
+        const period = req.query.period || "monthly";
 
         let groupBy = {};
-        if (period === 'weekly') {
-            groupBy = { year: { $year: "$createdAt" }, week: { $week: "$createdAt" } };
-        } else if (period === 'monthly') {
-            groupBy = { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } };
+        if (period === "weekly") {
+            groupBy = {
+                year: { $year: "$createdAt" },
+                week: { $week: "$createdAt" }
+            };
+        } else if (period === "monthly") {
+            groupBy = {
+                year: { $year: "$createdAt" },
+                month: { $month: "$createdAt" }
+            };
         } else {
             groupBy = { year: { $year: "$createdAt" } };
         }
 
-
-        const overTimeAgg = await Booking.aggregate([
-            { $match: { status: 'completed', commissionPaid: true } },
-            { $group: { _id: "$providerCommissions.providerId", totalCommission: { $sum: "$providerCommissions.commissionShare" } } },
+        const overTime = await Booking.aggregate([
+            { $match: { status: "completed" } },
+            {
+                $group: {
+                    _id: groupBy,
+                    total: { $sum: "$commissionAmount" }
+                }
+            },
             { $sort: { "_id.year": 1, "_id.month": 1, "_id.week": 1 } }
         ]);
 
-        const overTime = overTimeAgg.map(item => {
-            let label = '';
-            if (period === 'weekly') label = `W${item._id.week}-${item._id.year}`;
-            else if (period === 'monthly') label = `${item._id.month}-${item._id.year}`;
-            else label = `${item._id.year}`;
-            return { label, total: item.total };
+        const formattedOverTime = overTime.map(item => {
+            let label = "";
+            if (period === "weekly") {
+                label = `W${item._id.week}-${item._id.year}`;
+            } else if (period === "monthly") {
+                label = `${item._id.month}-${item._id.year}`;
+            } else {
+                label = `${item._id.year}`;
+            }
+
+            return {
+                label,
+                total: item.total || 0
+            };
         });
 
-
-        const topProvidersAgg = await Booking.aggregate([
-            { $match: { status: 'completed', commissionPaid: true } },
+        const topProviders = await Booking.aggregate([
+            { $match: { status: "completed" } },
             { $unwind: "$providerCommissions" },
-            { $match: { "providerCommissions.commissionPaid": true } },
-            { $group: { _id: "$providerCommissions.providerId", totalCommission: { $sum: "$providerCommissions.commissionAmount" } } },
+            {
+                $match: {
+                    "providerCommissions.accepted": true,
+                    "providerCommissions.commissionPaid": true
+                }
+            },
+            {
+                $group: {
+                    _id: "$providerCommissions.providerId",
+                    totalCommission: { $sum: "$providerCommissions.commissionShare" }
+                }
+            },
             { $sort: { totalCommission: -1 } },
             { $limit: 5 },
             {
@@ -144,13 +185,24 @@ export const getRevenueReport = async (req, res) => {
                 }
             },
             { $unwind: "$providerInfo" },
-            { $project: { _id: 0, name: "$providerInfo.name", totalCommission: 1 } }
+            {
+                $project: {
+                    _id: 0,
+                    name: "$providerInfo.name",
+                    totalCommission: 1
+                }
+            }
         ]);
 
 
-        const topServicesAgg = await Booking.aggregate([
-            { $match: { status: 'completed', commissionPaid: true } },
-            { $group: { _id: "$serviceId", totalCommission: { $sum: "$commissionAmount" } } },
+        const topServices = await Booking.aggregate([
+            { $match: { status: "completed" } },
+            {
+                $group: {
+                    _id: "$serviceId",
+                    totalCommission: { $sum: "$commissionAmount" }
+                }
+            },
             { $sort: { totalCommission: -1 } },
             { $limit: 5 },
             {
@@ -162,14 +214,19 @@ export const getRevenueReport = async (req, res) => {
                 }
             },
             { $unwind: "$serviceInfo" },
-            { $project: { _id: 0, name: "$serviceInfo.name", totalCommission: 1 } }
+            {
+                $project: {
+                    _id: 0,
+                    name: "$serviceInfo.name",
+                    totalCommission: 1
+                }
+            }
         ]);
 
 
-        const detailedAgg = await Booking.aggregate([
-            { $match: { status: 'completed', commissionPaid: true } },
+        const detailed = await Booking.aggregate([
+            { $match: { status: "completed" } },
             { $unwind: "$providerCommissions" },
-            { $match: { "providerCommissions.commissionPaid": true } },
             {
                 $lookup: {
                     from: "providers",
@@ -192,7 +249,6 @@ export const getRevenueReport = async (req, res) => {
                 $project: {
                     bookingId: "$_id",
                     serviceName: "$serviceInfo.name",
-                    providerId: "$providerInfo._id",
                     providerName: "$providerInfo.name",
                     commissionAmount: "$providerCommissions.commissionShare",
                     commissionPaid: "$providerCommissions.commissionPaid",
@@ -200,49 +256,57 @@ export const getRevenueReport = async (req, res) => {
                 }
             }
         ]);
+
         res.json({
             success: true,
-            data: { overTime, topProviders: topProvidersAgg, topServices: topServicesAgg, detailed: detailedAgg }
+            data: {
+                overTime: formattedOverTime,
+                topProviders,
+                topServices,
+                detailed
+            }
         });
 
     } catch (err) {
         console.error("Revenue report error:", err);
-        res.status(500).json({ success: false, message: "Server error" });
+        res.status(500).json({ success: false, message: err.message });
     }
 };
 
 
-
 export const getPendingCommissions = async (req, res) => {
     try {
-        const bookings = await Booking.find({ status: "completed", commissionPaid: false })
+        const bookings = await Booking.find({
+            status: "completed",
+            commissionPaid: false
+        })
             .populate("serviceId", "name")
             .populate("providerCommissions.providerId", "name email");
 
-        const pendingList = [];
+        const pending = [];
 
         bookings.forEach(b => {
             b.providerCommissions.forEach(pc => {
                 if (pc.accepted && !pc.commissionPaid) {
-                    pendingList.push({
+                    pending.push({
                         bookingId: b._id,
-                        service: b.serviceId?.name || "N/A",
+                        service: b.serviceId?.name,
                         providerId: pc.providerId?._id,
-                        providerName: pc.providerId?.name || "N/A",
-                        commissionAmount: pc.commissionShare || 0,
+                        providerName: pc.providerId?.name,
+                        commissionAmount: pc.commissionShare,
                         date: b.createdAt
                     });
                 }
             });
         });
 
-        res.json({ success: true, data: pendingList });
+        res.json({ success: true, data: pending });
+
     } catch (err) {
-        console.error("Get pending commissions error:", err);
-        res.status(500).json({ success: false, message: "Server error" });
+        console.error(err);
+        res.status(500).json({ success: false, message: err.message });
     }
 };
-
 
 
 export const markCommissionPaid = async (req, res) => {
@@ -259,15 +323,10 @@ export const markCommissionPaid = async (req, res) => {
         );
 
         if (!slot) {
-            return res.status(404).json({ success: false, message: "Provider commission not found" });
-        }
-
-        if (slot.commissionPaid) {
-            return res.json({ success: true, message: "Already marked as paid" });
+            return res.status(404).json({ success: false, message: "Provider slot not found" });
         }
 
         slot.commissionPaid = true;
-
 
         booking.commissionPaid = booking.providerCommissions
             .filter(pc => pc.accepted)
@@ -281,7 +340,7 @@ export const markCommissionPaid = async (req, res) => {
         });
 
     } catch (err) {
-        console.error("Mark commission error:", err);
-        res.status(500).json({ success: false, message: "Server error" });
+        console.error(err);
+        res.status(500).json({ success: false, message: err.message });
     }
 };

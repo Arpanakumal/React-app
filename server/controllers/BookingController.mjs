@@ -13,6 +13,7 @@ import { hasScheduleConflict } from "../utils/ScheduleCheck.mjs";
 export const createBooking = async (req, res) => {
     try {
         const userId = req.user.id;
+
         const {
             serviceId,
             appointmentDate,
@@ -24,6 +25,7 @@ export const createBooking = async (req, res) => {
             phone
         } = req.body;
 
+
         if (!serviceId || !appointmentDate || !appointmentTime || !username || !phone) {
             return res.status(400).json({
                 success: false,
@@ -31,9 +33,13 @@ export const createBooking = async (req, res) => {
             });
         }
 
+
         const service = await Service.findById(serviceId);
         if (!service) {
-            return res.status(404).json({ success: false, message: "Service not found" });
+            return res.status(404).json({
+                success: false,
+                message: "Service not found"
+            });
         }
 
 
@@ -41,21 +47,73 @@ export const createBooking = async (req, res) => {
         const durationHours = 1;
         const end = new Date(start.getTime() + durationHours * 60 * 60 * 1000);
 
-        const pricePerHour = Number(service.price_info);
         const providerCountNumber = Number(providerCount) || 1;
+        const pricePerHour = Number(service.price_info);
         const commissionPercent = Number(service.commissionPercent) || 10;
+
+
+        const providers = await Provider.find({
+            servicesOffered: serviceId,
+            "availability.isAvailable": true
+        });
+
+        if (!providers.length) {
+            return res.status(400).json({
+                success: false,
+                message: "No providers exist for this service"
+            });
+        }
+
+
+        const availableProviders = [];
+
+        for (const provider of providers) {
+            const dayMap = [
+                "Sunday", "Monday", "Tuesday",
+                "Wednesday", "Thursday", "Friday", "Saturday"
+            ];
+
+            const dayOfWeek = dayMap[start.getDay()];
+
+
+            if (!provider.availability?.workingDays?.includes(dayOfWeek)) {
+                continue;
+            }
+
+            const conflict = await hasScheduleConflict(
+                provider._id,
+                start,
+                end
+            );
+
+            if (!conflict) {
+                availableProviders.push(provider);
+            }
+        }
+
+        if (availableProviders.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "No providers available for this date/time. Please choose another day or time."
+            });
+        }
+
+        const selectedProviders = availableProviders.slice(0, providerCountNumber);
+
 
         const finalPrice = pricePerHour * durationHours * providerCountNumber;
         const commissionAmount = (finalPrice * commissionPercent) / 100;
         const providerEarning = finalPrice - commissionAmount;
 
-        const providerCommissions = Array.from({ length: providerCountNumber }, () => ({
-            providerId: null,
+
+        const providerCommissions = selectedProviders.map(p => ({
+            providerId: p._id,
             accepted: false,
             rejected: false,
-            earning: 0,
-            commissionPaid: false
+            commissionPaid: false,
+            earning: 0
         }));
+
 
         const booking = await Booking.create({
             userId,
@@ -64,7 +122,10 @@ export const createBooking = async (req, res) => {
             providerCount: providerCountNumber,
             providerIds: [],
             providerCommissions,
-            customer: { name: username.trim(), phone },
+            customer: {
+                name: username.trim(),
+                phone
+            },
             phone,
             address,
             appointmentStart: start,
@@ -78,15 +139,19 @@ export const createBooking = async (req, res) => {
             status: "pending"
         });
 
-        res.status(201).json({
+
+        return res.status(201).json({
             success: true,
-            message: "Booking created",
+            message: "Booking created successfully",
             data: booking
         });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: error.message });
+        console.error("Create Booking Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 
@@ -213,42 +278,42 @@ export const getBookingById = async (req, res) => {
 
 export const acceptBooking = async (req, res) => {
     try {
-        const providerId = req.user.id;
+        const providerId = String(req.user.id);
         const { bookingId } = req.body;
 
         const booking = await Booking.findById(bookingId);
-        if (!booking)
+
+        if (!booking) {
             return res.status(404).json({ success: false, message: "Booking not found" });
+        }
 
         if (["completed", "cancelled"].includes(booking.status)) {
             return res.status(400).json({ success: false, message: "Booking already closed" });
         }
 
-
         const alreadyAccepted = booking.providerCommissions.some(
-            pc => pc.providerId?.toString() === providerId
+            pc => pc.providerId && String(pc.providerId) === providerId
         );
 
         if (alreadyAccepted) {
             return res.status(400).json({
                 success: false,
-                message: "You already accepted this booking"
+                message: "Already accepted"
             });
         }
 
         const emptySlot = booking.providerCommissions.find(pc =>
             !pc.accepted &&
-            pc.providerId === null &&
-            !pc.rejectedBy.includes(providerId)
+            !pc.providerId &&
+            !pc.rejectedBy?.map(String).includes(providerId)
         );
 
         if (!emptySlot) {
             return res.status(400).json({
                 success: false,
-                message: "No available slots for you"
+                message: "No available slots"
             });
         }
-
 
         emptySlot.providerId = providerId;
         emptySlot.accepted = true;
@@ -257,22 +322,21 @@ export const acceptBooking = async (req, res) => {
             .filter(pc => pc.accepted)
             .map(pc => pc.providerId);
 
-        const totalRequired = booking.providerCommissions.length;
         const totalAccepted = booking.providerCommissions.filter(pc => pc.accepted).length;
+        const totalRequired = booking.providerCommissions.length;
 
         booking.status = totalAccepted === totalRequired ? "accepted" : "pending";
 
         await booking.save();
 
-        res.json({
+        return res.json({
             success: true,
-            message: "Booking accepted",
+            message: "Accepted successfully",
             data: booking
         });
 
     } catch (err) {
-        console.error("Error in acceptBooking:", err);
-        res.status(500).json({ success: false, message: "Server error" });
+        return res.status(500).json({ success: false, message: err.message });
     }
 };
 
@@ -435,7 +499,7 @@ export const cancelBooking = async (req, res) => {
 
     try {
 
-        const userId = req.user.id;
+        const userId = req.user.id || req.user._id;
 
         const { bookingId } = req.params;
 
@@ -446,8 +510,7 @@ export const cancelBooking = async (req, res) => {
                 success: false,
                 message: "Booking not found"
             });
-
-        if (booking.userId.toString() !== userId)
+        if (booking.userId.toString() !== req.user.id.toString())
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized"
@@ -574,69 +637,47 @@ export const updateBookingStatus = async (req, res) => {
 // Rate a provider
 export const rateProvider = async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = String(req.user.id);
         const { bookingId, providerId, rating, review } = req.body;
 
-        if (!bookingId || !providerId || !rating) {
-            return res.status(400).json({ success: false, message: "Booking ID, Provider ID, and rating are required" });
-        }
-
-        if (rating < 1 || rating > 5) {
-            return res.status(400).json({ success: false, message: "Rating must be between 1 and 5" });
-        }
-
         const booking = await Booking.findById(bookingId);
-        if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
 
-        if (booking.userId.toString() !== userId) {
-            return res.status(403).json({ success: false, message: "You can only rate your own bookings" });
+        if (!booking) {
+            return res.status(404).json({ success: false });
+        }
+
+        if (String(booking.userId) !== userId) {
+            return res.status(403).json({ success: false });
         }
 
         if (booking.status !== "completed") {
-            return res.status(400).json({ success: false, message: "You can only rate a completed booking" });
+            return res.status(400).json({ success: false });
         }
 
-
-        if (!booking.providerIds.map(id => id.toString()).includes(providerId)) {
-            return res.status(400).json({ success: false, message: "Provider not part of this booking" });
+        if (!booking.providerIds.map(String).includes(providerId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Provider not in booking"
+            });
         }
-
 
         if (!booking.ratings) booking.ratings = [];
-        const existingRatingIndex = booking.ratings?.findIndex(r => r.providerId.toString() === providerId);
 
-        if (existingRatingIndex >= 0) {
+        const index = booking.ratings.findIndex(
+            r => String(r.providerId) === providerId
+        );
 
-            booking.ratings[existingRatingIndex] = { providerId, rating, review };
+        if (index >= 0) {
+            booking.ratings[index] = { providerId, rating, review };
         } else {
             booking.ratings.push({ providerId, rating, review });
         }
 
         await booking.save();
 
+        return res.json({ success: true });
 
-        const providerBookings = await Booking.find({
-            providerIds: providerId,
-            "ratings.providerId": providerId
-        });
-
-        let total = 0;
-        let count = 0;
-        providerBookings.forEach(b => {
-            const r = b.ratings.find(r => r.providerId.toString() === providerId);
-            if (r) {
-                total += r.rating;
-                count++;
-            }
-        });
-
-        const avgRating = count ? total / count : 0;
-
-        await Provider.findByIdAndUpdate(providerId, { averageRating: avgRating, ratingCount: count });
-
-        res.json({ success: true, message: "Provider rated successfully", averageRating: avgRating, ratingCount: count });
     } catch (err) {
-        console.error("Error in rateProvider:", err);
-        res.status(500).json({ success: false, message: "Server error" });
+        return res.status(500).json({ success: false });
     }
 };

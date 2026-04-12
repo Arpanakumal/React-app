@@ -6,7 +6,7 @@ export const calculateProviderEarnings = (booking, hoursWorked = null) => {
     let providerEarning;
 
     if (hoursWorked !== null) {
-        // Booking completed based on hours worked
+z
         finalPrice = booking.pricePerHour * hoursWorked * providerCount;
     } else {
         finalPrice = booking.finalPrice || booking.pricePerHour * providerCount;

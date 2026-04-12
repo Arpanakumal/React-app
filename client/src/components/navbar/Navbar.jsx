@@ -1,14 +1,17 @@
 import React, { useContext, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { toast } from 'react-toastify';
 import './Navbar.css';
 import { logo, searchIcon, profile, logoutIcon, booking } from '../../assets/assets';
-import { Link } from "react-router-dom";
+
 import { StoreContext } from '../../context/StoreContext';
+import { useLocation, Link, useNavigate } from "react-router-dom";
 
 const Navbar = ({ setShowLogin }) => {
     const [menu, setMenu] = useState("Home");
+    const location = useLocation();
     const [pendingCount, setPendingCount] = useState(0);
+    const isActive = (path) => location.pathname === path;
 
     const { token, setToken, logout } = useContext(StoreContext);
 
@@ -22,21 +25,13 @@ const Navbar = ({ setShowLogin }) => {
 
             <ul className="navbar-menu">
                 <li>
-                    <Link
-                        to="/"
-                        onClick={() => setMenu("Home")}
-                        className={menu === "Home" ? "active" : ""}
-                    >
+                    <Link to="/" className={isActive("/") ? "active" : ""}>
                         Home
                     </Link>
                 </li>
 
                 <li>
-                    <Link
-                        to="/service"
-                        onClick={() => setMenu("Services")}
-                        className={menu === "Services" ? "active" : ""}
-                    >
+                    <Link to="/service" className={isActive("/service") ? "active" : ""}>
                         Services
                     </Link>
                 </li>
@@ -53,38 +48,26 @@ const Navbar = ({ setShowLogin }) => {
                                 setMenu("book");
                             }
                         }}
-                        className={menu === "book" ? "active" : ""}
+                        className={isActive("/book") ? "active" : ""}
                     >
                         Book
                     </Link>
                 </li>
 
                 <li>
-                    <Link
-                        to="/blog"
-                        onClick={() => setMenu("Blog")}
-                        className={menu === "Blog" ? "active" : ""}
-                    >
+                    <Link to="/blog" className={isActive("/blog") ? "active" : ""}>
                         Blog
                     </Link>
                 </li>
 
                 <li>
-                    <Link
-                        to="/about"
-                        onClick={() => setMenu("About us")}
-                        className={menu === "About us" ? "active" : ""}
-                    >
+                    <Link to="/about" className={isActive("/about") ? "active" : ""}>
                         About Us
                     </Link>
                 </li>
 
                 <li>
-                    <Link
-                        to="/contact"
-                        onClick={() => setMenu("Contact us")}
-                        className={menu === "Contact us" ? "active" : ""}
-                    >
+                    <Link to="/contact" className={isActive("/contact") ? "active" : ""}>
                         Contact Us
                     </Link>
                 </li>
