@@ -2,6 +2,12 @@
 import express from "express";
 import authmiddleware from "../middleware/authMiddleware.mjs";
 import {
+    requireRole
+} from "../middleware/requireRole.mjs";
+import auth from "../middleware/auth.mjs";
+
+
+import {
     createBooking,
     listBookings,
     acceptBooking,
@@ -14,6 +20,7 @@ import {
     cancelBooking,
     rateProvider
 } from "../controllers/BookingController.mjs";
+import authAdmin from "../middleware/authAdmin.mjs";
 
 
 const bookingRouter = express.Router();
@@ -24,14 +31,14 @@ bookingRouter.post("/reject", authmiddleware, rejectBooking);
 
 
 bookingRouter.get("/list", listBookings);
-bookingRouter.get("/provider", authmiddleware, listBookingsForProvider);
+bookingRouter.get("/provider", auth, requireRole("provider"), listBookingsForProvider);
 bookingRouter.get("/user", authmiddleware, listBookingsForUser);
-bookingRouter.patch("/:bookingId/cancel", authmiddleware, cancelBooking);
-bookingRouter.put("/complete/:id", authmiddleware, completeBooking);
+bookingRouter.patch("/:bookingId/cancel", auth, requireRole("provider"), cancelBooking);
+bookingRouter.put("/complete/:id", auth, requireRole("provider"), completeBooking);
 
 bookingRouter.post("/rate", authmiddleware, rateProvider);
 
-bookingRouter.get("/:id", authmiddleware, getBookingById);
+bookingRouter.get("/:id", authAdmin, getBookingById);
 bookingRouter.put("/update/:id", authmiddleware, updateBookingStatus);
 
 

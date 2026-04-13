@@ -27,6 +27,8 @@ const Providerlogin = () => {
 
             if (res.data.success) {
 
+                localStorage.removeItem("token");
+
                 localStorage.setItem("pToken", res.data.token);
                 localStorage.setItem("provider_role", res.data.role);
                 localStorage.setItem("provider_name", res.data.name);

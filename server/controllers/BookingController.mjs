@@ -98,7 +98,7 @@ export const createBooking = async (req, res) => {
             });
         }
 
-        const selectedProviders = availableProviders.slice(0, providerCountNumber);
+        // const selectedProviders = availableProviders.slice(0, providerCountNumber);
 
 
         const finalPrice = pricePerHour * durationHours * providerCountNumber;
@@ -106,14 +106,14 @@ export const createBooking = async (req, res) => {
         const providerEarning = finalPrice - commissionAmount;
 
 
-        const providerCommissions = selectedProviders.map(p => ({
-            providerId: p._id,
+        const providerCommissions = Array.from({ length: providerCountNumber }, () => ({
+            providerId: null,
             accepted: false,
-            rejected: false,
-            commissionPaid: false,
-            earning: 0
+            rejectedBy: [],
+            commissionShare: 0,
+            earningShare: 0,
+            commissionPaid: false
         }));
-
 
         const booking = await Booking.create({
             userId,
@@ -278,6 +278,10 @@ export const getBookingById = async (req, res) => {
 
 export const acceptBooking = async (req, res) => {
     try {
+
+        console.log("TOTAL SLOTS:", booking.providerCommissions.length);
+        console.log("ACCEPTED:", totalAccepted);
+        
         const providerId = String(req.user.id);
         const { bookingId } = req.body;
 
@@ -351,14 +355,8 @@ export const rejectBooking = async (req, res) => {
             return res.status(404).json({ success: false, message: "Booking not found" });
 
         booking.providerCommissions.forEach(pc => {
-            if (!pc.accepted) {
-
-                pc.providerId = null;
-
-
-                if (!pc.rejectedBy.includes(providerId)) {
-                    pc.rejectedBy.push(providerId);
-                }
+            if (!pc.rejectedBy.includes(providerId)) {
+                pc.rejectedBy.push(providerId);
             }
         });
 

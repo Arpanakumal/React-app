@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const providerCommissionSchema = new mongoose.Schema({
     providerId: { type: mongoose.Schema.Types.ObjectId, ref: "Provider", default: null },
     accepted: { type: Boolean, default: false },
-    rejectedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "Provider" }], 
+    rejectedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "Provider" }],
 
     commissionShare: { type: Number, default: 0 },
     earningShare: { type: Number, default: 0 },

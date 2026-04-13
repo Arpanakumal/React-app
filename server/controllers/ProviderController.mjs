@@ -299,17 +299,35 @@ export const respondToBooking = async (req, res) => {
             }
         }
 
-        // update providerIds safely
+
+
+
+
         booking.providerIds = booking.providerCommissions
             .filter(pc => pc.accepted)
             .map(pc => pc.providerId);
 
+        const totalAccepted = booking.providerCommissions.filter(pc => pc.accepted).length;
+        const totalRequired = booking.providerCount || booking.providerCommissions.length;
+
+        const remainingProviders = totalRequired - totalAccepted;
+        const allAccepted = totalAccepted >= totalRequired;
+
+
+        booking.status = allAccepted ? "accepted" : "pending";
+
         await booking.save();
+
+
 
         return res.json({
             success: true,
             message: action === "accept" ? "Accepted" : "Rejected",
-            data: booking
+            data: {
+                booking,
+                remainingProviders,
+                allAccepted
+            }
         });
 
     } catch (err) {
@@ -787,5 +805,3 @@ export const getProviderRatings = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
-
-

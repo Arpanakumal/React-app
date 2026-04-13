@@ -11,7 +11,8 @@ export const hasScheduleConflict = async (
         const start = new Date(appointmentStart);
         const end = new Date(appointmentEnd);
 
-        if (!start || !end || start >= end) return true;
+        if (!start || !end || start >= end)
+            return true;
 
         const provider = await Provider.findById(providerId);
         if (!provider || !provider.availability?.isAvailable) return true;

@@ -2,6 +2,8 @@ import express from "express";
 import multer from "multer";
 import authAdmin from "../middleware/authAdmin.mjs";
 import authmiddleware from "../middleware/authMiddleware.mjs";
+import auth from "../middleware/auth.mjs";
+import { requireRole } from "../middleware/requireRole.mjs";
 import {
     addProvider,
     loginProvider,
@@ -42,25 +44,25 @@ providerRouter.post("/reset-password", resetPassword);
 
 //  PROVIDER PANEL
 
-providerRouter.get("/commissions", authmiddleware, getProviderCommissions);
-providerRouter.get("/dashboard-summary", authmiddleware, getDashboardSummary);
-providerRouter.get("/booking/history", authmiddleware, getProviderBookingHistory);
-providerRouter.get("/profile", authmiddleware, getMyProfile);
-providerRouter.put("/profile", authmiddleware, upload.single("image"), updateMyProfile);
-providerRouter.put("/availability", authmiddleware, updateAvailability);
+providerRouter.get("/commissions", auth,requireRole("provider"), getProviderCommissions);
+providerRouter.get("/dashboard-summary", auth, requireRole("provider"), getDashboardSummary);
+providerRouter.get("/booking/history", auth,requireRole("provider"), getProviderBookingHistory);
+providerRouter.get("/profile", auth,requireRole("provider"), getMyProfile);
+providerRouter.put("/profile", auth, requireRole("provider"),upload.single("image"), updateMyProfile);
+providerRouter.put("/availability", auth,requireRole("provider"), updateAvailability);
 
 // BOOKINGS
-providerRouter.patch("/booking/respond", authmiddleware, respondToBooking);
-providerRouter.patch("/booking/:bookingId/start", authmiddleware, startBooking);
-providerRouter.patch("/booking/:bookingId/end", authmiddleware, endBooking);
+providerRouter.patch("/booking/respond", auth,requireRole("provider"), respondToBooking);
+providerRouter.patch("/booking/:bookingId/start", auth,requireRole("provider"),startBooking);
+providerRouter.patch("/booking/:bookingId/end", auth,requireRole("provider"), endBooking);
 
 // PUBLIC
 providerRouter.get("/", listProviders);
 
-// DYNAMIC LAST ALWAYS
+
 providerRouter.get("/:id/ratings", getProviderRatings);
 providerRouter.get("/:id", getProviderById);
-providerRouter.put("/:id", authmiddleware, upload.single("image"), updateProvider);
+providerRouter.put("/:id", auth, requireRole("provider"),upload.single("image"), updateProvider);
 providerRouter.patch("/:id/toggle", toggleProviderStatus);
 
 export default providerRouter;
