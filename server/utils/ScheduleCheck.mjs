@@ -1,7 +1,6 @@
 import Booking from "../models/BookingModel.mjs";
 import Provider from "../models/ProviderModel.mjs";
 
-
 export const hasScheduleConflict = async (
     providerId,
     appointmentStart,
@@ -11,12 +10,22 @@ export const hasScheduleConflict = async (
         const start = new Date(appointmentStart);
         const end = new Date(appointmentEnd);
 
-        if (!start || !end || start >= end)
-            return true;
+        if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) {
+            return { conflict: true, reason: "Invalid time slot" };
+        }
 
         const provider = await Provider.findById(providerId);
-        if (!provider || !provider.availability?.isAvailable) return true;
 
+        if (!provider) {
+            return { conflict: true, reason: "Provider not found" };
+        }
+
+        const isAvailable =
+            provider?.availability?.isAvailable ?? provider?.available;
+
+        if (!provider || isAvailable !== true) {
+            return { conflict: true, reason: "Provider not available" };
+        }
         const dayMap = [
             "Sunday", "Monday", "Tuesday", "Wednesday",
             "Thursday", "Friday", "Saturday"
@@ -24,15 +33,18 @@ export const hasScheduleConflict = async (
 
         const dayOfWeek = dayMap[start.getDay()];
 
-        if (!provider.availability.workingDays.includes(dayOfWeek)) {
-            return true;
+
+        const workingDays = provider.availability?.workingDays || [];
+
+        if (!workingDays.includes(dayOfWeek)) {
+            return { conflict: true, reason: "Not a working day" };
         }
 
         const [startHour, startMinute] =
-            provider.availability.startTime.split(":").map(Number);
+            (provider.availability?.startTime || "00:00").split(":").map(Number);
 
         const [endHour, endMinute] =
-            provider.availability.endTime.split(":").map(Number);
+            (provider.availability?.endTime || "23:59").split(":").map(Number);
 
         const workStart = new Date(start);
         workStart.setHours(startHour, startMinute, 0, 0);
@@ -41,67 +53,24 @@ export const hasScheduleConflict = async (
         workEnd.setHours(endHour, endMinute, 0, 0);
 
         if (start < workStart || end > workEnd) {
-            return true;
+            return { conflict: true, reason: "Outside working hours" };
         }
 
-        const conflict = await Booking.findOne({
+        const existingBooking = await Booking.findOne({
             providerIds: providerId,
             status: { $in: ["accepted", "in-progress"] },
             appointmentStart: { $lt: end },
             appointmentEnd: { $gt: start }
         });
 
-        return !!conflict;
+        if (existingBooking) {
+            return { conflict: true, reason: "Time slot already booked" };
+        }
+
+        return { conflict: false };
 
     } catch (error) {
         console.error("Schedule conflict check error:", error);
-        return true;
-    }
-};
-
-
-
-export const findAvailableProvider = async (
-    providerIds,
-    appointmentStart,
-    appointmentEnd
-) => {
-    try {
-        const availableProviders = [];
-
-        for (let id of providerIds) {
-            const hasConflict = await hasScheduleConflict(
-                id,
-                appointmentStart,
-                appointmentEnd
-            );
-
-            if (!hasConflict) {
-                availableProviders.push(id);
-            }
-        }
-
-
-        if (availableProviders.length === 0) {
-            return {
-                success: false,
-                message: "All providers are booked for this time slot",
-                availableProviders: []
-            };
-        }
-
-        return {
-            success: true,
-            message: "Providers available",
-            availableProviders
-        };
-
-    } catch (error) {
-        console.error("Error finding available providers:", error);
-        return {
-            success: false,
-            message: "Error checking provider availability",
-            availableProviders: []
-        };
+        return { conflict: true, reason: "Server error" };
     }
 };

@@ -647,10 +647,7 @@ export const updateAvailability = async (req, res) => {
         provider.availability.workingDays = workingDays;
         provider.availability.startTime = startTime;
         provider.availability.endTime = endTime;
-        provider.availability.isAvailable =
-            typeof isAvailable === "boolean"
-                ? isAvailable
-                : provider.availability.isAvailable ?? true;
+
 
         await provider.save();
 

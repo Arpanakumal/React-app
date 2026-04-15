@@ -12,8 +12,7 @@ const providerSchema = new mongoose.Schema({
     availability: {
         workingDays: [String],
         startTime: String,
-        endTime: String,
-        isAvailable: { type: Boolean, default: true }
+        endTime: String
     },
     resetPasswordToken: String,
     resetPasswordExpires: Date

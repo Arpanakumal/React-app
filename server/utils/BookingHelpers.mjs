@@ -6,13 +6,14 @@ export const calculateProviderEarnings = (booking, hoursWorked = null) => {
     let providerEarning;
 
     if (hoursWorked !== null) {
-z
+
         finalPrice = booking.pricePerHour * hoursWorked * providerCount;
     } else {
         finalPrice = booking.finalPrice || booking.pricePerHour * providerCount;
     }
 
     commissionAmount = (finalPrice * (booking.commissionPercent || 0)) / 100;
+    
     providerEarning = finalPrice - commissionAmount;
 
     const acceptedProviders = booking.providerCommissions.filter(pc => pc.accepted);

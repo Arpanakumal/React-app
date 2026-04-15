@@ -25,7 +25,6 @@ export const createBooking = async (req, res) => {
             phone
         } = req.body;
 
-
         if (!serviceId || !appointmentDate || !appointmentTime || !username || !phone) {
             return res.status(400).json({
                 success: false,
@@ -33,7 +32,7 @@ export const createBooking = async (req, res) => {
             });
         }
 
-
+        // 1. Validate service
         const service = await Service.findById(serviceId);
         if (!service) {
             return res.status(404).json({
@@ -42,19 +41,23 @@ export const createBooking = async (req, res) => {
             });
         }
 
+        // 2. Build appointment time
+        const [hours, minutes] = appointmentTime.split(":").map(Number);
 
-        const start = new Date(`${appointmentDate}T${appointmentTime}`);
+        const start = new Date(appointmentDate);
+        start.setHours(hours, minutes, 0, 0);
+
         const durationHours = 1;
         const end = new Date(start.getTime() + durationHours * 60 * 60 * 1000);
 
         const providerCountNumber = Number(providerCount) || 1;
+
         const pricePerHour = Number(service.price_info);
         const commissionPercent = Number(service.commissionPercent) || 10;
 
-
+        // 3. Get providers for this service
         const providers = await Provider.find({
-            servicesOffered: serviceId,
-            "availability.isAvailable": true
+            servicesOffered: serviceId
         });
 
         if (!providers.length) {
@@ -64,57 +67,52 @@ export const createBooking = async (req, res) => {
             });
         }
 
-
+        // 4. Check availability per provider
         const availableProviders = [];
+        const conflictReasons = [];
 
         for (const provider of providers) {
-            const dayMap = [
-                "Sunday", "Monday", "Tuesday",
-                "Wednesday", "Thursday", "Friday", "Saturday"
-            ];
 
-            const dayOfWeek = dayMap[start.getDay()];
-
-
-            if (!provider.availability?.workingDays?.includes(dayOfWeek)) {
-                continue;
-            }
-
-            const conflict = await hasScheduleConflict(
+            const result = await hasScheduleConflict(
                 provider._id,
                 start,
                 end
             );
 
-            if (!conflict) {
+            if (!result.conflict) {
                 availableProviders.push(provider);
+            } else {
+                conflictReasons.push(result.reason);
             }
         }
 
+        // 5. If no provider available
         if (availableProviders.length === 0) {
             return res.status(400).json({
                 success: false,
-                message: "No providers available for this date/time. Please choose another day or time."
+                message: conflictReasons[0] || "No providers available for this slot"
             });
         }
 
-        // const selectedProviders = availableProviders.slice(0, providerCountNumber);
-
-
+        // 6. Pricing calculation
         const finalPrice = pricePerHour * durationHours * providerCountNumber;
         const commissionAmount = (finalPrice * commissionPercent) / 100;
         const providerEarning = finalPrice - commissionAmount;
 
+        // 7. Create provider slots
+        const providerCommissions = Array.from(
+            { length: providerCountNumber },
+            () => ({
+                providerId: null,
+                accepted: false,
+                rejectedBy: [],
+                commissionShare: 0,
+                earningShare: 0,
+                commissionPaid: false
+            })
+        );
 
-        const providerCommissions = Array.from({ length: providerCountNumber }, () => ({
-            providerId: null,
-            accepted: false,
-            rejectedBy: [],
-            commissionShare: 0,
-            earningShare: 0,
-            commissionPaid: false
-        }));
-
+        // 8. Save booking
         const booking = await Booking.create({
             userId,
             username: username.trim(),
@@ -138,7 +136,6 @@ export const createBooking = async (req, res) => {
             providerEarning,
             status: "pending"
         });
-
 
         return res.status(201).json({
             success: true,
@@ -281,7 +278,7 @@ export const acceptBooking = async (req, res) => {
 
         console.log("TOTAL SLOTS:", booking.providerCommissions.length);
         console.log("ACCEPTED:", totalAccepted);
-        
+
         const providerId = String(req.user.id);
         const { bookingId } = req.body;
 
