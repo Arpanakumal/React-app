@@ -39,6 +39,7 @@ const bookingSchema = new mongoose.Schema({
     ratings: [
         {
             providerId: { type: mongoose.Schema.Types.ObjectId, ref: "Provider" },
+            userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
             rating: { type: Number, min: 1, max: 5 },
             review: String,
         }

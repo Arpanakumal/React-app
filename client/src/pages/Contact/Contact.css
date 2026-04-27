@@ -1,26 +1,45 @@
+.contact-page {
+    padding-top: 100px;
+
+}
+
+
+.contact-page h1 {
+    text-align: center;
+    font-size: 2.2rem;
+    margin-bottom: 2rem;
+    color: #04154a;
+}
+
 .contact-container {
     display: flex;
     gap: 2rem;
-    padding: 3rem 5vw;
-    flex-wrap: wrap; 
+    padding: 2rem 5vw;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
 }
+
 
 .contact-image {
     flex: 1 1 40%;
+    display: flex;
+    justify-content: center;
 }
 
 .contact-image img {
     width: 100%;
+    max-width: 450px;
     border-radius: 10px;
     object-fit: cover;
 }
 
 .contact-form {
-    flex: 1 1 55%;
+    flex: 1 1 50%;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
 }
+
 
 .form-group {
     display: flex;
@@ -29,7 +48,7 @@
 }
 
 .form-group label {
-    font-weight: bold;
+    font-weight: 600;
     margin-bottom: 0.5rem;
     color: #04154a;
 }
@@ -49,6 +68,7 @@
     border-color: #04154a;
 }
 
+
 .submit-btn {
     padding: 0.75rem 2rem;
     font-size: 1rem;
@@ -57,7 +77,7 @@
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: 0.3s;
     align-self: flex-start;
 }
 
@@ -69,13 +89,10 @@
 @media (max-width: 768px) {
     .contact-container {
         flex-direction: column;
+        text-align: center;
     }
 
-    .contact-form {
-        width: 100%;
-    }
-
-    .contact-image {
-        width: 100%;
+    .submit-btn {
+        align-self: center;
     }
 }

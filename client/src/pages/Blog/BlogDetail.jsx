@@ -109,7 +109,7 @@ const BlogDetail = () => {
             <p className="blog-meta">
                 Written by{" "}
                 <strong>
-                    {blog.authorName || blog.author?.name || "Unknown"}
+                    {blog.authorName || blog.author?.name}
                 </strong>
             </p>
 

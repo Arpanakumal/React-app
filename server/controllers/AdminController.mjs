@@ -13,7 +13,7 @@ export const adminLogin = async (req, res) => {
         password?.trim() === process.env.ADMIN_PASSWORD?.trim()
     ) {
         const token = jwt.sign(
-            { role: "admin", id: "admin" },
+            { role: "admin", id: "admin", name: "Admin" },
             process.env.JWT_SECRET,
             { expiresIn: "7d" }
         );

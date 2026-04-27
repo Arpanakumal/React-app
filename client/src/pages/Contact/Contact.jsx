@@ -75,7 +75,7 @@ const Contact = () => {
 
     return (
         <div className="contact-page">
-            <div className="text-2xl text-center pt-8 border-t">
+            <div className="contact-header">
                 <h1>Contact Us</h1>
             </div>
 
@@ -110,7 +110,7 @@ const Contact = () => {
                                 onChange={handleChange}
                                 placeholder="Your Email"
                                 required
-                                readOnly={!!user.id} 
+                                readOnly={!!user.id}
                             />
                         </div>
 

@@ -14,7 +14,11 @@ const authAdmin = (req, res, next) => {
             return res.status(403).json({ success: false });
         }
 
-        req.user = decoded;
+        req.user = {
+            id: decoded.id,
+            name: decoded.name || "Admin",
+            role: decoded.role
+        };
         next();
     } catch {
         return res.status(401).json({ success: false });
