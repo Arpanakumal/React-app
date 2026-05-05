@@ -38,7 +38,7 @@ const BookingDetail = ({ url }) => {
     if (loading) return <p>Loading booking details...</p>;
     if (!booking) return <p>No booking found.</p>;
 
-    // Helper to format providers
+
     const providerNames =
         booking.providers && booking.providers.length > 0
             ? booking.providers.map((p) => p.name).join(", ")
@@ -68,7 +68,7 @@ const BookingDetail = ({ url }) => {
                 <p><strong>Time:</strong> {new Date(booking.appointmentStart).toLocaleTimeString()}</p>
                 <p>
                     <strong>Address:</strong>{" "}
-                    {booking.address?.street || "-"}, {booking.address?.city || "-"}, {booking.address?.state || "-"}, {booking.address?.zip || "-"}, {booking.address?.country || "-"}
+                    {booking.customer.address?.street || "-"}, {booking.customer.address?.city || "-"}, {booking.customer.address?.state || "-"}, {booking.customer.address?.zip || "-"}, {booking.customer.address?.country || "-"}
                 </p>
                 <p><strong>Notes:</strong> {booking.notes || "None"}</p>
             </div>

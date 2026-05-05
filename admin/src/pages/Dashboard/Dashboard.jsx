@@ -186,7 +186,7 @@ const AdminDashboard = ({ url }) => {
                         </thead>
                         <tbody>
                             {recentBookings.length > 0 ? recentBookings.map((b, i) => {
-                                const jobValue = (b.pricePerHour || 0) * (b.providerCount || 1);
+                                const jobValue = b.finalPrice || 0;
                                 return (
                                     <tr key={i}>
                                         <td>{b.username || b.customer?.name || 'N/A'}</td>
@@ -200,7 +200,7 @@ const AdminDashboard = ({ url }) => {
                                         <td>{displayStatus(b.status)}</td>
                                         <td>{b.appointmentStart ? new Date(b.appointmentStart).toLocaleDateString() : 'N/A'}</td>
                                         <td>Rs. {jobValue}</td>
-                                        <td>Rs. {b.commissionAmount || 0}</td>
+                                        <td>Rs. {Math.round(b.commissionAmount || 0)}</td>
                                         <td>
                                             <button
                                                 className="action-btn"

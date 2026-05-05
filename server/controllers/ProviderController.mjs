@@ -415,18 +415,15 @@ export const endBooking = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
-
 export const getDashboardSummary = async (req, res) => {
     try {
         const providerId = req.user.id;
-
 
         const totalBookings = await Booking.countDocuments({
             providerCommissions: {
                 $elemMatch: { providerId: new mongoose.Types.ObjectId(providerId) }
             }
         });
-
 
         const pendingCommissionsAgg = await Booking.aggregate([
             {
@@ -436,9 +433,7 @@ export const getDashboardSummary = async (req, res) => {
                     commissionPaid: false
                 }
             },
-            {
-                $unwind: "$providerCommissions"
-            },
+            { $unwind: "$providerCommissions" },
             {
                 $match: {
                     "providerCommissions.providerId": new mongoose.Types.ObjectId(providerId),
@@ -446,19 +441,16 @@ export const getDashboardSummary = async (req, res) => {
                 }
             },
             {
-                $project: {
-                    commissionShare: "$providerCommissions.commissionShare"
-                }
-            },
-            {
                 $group: {
                     _id: null,
-                    totalPending: { $sum: "$commissionShare" }
+                    totalPending: { $sum: "$providerCommissions.commissionShare" }
                 }
             }
         ]);
 
-        const pendingCommission = pendingCommissionsAgg[0]?.totalPending || 0;
+        const pendingCommission = Math.round(
+            pendingCommissionsAgg[0]?.totalPending || 0
+        );
 
         res.json({
             success: true,
@@ -475,11 +467,9 @@ export const getDashboardSummary = async (req, res) => {
 };
 
 
-
 export const getProviderCommissions = async (req, res) => {
     try {
         const providerId = req.user.id;
-
 
         const bookings = await Booking.find({
             "providerCommissions.providerId": providerId,
@@ -487,7 +477,6 @@ export const getProviderCommissions = async (req, res) => {
         })
             .populate("serviceId", "name")
             .sort({ endedAt: -1 });
-
 
         const formatted = bookings.map(booking => {
             const mySlot = booking.providerCommissions.find(
@@ -499,10 +488,12 @@ export const getProviderCommissions = async (req, res) => {
             return {
                 _id: booking._id,
                 service: booking.serviceId?.name || "N/A",
-                finalPrice: booking.finalPrice,
+                finalPrice: Math.round(booking.finalPrice || 0),
                 commissionPercent: booking.commissionPercent,
-                commissionAmount: mySlot.commissionShare || 0,
-                providerEarning: mySlot.earningShare || 0,
+
+                commissionAmount: Math.round(mySlot.commissionShare || 0),
+                providerEarning: Math.round(mySlot.earningShare || 0),
+
                 commissionPaid: mySlot.commissionPaid || false,
                 endedAt: booking.endedAt
             };
@@ -515,7 +506,6 @@ export const getProviderCommissions = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
-
 
 export const getProviderBookingHistory = async (req, res) => {
     try {

@@ -38,7 +38,7 @@ bookingRouter.put("/complete/:id", auth, requireRole("provider"), completeBookin
 
 bookingRouter.post("/rate", authmiddleware, rateProvider);
 
-bookingRouter.get("/:id", authAdmin, getBookingById);
+bookingRouter.get("/:id", auth,requireRole("provider", "admin"), getBookingById);
 bookingRouter.put("/update/:id", authmiddleware, updateBookingStatus);
 
 

@@ -3,14 +3,17 @@ import './booking.css';
 import { StoreContext } from '../../context/StoreContext';
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useEffect } from "react";
+
+
+
 
 const Booking = () => {
     const { selectedServices, Service_list, getTotalAmount, token, getAuthAxios, clearServices } = useContext(StoreContext);
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
+        name: '',
         email: '',
         street: '',
         city: '',
@@ -23,9 +26,36 @@ const Booking = () => {
         notes: ''
     });
 
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                if (!token) return;
+
+                const authAxios = getAuthAxios();
+                const res = await authAxios.get("/user/me");
+
+                if (res.data.success) {
+                    const user = res.data.data;
+
+                    setFormData(prev => ({
+                        ...prev,
+                        name: user.name || "",
+                        email: user.email || ""
+                    }));
+                }
+            } catch (err) {
+                console.error("Failed to fetch user:", err);
+            }
+        };
+
+        fetchUser();
+    }, [token]);
+
     const handleChange = (e) => {
-        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
+
 
     const handleBooking = async (e) => {
         e.preventDefault();
@@ -44,12 +74,14 @@ const Booking = () => {
             const authAxios = getAuthAxios();
 
             const bookingPromises = Object.entries(selectedServices).map(([serviceId, data]) => {
-                const username = `${formData.firstName.trim()} ${formData.lastName.trim()}`;
+                const username = formData.name.trim();
+
 
                 return authAxios.post("/booking/create", {
                     serviceId,
                     providerCount: Number(data.providers) || 1,
                     username,
+                    email: formData.email,
                     phone: formData.phone.trim(),
                     appointmentDate: formData.date,
                     appointmentTime: formData.time,
@@ -115,8 +147,8 @@ const Booking = () => {
                 <p className='title'>Booking Information</p>
 
                 <div className="multi-fields">
-                    <input type="text" name="firstName" placeholder='First name' required value={formData.firstName} onChange={handleChange} />
-                    <input type="text" name="lastName" placeholder='Last name' required value={formData.lastName} onChange={handleChange} />
+                    <input type="text" name="name" placeholder='Username' required value={formData.name} onChange={handleChange} />
+
                 </div>
 
                 <input type="email" name="email" placeholder='Email address' value={formData.email} onChange={handleChange} />

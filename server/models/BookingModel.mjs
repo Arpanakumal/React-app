@@ -18,9 +18,18 @@ const bookingSchema = new mongoose.Schema({
     providerCount: { type: Number, default: 1 },
     providerIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Provider" }],
     providerCommissions: [providerCommissionSchema],
-    customer: Object,
-    phone: String,
-    address: Object,
+    customer: {
+        name: { type: String, required: true },
+        phone: String,
+        email: String,
+        address: {
+            street: String,
+            city: String,
+            state: String,
+            zip: String,
+            country: String
+        }
+    },
     appointmentStart: { type: Date, required: true },
     appointmentEnd: { type: Date, required: true },
     notes: String,

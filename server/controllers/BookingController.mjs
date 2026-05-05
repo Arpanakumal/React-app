@@ -22,7 +22,8 @@ export const createBooking = async (req, res) => {
             notes,
             providerCount,
             username,
-            phone
+            phone,
+            email
         } = req.body;
 
         if (!serviceId || !appointmentDate || !appointmentTime || !username || !phone) {
@@ -110,17 +111,19 @@ export const createBooking = async (req, res) => {
 
         const booking = await Booking.create({
             userId,
-            username: username.trim(),
+
             serviceId,
             providerCount: providerCountNumber,
             providerIds: [],
             providerCommissions,
             customer: {
                 name: username.trim(),
-                phone
+                phone,
+                email,
+                address
+
             },
-            phone,
-            address,
+
             appointmentStart: start,
             appointmentEnd: end,
             notes,

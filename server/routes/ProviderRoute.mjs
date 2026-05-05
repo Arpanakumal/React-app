@@ -36,13 +36,13 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 
-// AUTH
+
 providerRouter.post("/add", authAdmin, upload.single("image"), addProvider);
 providerRouter.post("/login", loginProvider);
 providerRouter.post("/forgot-password", forgotPassword);
 providerRouter.post("/reset-password", resetPassword);
 
-//  PROVIDER PANEL
+
 
 providerRouter.get("/commissions", auth,requireRole("provider"), getProviderCommissions);
 providerRouter.get("/dashboard-summary", auth, requireRole("provider"), getDashboardSummary);
@@ -51,12 +51,11 @@ providerRouter.get("/profile", auth,requireRole("provider"), getMyProfile);
 providerRouter.put("/profile", auth, requireRole("provider"),upload.single("image"), updateMyProfile);
 providerRouter.put("/availability", auth,requireRole("provider"), updateAvailability);
 
-// BOOKINGS
 providerRouter.patch("/booking/respond", auth,requireRole("provider"), respondToBooking);
 providerRouter.patch("/booking/:bookingId/start", auth,requireRole("provider"),startBooking);
 providerRouter.patch("/booking/:bookingId/end", auth,requireRole("provider"), endBooking);
 
-// PUBLIC
+
 providerRouter.get("/", listProviders);
 
 
