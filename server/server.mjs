@@ -1,33 +1,36 @@
 import dotenv from 'dotenv';
-
-
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
-import ServiceRouter from './routes/ServiceRoute.mjs';
-import userRouter from './routes/UserRoute.mjs';
 import path from "path";
-import providerRouter from './routes/ProviderRoute.mjs';
-import adminRouter from './routes/AdminRoutes.mjs';
-import bookingRouter from './routes/BookingRoute.mjs';
-import messageRouter from './routes/MessageRoute.mjs';
-import blogRouter from './routes/BlogRoute.mjs'
-
-
-
+import util from 'util';
 dotenv.config({ path: path.resolve('./.env') });
 
-console.log("ENV CHECK:", process.env.MONGO_URI, process.env.PORT);
+const ServiceRouter = (await import('./routes/ServiceRoute.mjs')).default;
+const userRouter = (await import('./routes/UserRoute.mjs')).default;
+const providerRouter = (await import('./routes/ProviderRoute.mjs')).default;
+const adminRouter = (await import('./routes/AdminRoutes.mjs')).default;
+const bookingRouter = (await import('./routes/BookingRoute.mjs')).default;
+const messageRouter = (await import('./routes/MessageRoute.mjs')).default;
+const blogRouter = (await import('./routes/BlogRoute.mjs')).default;
+
+// console.log("ENV CHECK:", process.env.MONGO_URI, process.env.PORT);
 
 const app = express();
-app.use(express.json());
 app.use(cors({
-    origin: ["http://localhost:3000", "http://localhost:5173"],
+    origin: [
+        "http://localhost:5173",
+        "http://localhost:3000",
+
+        "https://YOUR-CLIENT.vercel.app",
+        "https://YOUR-ADMIN.vercel.app",
+        "https://YOUR-PROVIDER.vercel.app"
+    ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-
-
+    credentials: true
 }));
-
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 
 
@@ -59,6 +62,18 @@ const connectDB = async () => {
         res.send('✅ Backend is running!');
     });
 
+    app.use((err, req, res, next) => {
+        console.error('Unhandled error:', util.inspect(err, { depth: 6 }));
+        if (res.headersSent) return next(err);
+
+        const responseBody = {
+            success: false,
+            message: err instanceof Error ? err.message : util.inspect(err, { depth: 3 }),
+            error: err.code || null,
+        };
+
+        res.status(500).json(responseBody);
+    });
 
     const PORT = process.env.PORT || 3001;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -1,15 +1,10 @@
 import express from "express";
-import multer from "multer";
+import upload from "../middleware/multer.mjs";
 import authAdmin from "../middleware/authAdmin.mjs";
 import { createBlog, listBlogs, updateBlog, deleteBlog, addComment } from "../controllers/BlogController.mjs";
 
 const blogRouter = express.Router();
 
-const storage = multer.diskStorage({
-    destination: "uploads",
-    filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname)
-});
-const upload = multer({ storage });
 
 
 blogRouter.post("/add", authAdmin, upload.single("image"), createBlog);

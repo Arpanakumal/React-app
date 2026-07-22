@@ -13,7 +13,7 @@ export const createBlog = async (req, res) => {
             });
         }
 
-        const image = req.file ? `/uploads/${req.file.filename}` : null;
+        const image = req.file ? req.file.path : null;
 
         const blog = new Blog({
             title,
@@ -74,13 +74,6 @@ export const deleteBlog = async (req, res) => {
             });
         }
 
-        if (blog.image) {
-            const imagePath = blog.image.replace("/uploads/", "uploads/");
-            if (fs.existsSync(imagePath)) {
-                fs.unlinkSync(imagePath);
-            }
-        }
-
         await Blog.findByIdAndDelete(id);
 
         res.json({
@@ -114,15 +107,9 @@ export const updateBlog = async (req, res) => {
         blog.title = title || blog.title;
         blog.content = content || blog.content;
 
-        if (req.file) {
-            if (blog.image) {
-                const oldImagePath = blog.image.replace("/uploads/", "uploads/");
-                if (fs.existsSync(oldImagePath)) {
-                    fs.unlinkSync(oldImagePath);
-                }
-            }
-            blog.image = `/uploads/${req.file.filename}`;
-        }
+       if (req.file) {
+    blog.image = req.file.path;
+}
 
         await blog.save();
 

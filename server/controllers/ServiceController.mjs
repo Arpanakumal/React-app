@@ -39,7 +39,7 @@ export const addService = async (req, res) => {
             price_info: Number(price_info),
             category: category.trim(),
             commissionPercent: commissionPercent ? Number(commissionPercent) : 10,
-            image: `/uploads/${req.file.filename}`
+            image: req.file.path
         });
 
         res.status(201).json({
@@ -104,16 +104,9 @@ export const updateService = async (req, res) => {
         if (commissionPercent !== undefined)
             service.commissionPercent = Number(commissionPercent);
 
-        if (req.file) {
-            if (service.image) {
-                const oldImage = service.image.replace("/uploads/", "uploads/");
-                if (fs.existsSync(oldImage)) {
-                    fs.unlinkSync(oldImage);
-                }
-            }
-
-            service.image = `/uploads/${req.file.filename}`;
-        }
+      if (req.file) {
+    service.image = req.file.path;
+}
 
         await service.save();
 
@@ -144,18 +137,12 @@ export const removeService = async (req, res) => {
         }
 
         const service = await ServiceModel.findById(id);
+
         if (!service) {
             return res.status(404).json({
                 success: false,
                 message: "Service not found"
             });
-        }
-
-        if (service.image) {
-            const imagePath = service.image.replace("/uploads/", "uploads/");
-            if (fs.existsSync(imagePath)) {
-                fs.unlinkSync(imagePath);
-            }
         }
 
         await ServiceModel.findByIdAndDelete(id);
@@ -173,7 +160,6 @@ export const removeService = async (req, res) => {
         });
     }
 };
-
 
 export const searchService = async (req, res) => {
     try {

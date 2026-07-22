@@ -45,7 +45,7 @@ export const rankProviders = (providers, options = {}) => {
                 recencyScore * recencyWeight;
 
             return {
-                ...p.toObject(),
+                ...p.toObject(), 
                 rankingScore: Number(score.toFixed(4))
             };
         })

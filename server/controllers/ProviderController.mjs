@@ -123,6 +123,11 @@ export const listProviders = async (req, res) => {
         const providers = await Provider.find()
             .populate("servicesOffered", "name");
 
+        console.log(providers.map(p => ({
+            name: p.name,
+            image: p.image
+        })));
+
         const rankedProviders = rankProviders(providers);
 
         res.json({ success: true, data: rankedProviders });
@@ -131,7 +136,6 @@ export const listProviders = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
-
 
 
 
@@ -197,7 +201,7 @@ export const updateProvider = async (req, res) => {
     }
 
     if (req.file) {
-        provider.image = `/uploads/${req.file.filename}`;
+        provider.image =req.file.path;
     }
 
     await provider.save();
@@ -585,7 +589,7 @@ export const updateMyProfile = async (req, res) => {
         }
 
         if (req.file) {
-            provider.image = `/uploads/${req.file.filename}`;
+            provider.image =req.file.path;
         }
 
         await provider.save();

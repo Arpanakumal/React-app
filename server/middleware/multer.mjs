@@ -1,31 +1,30 @@
 import multer from "multer";
-import path from "path";
-import fs from "fs";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "../config/cloudinary.mjs";
 
-// Create uploads folder if it doesn't exist
-const uploadDir = "uploads";
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
-}
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname);
-        cb(null, `${Date.now()}-${file.fieldname}${ext}`);
-    },
+const storage = new CloudinaryStorage({
+    cloudinary,
+    params: async (req, file) => ({
+        folder: "homeease",
+        allowed_formats: ["jpg", "jpeg", "png", "webp", "jfif"],
+        public_id: `${Date.now()}-${file.originalname.split(".")[0]}`,
+    }),
 });
 
 const fileFilter = (req, file, cb) => {
-    if (file.mimetype.startsWith("image/")) {
+    const allowedExtensions = ["jpg", "jpeg", "png", "webp", "jfif", "gif", "bmp", "tiff"];
+    const extension = file.originalname.split('.').pop().toLowerCase();
+
+    if (file.mimetype?.startsWith("image/") || allowedExtensions.includes(extension)) {
         cb(null, true);
     } else {
         cb(new Error("Only image files are allowed"), false);
     }
 };
 
-const upload = multer({ storage, fileFilter });
+const upload = multer({
+    storage,
+    fileFilter,
+});
 
 export default upload;

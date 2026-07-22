@@ -1,5 +1,5 @@
 import express from "express";
-import multer from "multer";
+import upload from "../middleware/multer.mjs";
 import authAdmin from "../middleware/authAdmin.mjs";
 import authmiddleware from "../middleware/authMiddleware.mjs";
 import auth from "../middleware/auth.mjs";
@@ -29,11 +29,6 @@ import {
 const providerRouter = express.Router();
 
 
-const storage = multer.diskStorage({
-    destination: "uploads",
-    filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname)
-});
-const upload = multer({ storage });
 
 
 
