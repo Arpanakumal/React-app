@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 // Layouts
 import AdminLayout from "../layouts/AdminLayout";
@@ -54,6 +55,8 @@ const url = import.meta.env.VITE_API_URL;
     <>
       <ToastContainer />
       <Routes>
+
+          <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/provider/login" element={<Providerlogin />} />
         <Route path="/provider/forgot-password" element={<Forgotpassword />} />
