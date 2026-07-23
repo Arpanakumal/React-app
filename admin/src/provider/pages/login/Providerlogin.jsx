@@ -1,58 +1,92 @@
-
 import React, { useState } from "react";
-import './login.css';
+import "./login.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import * as assets from "../../../assets/assets";
 
 const Providerlogin = () => {
     const navigate = useNavigate();
-    const [data, setData] = useState({ email: "", password: "" });
+
+    const url = import.meta.env.VITE_API_URL;
+
+    const [data, setData] = useState({
+        email: "",
+        password: ""
+    });
+
     const [showPassword, setShowPassword] = useState(false);
 
     const onChangeHandler = (e) => {
         const { name, value } = e.target;
-        setData((prev) => ({ ...prev, [name]: value }));
+
+        setData((prev) => ({
+            ...prev,
+            [name]: value
+        }));
     };
 
-    const togglePassword = () => setShowPassword((prev) => !prev);
+    const togglePassword = () => {
+        setShowPassword((prev) => !prev);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         try {
             const res = await axios.post(
-                "http://localhost:3001/api/provider/login",
+                `${url}/api/provider/login`,
                 data
             );
 
             if (res.data.success) {
 
+                // Remove customer/admin token if exists
                 localStorage.removeItem("token");
 
+                // Store provider authentication data
                 localStorage.setItem("pToken", res.data.token);
                 localStorage.setItem("provider_role", res.data.role);
                 localStorage.setItem("provider_name", res.data.name);
                 localStorage.setItem("provider_id", res.data.id);
 
                 navigate("/provider/dashboard");
+
             } else {
                 alert(res.data.message || "Invalid credentials");
             }
+
         } catch (err) {
-            const message = err.response?.data?.message || err.message || "Server error. Please try again.";
-            console.error("Provider login error:", err.response?.data || err);
+
+            const message =
+                err.response?.data?.message ||
+                err.message ||
+                "Server error. Please try again.";
+
+            console.error(
+                "Provider login error:",
+                err.response?.data || err
+            );
+
             alert(message);
         }
     };
 
+
     return (
         <div className="login-popup">
-            <form className="login-popup-container" onSubmit={handleSubmit}>
+
+            <form
+                className="login-popup-container"
+                onSubmit={handleSubmit}
+            >
+
                 <div className="login-popup-title">
                     <h2>Provider Login</h2>
                 </div>
 
+
                 <div className="login-popup-inputs">
+
                     <input
                         type="email"
                         name="email"
@@ -61,7 +95,10 @@ const Providerlogin = () => {
                         onChange={onChangeHandler}
                         required
                     />
+
+
                     <div className="password-wrapper">
+
                         <input
                             type={showPassword ? "text" : "password"}
                             name="password"
@@ -70,23 +107,44 @@ const Providerlogin = () => {
                             onChange={onChangeHandler}
                             required
                         />
-                        <span className="eye-icon" onClick={togglePassword}>
+
+
+                        <span
+                            className="eye-icon"
+                            onClick={togglePassword}
+                        >
                             <img
-                                src={showPassword ? assets.eyeOpen : assets.eyeClosed}
-                                alt="toggle"
+                                src={
+                                    showPassword
+                                        ? assets.eyeOpen
+                                        : assets.eyeClosed
+                                }
+                                alt="toggle password"
                             />
                         </span>
+
                     </div>
+
 
                     <div className="forgot-password">
-                        <a href="/provider/forgot-password">Forgot Password?</a>
+                        <a href="/provider/forgot-password">
+                            Forgot Password?
+                        </a>
                     </div>
+
                 </div>
 
-                <button type="submit">Login</button>
+
+                <button type="submit">
+                    Login
+                </button>
+
+
             </form>
+
         </div>
     );
 };
+
 
 export default Providerlogin;
