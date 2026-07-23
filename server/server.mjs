@@ -22,13 +22,21 @@ app.use(cors({
         "http://localhost:5173",
         "http://localhost:3000",
 
-        "https://YOUR-CLIENT.vercel.app",
-        "https://YOUR-ADMIN.vercel.app",
-        "https://YOUR-PROVIDER.vercel.app"
+        "https://your-client.vercel.app",
+        "https://react-app-homeease.vercel.app",
+        "https://your-provider.vercel.app"
     ],
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    methods: [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+        "OPTIONS"
+    ],
     credentials: true
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
