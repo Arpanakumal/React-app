@@ -91,13 +91,17 @@ const BlogDetail = () => {
         <div className="blog-detail-container">
             <h1 className="blog-title">{blog.title}</h1>
 
-            {blog.image && (
-                <img
-                    className="blog-image"
-                    src={`http://localhost:3001${blog.image}`}
-                    alt={blog.title}
-                />
-            )}
+          {blog.image && (
+    <img
+        className="blog-image"
+        src={
+            blog.image.startsWith("http")
+                ? blog.image
+                : `http://localhost:3001${blog.image}`
+        }
+        alt={blog.title}
+    />
+)}
 
             <div className="blog-text">
                 {formatContent(blog.content).map((para, i) => (

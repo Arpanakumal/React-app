@@ -54,10 +54,10 @@ const Book = () => {
                                 <p>{service.name}</p>
 
                                 <div className="book-item-image">
-                                    <img
-                                        src={`${url.replace("/api", "")}${service.image}`}
-                                        alt={service.name}
-                                    />
+                                   <img
+    src={service.image}
+    alt={service.name}
+/>
                                 </div>
 
                                 <div className="providers-input-container">

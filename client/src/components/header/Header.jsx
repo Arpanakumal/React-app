@@ -13,7 +13,7 @@ const Header = () => {
                     Book services in just a few clicks, track your appointment in real time, and enjoy
                     peace of mind knowing your home is in expert hands.
                 </p>
-                <button>View Services</button>
+
             </div><br></br>
 
         </div>

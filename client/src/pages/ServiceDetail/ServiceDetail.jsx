@@ -19,10 +19,10 @@ const ServiceDetail = () => {
 
     return (
         <div className="service-detail">
-            <img
-                src={`${url.replace("/api", "")}${service.image}`}
-                alt={service.name}
-            />
+         <img
+    src={service.image}
+    alt={service.name}
+/>
 
             <div className="service-detail-info">
                 <h2>{service.name}</h2>

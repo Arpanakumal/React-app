@@ -61,8 +61,12 @@ const LoginPopup = ({ setShowLogin }) => {
             setShowLogin(false);
             navigate(redirectPath || "/");
         } catch (error) {
-            console.error("Login error:", error);
-            toast.error("Server error. Please try again.");
+            const message =
+                error.response?.data?.message ||
+                error.message ||
+                "Server error. Please try again.";
+            console.error("Login error:", error.response?.data || error);
+            toast.error(message);
         }
     };
 

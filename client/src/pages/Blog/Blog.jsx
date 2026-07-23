@@ -21,7 +21,14 @@ const Blog = () => {
             <div className="blog-grid">
                 {blogs.map(blog => (
                     <div key={blog._id} className="blog-card">
-                        {blog.image && <img src={`${url.replace("/api", "")}${blog.image}`} alt={blog.title} />}
+                        {blog.image && <img
+    src={
+        blog.image?.startsWith("http")
+            ? blog.image
+            : `${url.replace("/api", "")}${blog.image}`
+    }
+    alt={blog.title}
+/>}
                         <div className="blog-content">
                             <h3>{blog.title}</h3>
                             <p>{blog.content.slice(0, 150)}...</p>
