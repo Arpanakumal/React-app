@@ -6,21 +6,21 @@ import * as assets from "../../assets/assets";
 
 const AdminLogin = () => {
     const navigate = useNavigate();
-    const [data, setData] = useState({ email: "", password: "" });
-    const [showPassword, setShowPassword] = useState(false);
+    const url = import.meta.env.VITE_API_URL;
 
-    const onChangeHandler = (e) => {
-        const { name, value } = e.target;
-        setData((prev) => ({ ...prev, [name]: value }));
-    };
+    const [data, setData] = useState({ 
+        email: "", 
+        password: "" 
+    });
 
-    const togglePassword = () => setShowPassword((prev) => !prev);
+    ...
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         try {
             const res = await axios.post(
-                "http://localhost:3001/api/admin/login",
+                `${url}/api/admin/login`,
                 data
             );
 
@@ -32,13 +32,17 @@ const AdminLogin = () => {
             } else {
                 alert(res.data.message || "Invalid credentials");
             }
+
         } catch (err) {
-            const message = err.response?.data?.message || err.message || "Server error. Please try again.";
+            const message =
+                err.response?.data?.message ||
+                err.message ||
+                "Server error. Please try again.";
+
             console.error("Admin login error:", err.response?.data || err);
             alert(message);
         }
     };
-
     return (
         <div className="login-popup">
             <form className="login-popup-container" onSubmit={handleSubmit}>
