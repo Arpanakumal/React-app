@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
-import { Routes, Route, Navigate } from "react-router-dom";
+import {  Navigate } from "react-router-dom";
 
 // Layouts
 import AdminLayout from "../layouts/AdminLayout";
