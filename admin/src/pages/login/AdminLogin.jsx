@@ -8,12 +8,25 @@ const AdminLogin = () => {
     const navigate = useNavigate();
     const url = import.meta.env.VITE_API_URL;
 
-    const [data, setData] = useState({ 
-        email: "", 
-        password: "" 
+    const [data, setData] = useState({
+        email: "",
+        password: ""
     });
 
+    const [showPassword, setShowPassword] = useState(false);
 
+    const onChangeHandler = (e) => {
+        const { name, value } = e.target;
+
+        setData((prev) => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const togglePassword = () => {
+        setShowPassword((prev) => !prev);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -28,6 +41,7 @@ const AdminLogin = () => {
                 localStorage.setItem("token", res.data.token);
                 localStorage.setItem("role", res.data.role);
                 localStorage.setItem("name", res.data.name);
+
                 navigate("/dashboard");
             } else {
                 alert(res.data.message || "Invalid credentials");
@@ -44,16 +58,18 @@ const AdminLogin = () => {
         }
     };
 
-
-    
     return (
         <div className="login-popup">
-            <form className="login-popup-container" onSubmit={handleSubmit}>
+            <form 
+                className="login-popup-container" 
+                onSubmit={handleSubmit}
+            >
                 <div className="login-popup-title">
                     <h2>Admin Login</h2>
                 </div>
 
                 <div className="login-popup-inputs">
+
                     <input
                         type="email"
                         name="email"
@@ -62,6 +78,7 @@ const AdminLogin = () => {
                         onChange={onChangeHandler}
                         required
                     />
+
                     <div className="password-wrapper">
                         <input
                             type={showPassword ? "text" : "password"}
@@ -71,16 +88,28 @@ const AdminLogin = () => {
                             onChange={onChangeHandler}
                             required
                         />
-                        <span className="eye-icon" onClick={togglePassword}>
+
+                        <span 
+                            className="eye-icon" 
+                            onClick={togglePassword}
+                        >
                             <img
-                                src={showPassword ? assets.eyeOpen : assets.eyeClosed}
+                                src={
+                                    showPassword 
+                                    ? assets.eyeOpen 
+                                    : assets.eyeClosed
+                                }
                                 alt="toggle"
                             />
                         </span>
                     </div>
+
                 </div>
 
-                <button type="submit">Login</button>
+                <button type="submit">
+                    Login
+                </button>
+
             </form>
         </div>
     );
