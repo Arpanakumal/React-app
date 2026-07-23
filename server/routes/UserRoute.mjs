@@ -36,7 +36,7 @@ userRouter.get("/me", authmiddleware, getCurrentUser);
 
 userRouter.get("/:id", getUserById);
 
-userRouter.put("/:id/update", updateUser);
+userRouter.put("/:id/update", authmiddleware, updateUser);
 
 
 userRouter.delete("/delete/:id", deleteUser);

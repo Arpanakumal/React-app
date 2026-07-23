@@ -33,7 +33,7 @@ bookingRouter.post("/reject", authmiddleware, rejectBooking);
 bookingRouter.get("/list", listBookings);
 bookingRouter.get("/provider", auth, requireRole("provider"), listBookingsForProvider);
 bookingRouter.get("/user", authmiddleware, listBookingsForUser);
-bookingRouter.patch("/:bookingId/cancel", auth, requireRole("provider"), cancelBooking);
+bookingRouter.patch("/:bookingId/cancel", auth, requireRole("user"), cancelBooking);
 bookingRouter.put("/complete/:id", auth, requireRole("provider"), completeBooking);
 
 bookingRouter.post("/rate", authmiddleware, rateProvider);
