@@ -21,7 +21,6 @@ app.use(cors({
     origin: [
         "http://localhost:5173",
         "http://localhost:3000",
-
         "https://react-app-homeease.vercel.app",
         "https://react-app-homeease-git-main-arpanakumals-projects.vercel.app"
     ],
@@ -35,8 +34,6 @@ app.use(cors({
     ],
     credentials: true
 }));
-
-app.options("*", cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
