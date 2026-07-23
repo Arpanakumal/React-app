@@ -47,7 +47,7 @@ import Review from "./provider/pages/reviews/Review";
 
 
 const App = () => {
-  const url = "http://localhost:3001";
+const url = import.meta.env.VITE_API_URL;
 
 
   return (
