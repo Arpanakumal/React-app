@@ -33,8 +33,9 @@ const AdminLogin = () => {
                 alert(res.data.message || "Invalid credentials");
             }
         } catch (err) {
-            console.error("Admin login error:", err);
-            alert("Server error. Please try again.");
+            const message = err.response?.data?.message || err.message || "Server error. Please try again.";
+            console.error("Admin login error:", err.response?.data || err);
+            alert(message);
         }
     };
 

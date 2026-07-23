@@ -9,6 +9,13 @@ const List = ({ url }) => {
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(false);
 
+    const getServiceImageUrl = (image) => {
+        if (!image) return '';
+        if (image.startsWith('http://') || image.startsWith('https://')) return image;
+        if (image.startsWith('/uploads')) return `${url}${image}`;
+        return `${url}/uploads/${image}`;
+    };
+
     const fetchServices = async () => {
         try {
             setLoading(true);
@@ -61,7 +68,7 @@ const List = ({ url }) => {
 
                 {services.map((service) => (
                     <div key={service._id} className="service-list-row">
-                        <img src={`${url}${service.image}`} alt={service.name} />
+                        <img src={getServiceImageUrl(service.image)} alt={service.name} />
 
                         <p>{service.name}</p>
                         <p>{service.category}</p>

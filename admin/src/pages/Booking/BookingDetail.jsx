@@ -41,11 +41,10 @@ const BookingDetail = ({ url }) => {
     return (
         <div className="detail-container">
             <div className="detail-header">
-                <img
-                    src={booking.service?.image ? `${url}${booking.service.image}` : "/default-service.png"}
-                    alt={booking.service?.name || "Service"}
-                    className="service-image"
-                />
+               <img
+    src={booking.service?.image || "/default-service.png"}
+    alt={booking.service?.name}
+/>
                 <h2>{booking.service?.name || "No Name"}</h2>
             </div>
             <div className="detail-info">

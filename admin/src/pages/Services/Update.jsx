@@ -46,6 +46,13 @@ const UpdateService = ({ url }) => {
         fetchService();
     }, [id]);
 
+    const getServiceImageUrl = (imagePath) => {
+        if (!imagePath) return '';
+        if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) return imagePath;
+        if (imagePath.startsWith('/uploads')) return `${url}${imagePath}`;
+        return `${url}/uploads/${imagePath}`;
+    };
+
     const onChangeHandler = (event) => {
         const { name, value } = event.target;
         setData(prev => ({ ...prev, [name]: value }));
@@ -81,7 +88,13 @@ const UpdateService = ({ url }) => {
                         <p>Upload Image</p>
                         <label htmlFor="image">
                             <img
-                                src={image ? URL.createObjectURL(image) : existingImage ? `${url}${existingImage}` : upload}
+                               src={
+    image
+        ? URL.createObjectURL(image)
+        : existingImage
+            ? getServiceImageUrl(existingImage)
+            : upload
+}
                                 alt="Upload Preview"
                                 style={{ width: '150px', height: '150px', objectFit: 'cover', cursor: 'pointer' }}
                             />

@@ -78,7 +78,7 @@ const Edit = () => {
                     {existingImage && !image && (
                         <div style={{ marginBottom: "10px" }}>
                             <p>Current Image:</p>
-                            <img src={`http://localhost:3001${existingImage}`} alt="current" />
+                            <img src={existingImage} alt="current" />
                         </div>
                     )}
                     <input type="file" onChange={e => setImage(e.target.files[0])} />

@@ -13,6 +13,10 @@ const ProviderList = ({ url }) => {
 
     const navigate = useNavigate();
 
+const getProviderImageUrl = (image) => {
+    return image || "/default-avatar.png";
+};
+
     const fetchProviders = async () => {
         try {
             setLoading(true);
@@ -31,13 +35,12 @@ const ProviderList = ({ url }) => {
             const data = res.data.data;
             setProviders(data);
 
-
             const allServices = data.flatMap((p) =>
                 p.servicesOffered.map((s) => s.name)
             );
             setServices([...new Set(allServices)]);
 
-            setFilteredProviders([]);
+            setFilteredProviders(data);
         } catch (err) {
             console.error(err);
             toast.error("Server error while fetching providers");
@@ -123,10 +126,8 @@ const ProviderList = ({ url }) => {
             </div>
 
             <div className="list-table">
-                {selectedServices.length === 0 ? (
-                    <p>Please select a service to view providers</p>
-                ) : filteredProviders.length === 0 ? (
-                    <p>No providers found for selected services</p>
+                {filteredProviders.length === 0 ? (
+                    <p>No providers found</p>
                 ) : (
                     filteredProviders.map((provider) => (
                         <div
@@ -134,13 +135,11 @@ const ProviderList = ({ url }) => {
                             className="list-table-format"
                             onClick={() => navigate(`/providers/detail/${provider._id}`)}
                         >
-                            <img
-                                src={
-                                    provider.image ? `${url}${provider.image}` : "/default-avatar.png"
-                                }
-                                alt={provider.name}
-                                className="provider-image"
-                            />
+                         <img
+    src={getProviderImageUrl(provider.image)}
+    alt={provider.name}
+    className="provider-image"
+/>
 
                             <p className="provider-name">{provider.name}</p>
                             <p className="provider-email">{provider.email}</p>

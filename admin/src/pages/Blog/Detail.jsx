@@ -56,7 +56,12 @@ const BlogDetails = () => {
 
     return (
         <div className="blog-details">
-            {blog.image && <img src={`http://localhost:3001${blog.image}`} alt={blog.title} />}
+            {blog.image && (
+    <img
+        src={blog.image}
+        alt={blog.title}
+    />
+)}
             <div className="content">
                 <h2>{blog.title}</h2>
                 <p>{blog.content}</p>

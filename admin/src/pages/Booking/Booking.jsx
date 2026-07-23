@@ -45,6 +45,15 @@ const BookingList = ({ url }) => {
         (search ? b.service?.name.toLowerCase().includes(search.toLowerCase()) : true) &&
         (statusFilter ? b.status === statusFilter : true)
     );
+    const getServiceImage = (image) => {
+    if (!image) return "/default-service.png";
+
+    if (image.startsWith("http")) {
+        return image; // Cloudinary
+    }
+
+    return `${url}${image}`; // Local uploads
+};
 
     const indexOfLast = currentPage * perPage;
     const indexOfFirst = indexOfLast - perPage;
@@ -92,11 +101,11 @@ const BookingList = ({ url }) => {
                         style={{ cursor: "pointer" }}
                         onClick={() => navigate(`/bookings/detail/${b._id}`)}
                     >
-                        <img
-                            src={b.service?.image ? `${url}${b.service.image}` : "/default-service.png"}
-                            alt={b.service?.name || "Service"}
-                            className="service-image"
-                        />
+                       <img
+    src={getServiceImage(b.service?.image)}
+    alt={b.service?.name || "Service"}
+    className="service-image"
+/>
                         <p><strong>{b.service?.name || "No Name"}</strong></p>
                         <p><strong>Customer:</strong> {b.username || b.customer?.name}</p>
                         <p><strong>Status:</strong> {displayStatus(b.status)}</p>

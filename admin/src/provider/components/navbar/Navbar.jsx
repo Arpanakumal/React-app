@@ -51,6 +51,15 @@ const Navbar = () => {
         localStorage.removeItem("provider_id");
         window.location.href = "http://localhost:5173/provider/login";
     };
+    const getProfileImage = (image) => {
+    if (!image) return "/default-profile.png";
+
+    if (image.startsWith("http")) {
+        return image; // Cloudinary
+    }
+
+    return `${API_URL}${image}`; // Local uploads
+};
 
     return (
         <div className="navbar">
@@ -59,12 +68,12 @@ const Navbar = () => {
             <div className="navbar-right">
 
                 <div className="profile-wrapper" ref={dropdownRef}>
-                    <img
-                        src={profileImage ? `${API_URL}${profileImage}` : '/default-profile.png'}
-                        alt="Profile"
-                        className="profile"
-                        onClick={() => setShowDropdown(prev => !prev)}
-                    />
+                   <img
+    src={getProfileImage(profileImage)}
+    alt="Profile"
+    className="profile"
+    onClick={() => setShowDropdown(prev => !prev)}
+/>
 
 
                     {showDropdown && (

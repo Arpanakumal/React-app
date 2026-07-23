@@ -31,13 +31,19 @@ const DisplayBlog = () => {
             <div className="blog-grid" style={{ display: "flex", flexWrap: "wrap" }}>
                 {blogs.map((blog) => (
                     <img
-                        key={blog._id}
-                        src={`http://localhost:3001${blog.image}`}
-                        alt={blog.title}
-                        className="blog-thumbnail"
-                        style={{ width: "150px", height: "150px", cursor: "pointer", objectFit: "cover", margin: "5px" }}
-                        onClick={() => navigate(`/blog/${blog._id}`)} 
-                    />
+    key={blog._id}
+    src={blog.image}
+    alt={blog.title}
+    className="blog-thumbnail"
+    style={{
+        width: "150px",
+        height: "150px",
+        cursor: "pointer",
+        objectFit: "cover",
+        margin: "5px"
+    }}
+    onClick={() => navigate(`/blog/${blog._id}`)}
+/>
                 ))}
             </div>
         </div>
