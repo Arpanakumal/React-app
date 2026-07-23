@@ -4,7 +4,7 @@ import { StoreContext } from '../../context/StoreContext';
 import { cross } from '../../assets/assets';
 import { useNavigate } from 'react-router-dom';
 
-const Book = () => {
+const Books = () => {
 
     const {
         selectedServices,
@@ -114,4 +114,4 @@ const Book = () => {
     );
 };
 
-export default Book;
+export default Books;

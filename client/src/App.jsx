@@ -5,7 +5,7 @@ import Navbar from "./components/navbar/Navbar";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Home from "./pages/home/home";
-import Book from "./pages/Book/Book";
+import Book from "./pages/Book/Books";
 import BookingConfirmation from "./pages/BookingConfirmation/Booking";
 import ServiceDisplay from "./pages/ServiceDisplay/ServiceDisplay";
 import ServiceDetail from "./pages/ServiceDetail/ServiceDetail";
