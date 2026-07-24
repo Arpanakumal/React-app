@@ -53,8 +53,8 @@ const StoreContextProvider = ({ children }) => {
         }
         return total;
     };
-
-    const url = "http://localhost:3001/api";
+const API_URL = process.env.REACT_APP_API_URL;
+const url = `${API_URL}/api`;
 
 
     const [token, setToken] = useState(localStorage.getItem("user_token") || "");
