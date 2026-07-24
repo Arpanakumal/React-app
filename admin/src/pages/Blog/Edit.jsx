@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import './edit.css';
 
-const API_URL = "http://localhost:3001/api/blog";
+const API_URL = `${process.env.REACT_APP_API_URL}/api`;
 const token = localStorage.getItem("token");
 
 const Edit = () => {

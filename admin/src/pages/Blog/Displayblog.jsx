@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import './display.css';
 
-const API_URL = "http://localhost:3001/api/blog";
+const API_URL = `${process.env.REACT_APP_API_URL}/api`;
 const token = localStorage.getItem("token");
 
 const DisplayBlog = () => {
