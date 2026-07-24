@@ -50,16 +50,13 @@ const Navbar = () => {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const handleLogout = () => {
+   const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("name");
 
-        localStorage.removeItem("token"); 
-        localStorage.removeItem("role");  
-        localStorage.removeItem("name");  
-
-
-        window.location.href = "http://localhost:5173/login";
-    };
-
+    navigate("/login");
+};
 
 
     return (

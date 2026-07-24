@@ -45,12 +45,13 @@ const Navbar = () => {
     }, []);
 
     const handleLogout = () => {
-        localStorage.removeItem("pToken");
-        localStorage.removeItem("provider_role");
-        localStorage.removeItem("provider_name");
-        localStorage.removeItem("provider_id");
-        window.location.href = "http://localhost:5173/provider/login";
-    };
+    localStorage.removeItem("pToken");
+    localStorage.removeItem("provider_role");
+    localStorage.removeItem("provider_name");
+    localStorage.removeItem("provider_id");
+
+    navigate("/provider/login");
+};
     const getProfileImage = (image) => {
     if (!image) return "/default-profile.png";
 
