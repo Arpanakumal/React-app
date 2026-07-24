@@ -1,0 +1,14 @@
+# Environment variables
+server/.env
+client/.env
+admin/.env
+
+# Or ignore all .env files anywhere
+**/.env
+
+# Node modules
+**/node_modules/
+
+# Build files
+**/dist/
+**/build/
