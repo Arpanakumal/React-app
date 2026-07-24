@@ -53,9 +53,7 @@ const StoreContextProvider = ({ children }) => {
         }
         return total;
     };
-const API_URL = process.env.REACT_APP_API_URL;
-const url = `${API_URL}/api`;
-
+const url = `${process.env.REACT_APP_API_URL}/api`;
 
     const [token, setToken] = useState(localStorage.getItem("user_token") || "");
     const [role, setRole] = useState(localStorage.getItem("user_role") || "");

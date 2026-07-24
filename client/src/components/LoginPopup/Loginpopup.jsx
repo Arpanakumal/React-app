@@ -21,6 +21,15 @@ const LoginPopup = ({ setShowLogin }) => {
         password: "",
     });
 
+    console.log("API:", process.env.REACT_APP_API_URL);
+
+const url =
+  mode === "signup"
+    ? `${process.env.REACT_APP_API_URL}/api/user/register`
+    : `${process.env.REACT_APP_API_URL}/api/user/login`;
+
+console.log("Login URL:", url);
+
     const onChangeHandler = (e) => {
         const { name, value } = e.target;
         setData((prev) => ({ ...prev, [name]: value }));
