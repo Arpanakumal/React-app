@@ -609,8 +609,13 @@ export const updateAvailability = async (req, res) => {
         const { workingDays, startTime, endTime, isAvailable } = req.body;
 
         const provider = await Provider.findById(providerId);
-        if (!provider)
-            return res.status(404).json({ success: false, message: "Provider not found" });
+
+        if (!provider) {
+            return res.status(404).json({
+                success: false,
+                message: "Provider not found"
+            });
+        }
 
         if (!Array.isArray(workingDays)) {
             return res.status(400).json({
@@ -633,7 +638,6 @@ export const updateAvailability = async (req, res) => {
             });
         }
 
-
         if (!provider.availability) {
             provider.availability = {};
         }
@@ -641,7 +645,7 @@ export const updateAvailability = async (req, res) => {
         provider.availability.workingDays = workingDays;
         provider.availability.startTime = startTime;
         provider.availability.endTime = endTime;
-
+        provider.availability.isAvailable = isAvailable; // <-- ADD THIS
 
         await provider.save();
 
@@ -653,10 +657,12 @@ export const updateAvailability = async (req, res) => {
 
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, message: "Server error" });
+        res.status(500).json({
+            success:false,
+            message:"Server error"
+        });
     }
 };
-
 
 export const forgotPassword = async (req, res) => {
     try {
