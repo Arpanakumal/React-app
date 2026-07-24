@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import './booking.css';
+import './Booking.css';
 import { StoreContext } from '../../context/StoreContext';
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
