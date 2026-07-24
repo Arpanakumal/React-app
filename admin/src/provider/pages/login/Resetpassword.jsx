@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const ResetPassword = () => {
+    const API_URL = import.meta.env.VITE_API_URL;
     const navigate = useNavigate();
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -36,10 +37,10 @@ const ResetPassword = () => {
 
         setLoading(true);
         try {
-            const res = await axios.post(
-                "http://localhost:3001/api/provider/reset-password",
-                { token, newPassword: password }
-            );
+           const res = await axios.post(
+    "http://localhost:3001/api/provider/reset-password",
+    { token, newPassword: password }
+);
 
             if (res.data.success) {
                 toast.success("Password reset successfully!", {

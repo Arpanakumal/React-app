@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const Forgotpassword = () => {
+      const API_URL = import.meta.env.VITE_API_URL;
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
@@ -15,10 +16,10 @@ const Forgotpassword = () => {
         setLoading(true);
 
         try {
-            const res = await axios.post(
-                "http://localhost:3001/api/provider/forgot-password",
-                { email }
-            );
+           const res = await axios.post(
+    `${API_URL}/api/provider/forgot-password`,
+    { email }
+);
 
             if (res.data.success && res.data.redirect) {
                 localStorage.setItem("providerResetToken", res.data.resetToken);
