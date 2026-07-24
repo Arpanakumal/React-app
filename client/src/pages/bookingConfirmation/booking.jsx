@@ -7,8 +7,7 @@ import { useEffect } from "react";
 
 
 
-
-const Booking = () => {
+const booking = () => {
     const { selectedServices, Service_list, getTotalAmount, token, getAuthAxios, clearServices } = useContext(StoreContext);
     const navigate = useNavigate();
 
@@ -217,4 +216,4 @@ const Booking = () => {
     );
 };
 
-export default Booking;
+export default booking;
