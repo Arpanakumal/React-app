@@ -6,7 +6,7 @@ import './ServiceDetail.css';
 const ServiceDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { Service_list, addService, url } = useContext(StoreContext);
+    const { Service_list, addService, } = useContext(StoreContext);
 
     const service = Service_list.find(item => item._id === id);
 

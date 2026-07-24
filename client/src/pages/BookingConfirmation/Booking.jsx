@@ -1,9 +1,9 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect, useCallback } from "react";
 import './Booking.css';
 import { StoreContext } from '../../context/StoreContext';
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useEffect } from "react";
+
 
 
 
@@ -25,30 +25,30 @@ const Booking = () => {
         notes: ''
     });
 
-    useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                if (!token) return;
+   const fetchUser = useCallback(async () => {
+    try {
+        if (!token) return;
 
-                const authAxios = getAuthAxios();
-                const res = await authAxios.get("/user/me");
+        const authAxios = getAuthAxios();
+        const res = await authAxios.get("/user/me");
 
-                if (res.data.success) {
-                    const user = res.data.data;
+        if (res.data.success) {
+            const user = res.data.data;
 
-                    setFormData(prev => ({
-                        ...prev,
-                        name: user.name || "",
-                        email: user.email || ""
-                    }));
-                }
-            } catch (err) {
-                console.error("Failed to fetch user:", err);
-            }
-        };
+            setFormData((prev) => ({
+                ...prev,
+                name: user.name || "",
+                email: user.email || "",
+            }));
+        }
+    } catch (err) {
+        console.error("Failed to fetch user:", err);
+    }
+}, [token, getAuthAxios]);
 
-        fetchUser();
-    }, [token]);
+useEffect(() => {
+    fetchUser();
+}, [fetchUser]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;

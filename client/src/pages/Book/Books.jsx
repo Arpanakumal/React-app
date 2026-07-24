@@ -13,7 +13,7 @@ const Books = () => {
         updateProviders,
         getTotalAmount,
         token,
-        url
+    
     } = useContext(StoreContext);
 
     const serviceEntries = Object.entries(selectedServices);

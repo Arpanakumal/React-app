@@ -1,23 +1,19 @@
-import React, { useContext, useState } from 'react';
-
-import { toast } from 'react-toastify';
-import './Navbar.css';
-import { logo, searchIcon, profile, logoutIcon, booking } from '../../assets/assets';
-
-import { StoreContext } from '../../context/StoreContext';
+import React, { useContext } from "react";
+import { toast } from "react-toastify";
+import "./Navbar.css";
+import { logo, profile, logoutIcon, booking } from "../../assets/assets";
+import { StoreContext } from "../../context/StoreContext";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 
 const Navbar = ({ setShowLogin }) => {
-    const [menu, setMenu] = useState("Home");
     const location = useLocation();
-    const [pendingCount, setPendingCount] = useState(0);
-    const isActive = (path) => location.pathname === path;
-
-    const { token, setToken, logout } = useContext(StoreContext);
-
     const navigate = useNavigate();
 
+    const isActive = (path) => location.pathname === path;
 
+    const { token, logout } = useContext(StoreContext);
+
+    const pendingCount = 0;
 
     return (
         <div className="navbar">
@@ -35,6 +31,7 @@ const Navbar = ({ setShowLogin }) => {
                         Services
                     </Link>
                 </li>
+
                 <li>
                     <Link
                         to="/book"
@@ -44,8 +41,6 @@ const Navbar = ({ setShowLogin }) => {
                                 localStorage.setItem("redirect_after_login", "/book");
                                 setShowLogin(true);
                                 toast.error("Please login first");
-                            } else {
-                                setMenu("book");
                             }
                         }}
                         className={isActive("/book") ? "active" : ""}
@@ -73,31 +68,31 @@ const Navbar = ({ setShowLogin }) => {
                 </li>
             </ul>
 
-
             <div className="navbar-right">
-
-                {!token ?
+                {!token ? (
                     <button onClick={() => setShowLogin(true)}>Sign In</button>
-                    : <div className='navbar-profile'>
+                ) : (
+                    <div className="navbar-profile">
                         <img src={profile} alt="" />
-                        <ul className='nav-profile-dropdown'>
+
+                        <ul className="nav-profile-dropdown">
                             <li onClick={() => navigate("/profile")}>
                                 <img src={profile} alt="" /> My Profile
                             </li>
 
                             <li onClick={() => navigate("/my-bookings")}>
                                 <img src={booking} alt="" /> My Bookings
-                                {pendingCount > 0 && <span className="badge">{pendingCount}</span>}
+                                {pendingCount > 0 && (
+                                    <span className="badge">{pendingCount}</span>
+                                )}
                             </li>
 
                             <li onClick={logout}>
                                 <img src={logoutIcon} alt="" /> Logout
                             </li>
                         </ul>
-
                     </div>
-
-                }
+                )}
             </div>
         </div>
     );

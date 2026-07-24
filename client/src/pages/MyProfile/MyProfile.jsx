@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -15,36 +15,34 @@ const MyProfile = () => {
     const navigate = useNavigate();
 
 
-    const fetchUser = async () => {
-        try {
-            const { data } = await axios.get(`${API_URL}/api/user/me`, {
-                headers: { Authorization: `Bearer ${token}` },
+  const fetchUser = useCallback(async () => {
+    try {
+        const { data } = await axios.get(`${API_URL}/api/user/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (data.success) {
+            const u = data.data;
+            setUser({
+                id: u._id,
+                name: u.name,
+                email: u.email,
+                password: "",
             });
-
-
-            if (data.success) {
-                const u = data.data;
-                setUser({
-                    id: u._id,
-                    name: u.name,
-                    email: u.email,
-                    password: "",
-                });
-            } else {
-                toast.error(data.message || "Failed to fetch user");
-            }
-        } catch (err) {
-            console.error("Fetch user error:", err);
-            toast.error("Cannot reach backend. Is it running?");
-        } finally {
-            setLoading(false);
+        } else {
+            toast.error(data.message || "Failed to fetch user");
         }
-    };
+    } catch (err) {
+        console.error("Fetch user error:", err);
+        toast.error("Cannot reach backend. Is it running?");
+    } finally {
+        setLoading(false);
+    }
+}, [API_URL, token]);
 
-    useEffect(() => {
-        fetchUser();
-    }, []);
-
+useEffect(() => {
+    fetchUser();
+}, [fetchUser]);
 
     const handleChange = (e) => {
         setUser({ ...user, [e.target.name]: e.target.value });

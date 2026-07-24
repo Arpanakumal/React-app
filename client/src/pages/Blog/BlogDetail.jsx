@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import "./Detail.css";
@@ -16,21 +16,18 @@ const BlogDetail = () => {
         return new Date(date).toLocaleDateString("en-US", {
             year: "numeric",
             month: "long",
-            day: "numeric"
+            day: "numeric",
         });
     };
 
-    useEffect(() => {
-        fetchBlog();
-    }, [id]);
-
-    const fetchBlog = async () => {
+    const fetchBlog = useCallback(async () => {
         try {
             const res = await fetch(`${API_URL}/list`);
             const data = await res.json();
 
             if (data.success) {
                 const foundBlog = data.blogs.find((b) => b._id === id);
+
                 if (foundBlog) {
                     setBlog(foundBlog);
                     setComments(foundBlog.comments || []);
@@ -39,17 +36,21 @@ const BlogDetail = () => {
         } catch (err) {
             console.error("Error fetching blog:", err);
         }
-    };
+    }, [id]);
+
+    useEffect(() => {
+        fetchBlog();
+    }, [fetchBlog]);
 
     const formatContent = (text) => {
-        return text
-            .split(". ")
-            .reduce((acc, sentence, index) => {
-                const paraIndex = Math.floor(index / 3);
-                if (!acc[paraIndex]) acc[paraIndex] = "";
-                acc[paraIndex] += sentence + ". ";
-                return acc;
-            }, []);
+        return text.split(". ").reduce((acc, sentence, index) => {
+            const paraIndex = Math.floor(index / 3);
+
+            if (!acc[paraIndex]) acc[paraIndex] = "";
+            acc[paraIndex] += sentence + ". ";
+
+            return acc;
+        }, []);
     };
 
     const handleReplySubmit = async (e) => {
@@ -91,17 +92,17 @@ const BlogDetail = () => {
         <div className="blog-detail-container">
             <h1 className="blog-title">{blog.title}</h1>
 
-          {blog.image && (
-    <img
-        className="blog-image"
-        src={
-            blog.image.startsWith("http")
-                ? blog.image
-                : `http://localhost:3001${blog.image}`
-        }
-        alt={blog.title}
-    />
-)}
+            {blog.image && (
+                <img
+                    className="blog-image"
+                    src={
+                        blog.image.startsWith("http")
+                            ? blog.image
+                            : `http://localhost:3001${blog.image}`
+                    }
+                    alt={blog.title}
+                />
+            )}
 
             <div className="blog-text">
                 {formatContent(blog.content).map((para, i) => (
@@ -110,16 +111,12 @@ const BlogDetail = () => {
             </div>
 
             <hr />
+
             <p className="blog-meta">
-                Written by{" "}
-                <strong>
-                    {blog.authorName || blog.author?.name}
-                </strong>
+                Written by <strong>{blog.authorName || blog.author?.name}</strong>
             </p>
 
-            <p className="blog-date">
-                {formatDate(blog.createdAt)}
-            </p>
+            <p className="blog-date">{formatDate(blog.createdAt)}</p>
 
             <h3>Comments</h3>
 

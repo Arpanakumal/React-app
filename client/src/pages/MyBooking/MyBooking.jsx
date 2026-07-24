@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useCallback } from "react";
 import axios from "axios";
 import "./mybooking.css";
 import { StoreContext } from "../../context/StoreContext";
@@ -11,31 +11,30 @@ const MyBooking = () => {
     const [rating, setRating] = useState({});
     const [review, setReview] = useState({});
 
-    useEffect(() => {
-        fetchBookings();
-    }, []);
+   const fetchBookings = useCallback(async () => {
+    try {
+        const res = await axios.get(`${url}/booking/user`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
 
+        if (res.data.success) {
+            const hidden = JSON.parse(localStorage.getItem("hiddenBookings") || "[]");
 
-    const fetchBookings = async () => {
-        try {
-            const res = await axios.get(`${url}/booking/user`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const filtered = res.data.data.filter(
+                (b) => !hidden.includes(b._id)
+            );
 
-            if (res.data.success) {
-                const hidden = JSON.parse(localStorage.getItem("hiddenBookings") || "[]");
-
-                const filtered = res.data.data.filter(
-                    b => !hidden.includes(b._id)
-                );
-
-                setBookings(filtered);
-            }
-        } catch (err) {
-            console.error(err);
-            toast.error("Failed to load bookings");
+            setBookings(filtered);
         }
-    };
+    } catch (err) {
+        console.error(err);
+        toast.error("Failed to load bookings");
+    }
+}, [url, token]);
+
+useEffect(() => {
+    fetchBookings();
+}, [fetchBookings]);
 
 
     const cancelBooking = async (id) => {
