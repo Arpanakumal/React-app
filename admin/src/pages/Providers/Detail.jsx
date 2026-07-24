@@ -117,14 +117,20 @@ const Detail = ({ url }) => {
                                 ? `${provider.availability.startTime} - ${provider.availability.endTime}`
                                 : "Not set"}
                         </p>
-                        <p>
-                            <span>Currently Available:</span>{" "}
-                            <span
-                                className={`status ${provider.availability.isAvailable ? "available" : "unavailable"}`}
-                            >
-                                {provider.availability.isAvailable ? "Yes" : "No"}
-                            </span>
-                        </p>
+                       <p>
+    <span>Currently Available:</span>{" "}
+    <span
+        className={`status ${
+            (provider.availability.isAvailable ?? provider.available)
+                ? "available"
+                : "unavailable"
+        }`}
+    >
+        {(provider.availability.isAvailable ?? provider.available)
+            ? "Yes"
+            : "No"}
+    </span>
+</p>
                     </div>
                 )}
 
