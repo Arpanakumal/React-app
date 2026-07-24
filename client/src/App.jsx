@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Home from "./pages/home/home";
 import Book from "./pages/Book/Books";
-import BookingConfirmation from "./pages/bookingConfirmation/Booking";
+import BookingConfirmation from "./pages/BookingConfirmation/Booking";
 import ServiceDisplay from "./pages/ServiceDisplay/ServiceDisplay";
 import ServiceDetail from "./pages/ServiceDetail/ServiceDetail";
 import Footer from "./components/Footer/Footer";
